@@ -131,7 +131,13 @@ button:focus-visible,
   outline: none;
 }
 
-.task-check:focus-visible {
+.bullet-text:focus-visible {
+  outline: 1px solid var(--text);
+  outline-offset: 2px;
+}
+
+.task-check:focus-visible,
+button.task-check:focus-visible {
   color: var(--bg);
   outline: 1px solid var(--text);
   outline-offset: 2px;
@@ -161,6 +167,106 @@ button:focus-visible,
 .task-check[aria-checked='true'] {
   border-color: var(--text);
   background: var(--text);
+}
+
+.branch-dot {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  margin-top: 7px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.branch-dot::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent-dot);
+  opacity: 0.6;
+}
+
+.branch-dot:hover::after,
+.branch-dot:focus-visible::after {
+  opacity: 1;
+}
+
+button.branch-dot:focus-visible {
+  outline: 1px solid var(--text);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.branch-handle {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  border: none;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.branch-node {
+  position: relative;
+  width: max-content;
+  max-width: 320px;
+  border-radius: 3px;
+}
+
+.react-flow__node-branch {
+  cursor: move;
+}
+
+.react-flow__node-branch:hover .branch-node,
+.react-flow__node-branch.selected .branch-node {
+  background: var(--bg-subtle);
+}
+
+.react-flow__node-branch .bullet-text {
+  cursor: text;
+}
+
+.react-flow .react-flow__nodesselection-rect {
+  pointer-events: none;
+}
+
+.branch-delete {
+  margin: 0 8px 4px 36px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.branch-delete:hover,
+.branch-delete:focus-visible {
+  color: var(--text);
+}
+
+button.branch-delete:focus-visible {
+  outline: 1px solid var(--text);
+  outline-offset: 2px;
+}
+
+.react-flow__edge.branch-edge .react-flow__edge-path {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.react-flow__edge.branch-edge:hover .react-flow__edge-path,
+.react-flow__edge.branch-edge.selected .react-flow__edge-path {
+  stroke: color-mix(in srgb, var(--text) 45%, var(--line));
 }
 
 .react-flow,

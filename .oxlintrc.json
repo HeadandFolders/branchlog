@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "react"],
+  "ignorePatterns": ["out", "dist", "node_modules", "test-results", "playwright-report", "blob-report"],
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "settings": {
+    "react": {
+      "version": "19.3.1"
+    }
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    // DailyCanvas writes tasksRef.current during render so the structure
+    // effect reads that render's tasks. The rule cannot allow just that write.
+    "react/refs": "off"
+  }
+}

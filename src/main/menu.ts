@@ -22,6 +22,19 @@ export function installMenu(): void {
       ],
     },
     {
+      label: 'Edit',
+      submenu: [
+        { label: 'Undo', accelerator: 'CmdOrCtrl+Z', click: () => send('undo') },
+        { label: 'Redo', accelerator: 'CmdOrCtrl+Shift+Z', click: () => send('redo') },
+        { label: 'Redo', accelerator: 'Ctrl+Y', visible: false, click: () => send('redo') },
+        { type: 'separator' },
+        { label: 'Cut', accelerator: 'CmdOrCtrl+X', click: () => send('cut') },
+        { role: 'copy' },
+        { role: 'paste' },
+        { label: 'Select All', accelerator: 'CmdOrCtrl+A', click: () => send('select-all') },
+      ],
+    },
+    {
       label: 'Go',
       submenu: [
         { label: 'Go to Today', accelerator: 'CmdOrCtrl+T', click: () => send('today') },

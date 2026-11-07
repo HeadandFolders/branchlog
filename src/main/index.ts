@@ -4,10 +4,13 @@ import { finishBackup, startDailyBackup } from './backup'
 import { closeDatabase, initDatabase } from './database'
 import { installIpc } from './ipc'
 import { installMenu } from './menu'
+import { installEditContextMenu } from './context-menu'
 import { hardenContents, installSecurityPolicy } from './security'
 import { loadWindowState, trackWindowState } from './window-state'
 
 const appRoot = import.meta.dirname
+const userDataOverride = process.env.BRANCHLOG_USER_DATA
+if (userDataOverride) app.setPath('userData', userDataOverride)
 
 let mainWindow: BrowserWindow | null = null
 let allowQuit = false
@@ -72,6 +75,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.on('web-contents-created', (_event, contents) => {
     hardenContents(contents)
+    installEditContextMenu(contents)
   })
 
   void app.whenReady().then(() => {

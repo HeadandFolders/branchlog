@@ -1,6 +1,8 @@
 import { Component, useEffect, type ReactNode } from 'react'
 import { DailyCanvas } from './components/DailyCanvas'
 import { TopBar } from './components/TopBar'
+import { copyFromMenu, cutFromMenu, selectAllFromMenu } from './lib/list-edit'
+import { installHistoryKeys, redoEditing, undoEditing } from './store/history'
 import { useNotebook } from './store/notebook'
 
 interface BoundaryProps {
@@ -41,14 +43,21 @@ function Notebook() {
   useEffect(() => {
     void goToDate(useNotebook.getState().currentDate)
     const unsubscribe = window.branchlog.onMenuAction((action) => {
-      useNotebook.getState().runMenuAction(action)
+      if (action === 'undo') undoEditing()
+      else if (action === 'redo') redoEditing()
+      else if (action === 'cut') cutFromMenu()
+      else if (action === 'copy') copyFromMenu()
+      else if (action === 'select-all') selectAllFromMenu()
+      else useNotebook.getState().runMenuAction(action)
     })
+    const removeHistoryKeys = installHistoryKeys()
     const onUnload = (): void => {
       useNotebook.getState().flushPendingSync()
     }
     window.addEventListener('beforeunload', onUnload)
     return () => {
       unsubscribe()
+      removeHistoryKeys()
       window.removeEventListener('beforeunload', onUnload)
     }
   }, [goToDate])

@@ -9,6 +9,9 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "lint": "oxlint",
+    "test": "npm run test:e2e",
+    "test:e2e": "electron-vite build && playwright test",
     "postinstall": "node scripts/rebuild-native.cjs"
   },
   "dependencies": {
@@ -24,6 +27,7 @@
   },
   "devDependencies": {
     "@electron/rebuild": "^4.2.1",
+    "@playwright/test": "^1.65.0",
     "@tailwindcss/vite": "^4.3.5",
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^26.6.6",
@@ -32,6 +36,7 @@
     "@vitejs/plugin-react": "^6.2.1",
     "electron": "^45.2.3",
     "electron-vite": "^6.0.0",
+    "oxlint": "^1.92.0",
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2"
   }

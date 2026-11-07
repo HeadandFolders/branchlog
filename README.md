@@ -2,7 +2,7 @@
 
 A local-first desktop notebook. Each day is a page of checkbox tasks on an infinite canvas.
 
-This repository is in **Phase 1**: the desktop shell and the daily page. Branching, the concept map, the calendar, images, and LM Studio comments come in later phases.
+This repository is in **Phase 2**: the desktop shell, the daily page, and same-day branches. The concept map, the calendar, images, and LM Studio comments come in later phases.
 
 ## Setup
 

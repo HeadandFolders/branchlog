@@ -92,3 +92,12 @@ export function placeCaret(element: HTMLElement, offset: number): void {
   selection.removeAllRanges()
   selection.addRange(range)
 }
+
+export function insertPlainText(element: HTMLElement, insert: string): string {
+  const { start, end } = caretOffsets(element)
+  const current = element.textContent ?? ''
+  const next = current.slice(0, start) + insert + current.slice(end)
+  if (element.textContent !== next) element.textContent = next
+  placeCaret(element, start + insert.length)
+  return next
+}

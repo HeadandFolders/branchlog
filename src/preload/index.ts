@@ -1,11 +1,15 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import {
+  isAck,
   isMenuAction,
   isTask,
   isTaskList,
   isWriteResult,
+  type Ack,
   type BranchlogApi,
+  type CreateBranchInput,
   type CreateTaskInput,
+  type Task,
   type UpdateTaskInput,
   type WriteResult,
 } from '@shared/types'
@@ -26,6 +30,9 @@ const api: BranchlogApi = {
     createSync: (input: CreateTaskInput) => {
       return readWriteResult(ipcRenderer.sendSync('tasks:createSync', input))
     },
+    createBranchSync: (input: CreateBranchInput) => {
+      return readWriteResult(ipcRenderer.sendSync('tasks:createBranchSync', input))
+    },
     update: async (input: UpdateTaskInput) => {
       const value: unknown = await ipcRenderer.invoke('tasks:update', input)
       if (!isTask(value)) throw new Error('Could not complete that request')
@@ -33,6 +40,11 @@ const api: BranchlogApi = {
     },
     updateSync: (input: UpdateTaskInput) => {
       return readWriteResult(ipcRenderer.sendSync('tasks:updateSync', input))
+    },
+    replaceDaySync: (date: string, tasks: Task[]): Ack => {
+      const value: unknown = ipcRenderer.sendSync('tasks:replaceDay', { date, tasks })
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
     },
     delete: (id) => ipcRenderer.invoke('tasks:delete', id),
   },

@@ -1,7 +1,20 @@
-import { memo, useLayoutEffect, useRef, type FormEvent, type KeyboardEvent, type RefObject } from 'react'
+import {
+  memo,
+  useLayoutEffect,
+  useRef,
+  type ClipboardEvent as ReactClipboardEvent,
+  type FormEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+  type RefObject,
+} from 'react'
+import { Handle, Position, useReactFlow } from '@xyflow/react'
 import { Check } from 'lucide-react'
 import type { Task } from '@shared/types'
-import { caretOffsets, placeCaret, takeCaret } from '../lib/caret'
+import { caretOffsets, insertPlainText, placeCaret, takeCaret } from '../lib/caret'
+import { textDirection } from '../lib/direction'
+import { handleTaskBeforeInput, handleTaskKey } from '../lib/task-keys'
+import { batchEdits, markInput } from '../store/history'
 import { useNotebook } from '../store/notebook'
 
 interface BulletTextProps {
@@ -15,6 +28,7 @@ interface BulletTextProps {
   onBlur: () => void
   onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void
   onBeforeInput: (event: FormEvent<HTMLDivElement>) => void
+  onPaste: (event: ReactClipboardEvent<HTMLDivElement>) => void
 }
 
 const BulletText = memo(
@@ -29,10 +43,22 @@ const BulletText = memo(
     onBlur,
     onKeyDown,
     onBeforeInput,
+    onPaste,
   }: BulletTextProps) {
     useLayoutEffect(() => {
       const element = textRef.current
       if (!element || element.textContent === text) return
+      if (document.activeElement === element) return
+      const selection = window.getSelection()
+      if (
+        selection &&
+        selection.rangeCount > 0 &&
+        !selection.isCollapsed &&
+        element.contains(selection.anchorNode) &&
+        element.contains(selection.focusNode)
+      ) {
+        return
+      }
       element.textContent = text
     }, [editing, text, textRef])
 
@@ -47,16 +73,32 @@ const BulletText = memo(
         data-task-id={taskId}
         role="textbox"
         aria-label="Task"
-        aria-multiline="false"
+        aria-multiline="true"
         spellCheck={editing}
+        dir={textDirection(text)}
+        tabIndex={0}
         contentEditable={editing ? 'plaintext-only' : 'false'}
         suppressContentEditableWarning
         className={`bullet-text nopan nodrag ${textClass}`}
         onFocus={onFocus}
-        onInput={(event) => onInput(event.currentTarget.textContent ?? '')}
+        onPointerDown={(event) => {
+          if (event.button !== 2) return
+          event.currentTarget.contentEditable = 'plaintext-only'
+          event.currentTarget.spellcheck = true
+          onFocus()
+        }}
+        onInput={(event) => {
+          const value = event.currentTarget.textContent ?? ''
+          const direction = textDirection(value)
+          if (event.currentTarget.dir !== direction) event.currentTarget.dir = direction
+          const native = event.nativeEvent
+          markInput(native instanceof InputEvent ? native.inputType : '')
+          onInput(value)
+        }}
         onBlur={onBlur}
         onBeforeInput={onBeforeInput}
         onKeyDown={onKeyDown}
+        onPaste={onPaste}
       />
     )
   },
@@ -76,14 +118,21 @@ export function TaskBullet({ task }: TaskBulletProps) {
   const updateText = useNotebook((state) => state.updateText)
   const flushText = useNotebook((state) => state.flushText)
   const toggleDone = useNotebook((state) => state.toggleDone)
-  const deleteTask = useNotebook((state) => state.deleteTask)
   const createTask = useNotebook((state) => state.createTask)
+  const createBranch = useNotebook((state) => state.createBranch)
+  const { screenToFlowPosition } = useReactFlow()
   const setFocusedId = useNotebook((state) => state.setFocusedId)
   const editing = useNotebook((state) => state.focusedId === task.id)
   const clearFocusRequest = useNotebook((state) => state.clearFocusRequest)
+  const focusPin = useNotebook((state) => {
+    const request = state.focusRequest
+    if (request?.id !== task.id) return null
+    return request.offset ?? -1
+  })
   const splitLock = useRef(false)
 
   const splitAtCaret = (element: HTMLDivElement): void => {
+    batchEdits(() => {
     const text = element.textContent ?? ''
     const { start, end } = caretOffsets(element)
     let before = text.slice(0, start)
@@ -94,23 +143,54 @@ export function TaskBullet({ task }: TaskBulletProps) {
       else if (after.startsWith('\r\n')) after = after.slice(2)
       else if (after.startsWith('\n') || after.startsWith('\r')) after = after.slice(1)
     }
+    if (task.side === 'right' && !task.parentId) return
     if (element.textContent !== before) element.textContent = before
     updateText(task.id, before)
+    if (task.side === 'right') {
+      if (!task.parentId) return
+      createBranch(task.parentId, task.x, task.y + 72, after, true)
+      return
+    }
     createTask(task.id, after, true)
+    })
   }
+
+  const historyRev = useNotebook((state) => state.historyRev)
+  const seenRev = useRef(historyRev)
 
   useLayoutEffect(() => {
     if (!editing) return
     const element = ref.current
     if (!element) return
-    const request = useNotebook.getState().focusRequest
+    const state = useNotebook.getState()
+    const request = state.focusRequest
     const pinned = request?.id === task.id && request.offset !== undefined
-    if (document.activeElement === element && !pinned) return
-    if (element.textContent !== task.text) element.textContent = task.text
-    element.focus()
+    const force = state.historyRev !== seenRev.current
+    if (force) seenRev.current = state.historyRev
+    const stored = state.tasks.find((item) => item.id === task.id)?.text
+    const textChanged = stored !== undefined && element.textContent !== stored
+    if (document.activeElement === element && focusPin === null && !(force && textChanged)) return
+
     const selection = window.getSelection()
-    if (!selection) return
-    if (pinned && request) {
+    const existing = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null
+    const keepSelection =
+      !pinned &&
+      existing !== null &&
+      !existing.collapsed &&
+      element.contains(existing.startContainer) &&
+      element.contains(existing.endContainer)
+
+    if (!keepSelection && stored !== undefined && element.textContent !== stored) element.textContent = stored
+    element.focus({ preventScroll: true })
+    if (!selection) {
+      if (useNotebook.getState().focusRequest?.id === task.id) clearFocusRequest()
+      return
+    }
+    if (keepSelection && existing) {
+      takeCaret(task.id)
+      selection.removeAllRanges()
+      selection.addRange(existing)
+    } else if (pinned && request) {
       placeCaret(element, request.offset ?? 0)
     } else {
       const caret = takeCaret(task.id)
@@ -127,11 +207,19 @@ export function TaskBullet({ task }: TaskBulletProps) {
       }
     }
     if (useNotebook.getState().focusRequest?.id === task.id) clearFocusRequest()
-  }, [clearFocusRequest, editing, task.id, task.text])
+  }, [clearFocusRequest, editing, focusPin, historyRev, task.id])
+
+  const branchFrom = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.preventDefault()
+    event.stopPropagation()
+    const rect = event.currentTarget.getBoundingClientRect()
+    const point = screenToFlowPosition({ x: rect.right + 36, y: rect.top })
+    createBranch(task.id, point.x, point.y)
+  }
 
   return (
     <div
-      className={`nopan flex items-start gap-3 rounded-[3px] px-2 py-1.5 ${
+      className={`nopan relative flex items-start gap-3 rounded-[3px] px-2 py-1.5 ${
         editing ? 'bg-[var(--bg-subtle)]' : ''
       }`}
     >
@@ -161,41 +249,45 @@ export function TaskBullet({ task }: TaskBulletProps) {
           onFocus={() => setFocusedId(task.id)}
           onInput={(text) => updateText(task.id, text)}
           onBlur={() => void flushText(task.id)}
-          onBeforeInput={(event) => {
-            const native = event.nativeEvent
-            if (!(native instanceof InputEvent)) return
-            if (native.inputType !== 'insertParagraph' && native.inputType !== 'insertLineBreak') return
-            if (!splitLock.current && native.inputType === 'insertLineBreak') return
+          onPaste={(event) => {
+            if ('isComposing' in event.nativeEvent && event.nativeEvent.isComposing) return
+            const data = event.clipboardData
+            const plain = data?.getData('text/plain') ?? ''
+            const html = plain === '' ? (data?.getData('text/html') ?? '') : ''
+            const text =
+              plain !== ''
+                ? plain
+                : html === ''
+                  ? ''
+                  : (new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '')
+            if (text === '') return
             event.preventDefault()
-            if (splitLock.current) return
-            splitAtCaret(event.currentTarget)
-          }}
-          onKeyDown={(event) => {
             event.stopPropagation()
-            if (event.nativeEvent.isComposing) return
-            if (event.key === 'Enter' && !event.shiftKey) {
-              event.preventDefault()
-              splitLock.current = true
-              splitAtCaret(event.currentTarget)
-              queueMicrotask(() => {
-                splitLock.current = false
-              })
-              return
-            }
-            if (
-              (event.key === 'Backspace' || event.key === 'Delete') &&
-              (event.currentTarget.textContent ?? '') === '' &&
-              !event.repeat &&
-              !event.metaKey &&
-              !event.ctrlKey &&
-              !event.altKey
-            ) {
-              event.preventDefault()
-              void deleteTask(task.id)
-            }
+            const next = insertPlainText(event.currentTarget, text)
+            event.currentTarget.dir = textDirection(next)
+            updateText(task.id, next)
           }}
+          onBeforeInput={(event) => handleTaskBeforeInput(event, splitLock, splitAtCaret)}
+          onKeyDown={(event) => handleTaskKey(event, task, splitLock, splitAtCaret)}
         />
       </div>
+      <button
+        type="button"
+        className="branch-dot nopan nodrag"
+        aria-label="Branch from this task"
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={branchFrom}
+      />
+      {task.side === 'main' ? (
+        <Handle
+          id={`in-${task.id}`}
+          type="target"
+          position={Position.Right}
+          isConnectable={false}
+          className="branch-handle"
+          style={{ width: 1, height: 1, minWidth: 0, minHeight: 0, opacity: 0, border: 'none', background: 'transparent' }}
+        />
+      ) : null}
     </div>
   )
 }

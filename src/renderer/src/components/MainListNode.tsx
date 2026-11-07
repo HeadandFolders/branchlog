@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { DateHeader } from './DateHeader'
 import { TaskBullet } from './TaskBullet'
 import { rememberCaret, rangeOffsets } from '../lib/caret'
+import { handleNewTaskKey } from '../lib/new-task'
+import { deleteSelectedTaskText, installCrossTaskCut, selectedTaskPlainText } from '../lib/list-edit'
 import { useNotebook } from '../store/notebook'
 
 interface DragState {
@@ -127,30 +129,36 @@ function markFromBoundary(list: HTMLElement, range: Range, atStart: boolean): Te
   return { id: text.dataset.taskId, offset: before.toString().length }
 }
 
-function selectedTaskText(list: HTMLElement): string | null {
-  const selection = window.getSelection()
-  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return null
-  if (!selection.anchorNode || !list.contains(selection.anchorNode)) return null
-  const range = selection.getRangeAt(0)
-  const lines: string[] = []
+function spansMultipleTasks(list: HTMLElement, range: Range): boolean {
+  let count = 0
   for (const node of list.querySelectorAll<HTMLElement>('[data-task-text]')) {
-    if (!range.intersectsNode(node)) continue
-    const piece = document.createRange()
-    piece.selectNodeContents(node)
-    if (range.compareBoundaryPoints(Range.START_TO_START, piece) > 0 && node.contains(range.startContainer)) {
-      piece.setStart(range.startContainer, range.startOffset)
-    }
-    if (range.compareBoundaryPoints(Range.END_TO_END, piece) < 0 && node.contains(range.endContainer)) {
-      piece.setEnd(range.endContainer, range.endOffset)
-    }
-    lines.push(piece.toString())
+    const offsets = rangeOffsets(node, range)
+    if (!offsets || offsets.start === offsets.end) continue
+    count += 1
+    if (count > 1) return true
   }
-  if (lines.length < 2) return null
-  return lines.join('\n')
+  return false
+}
+
+function editingHost(target: EventTarget | null): HTMLElement | null {
+  if (!(target instanceof Node)) return null
+  const element = target instanceof Element ? target : target.parentElement
+  const host = element?.closest<HTMLElement>('[data-task-text]')
+  if (!host?.isContentEditable) return null
+  return host
+}
+
+function selectionInsideEditor(): boolean {
+  const selection = window.getSelection()
+  const anchor = selection?.anchorNode
+  if (!anchor) return false
+  const element = anchor instanceof Element ? anchor : anchor.parentElement
+  return element?.closest<HTMLElement>('[data-task-text]')?.isContentEditable ?? false
 }
 
 export function MainListNode() {
-  const tasks = useNotebook((state) => state.tasks)
+  const allTasks = useNotebook((state) => state.tasks)
+  const tasks = allTasks.filter((task) => task.side === 'main')
   const ready = useNotebook((state) => state.ready)
   const currentDate = useNotebook((state) => state.currentDate)
   const createTask = useNotebook((state) => state.createTask)
@@ -200,7 +208,11 @@ export function MainListNode() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.isComposing || event.key === 'Process') return
+      if (event.altKey || event.shiftKey) return
       if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'a') return
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
+      if (editingHost(event.target) || selectionInsideEditor()) return
       const list = listRef.current
       if (!list) return
       const target = event.target
@@ -227,7 +239,7 @@ export function MainListNode() {
     const onCopy = (event: ClipboardEvent): void => {
       const list = listRef.current
       if (!list || !event.clipboardData) return
-      const text = selectedTaskText(list)
+      const text = selectedTaskPlainText(list)
       if (text == null) return
       event.preventDefault()
       event.clipboardData.setData('text/plain', text)
@@ -243,63 +255,31 @@ export function MainListNode() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.isComposing || event.key === 'Process') return
       if (event.key !== 'Backspace' && event.key !== 'Delete') return
-      if (event.shiftKey || event.altKey || event.isComposing) return
+      if (event.shiftKey || event.altKey) return
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
+      if (editingHost(event.target) || selectionInsideEditor()) return
       const list = listRef.current
       if (!list) return
       const selection = window.getSelection()
       if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return
       if (!selection.anchorNode || !list.contains(selection.anchorNode)) return
-      const range = selection.getRangeAt(0)
-      const slices: { id: string; node: HTMLElement; text: string; start: number; end: number }[] = []
-      for (const node of list.querySelectorAll<HTMLElement>('[data-task-text]')) {
-        const offsets = rangeOffsets(node, range)
-        const id = node.dataset.taskId
-        if (!offsets || !id) continue
-        slices.push({ id, node, text: node.textContent ?? '', ...offsets })
-      }
-      if (slices.length === 0) return
+      if (!deleteSelectedTaskText(list)) return
       event.preventDefault()
       event.stopPropagation()
       keepHighlight.current = false
       clearLiveSelectionPaint()
-      selection.removeAllRanges()
-
-      const notebook = useNotebook.getState()
-      const tasks = notebook.tasks
-      const deletions = new Set<string>()
-      let caret: { id: string; offset: number } | null = null
-      for (const slice of slices) {
-        const next = slice.text.slice(0, slice.start) + slice.text.slice(slice.end)
-        if (next.replace(/\r?\n/g, '') === '') {
-          deletions.add(slice.id)
-        } else {
-          slice.node.textContent = next
-          notebook.updateText(slice.id, next)
-          if (!caret) caret = { id: slice.id, offset: slice.start }
-        }
-      }
-      const first = slices[0]
-      const last = slices[slices.length - 1]
-      const firstIndex = first ? tasks.findIndex((task) => task.id === first.id) : -1
-      const lastIndex = last ? tasks.findIndex((task) => task.id === last.id) : -1
-      for (const id of deletions) void notebook.deleteTask(id)
-      if (caret) {
-        useNotebook.getState().focusAt(caret.id, caret.offset)
-        return
-      }
-      const latest = useNotebook.getState().tasks
-      const before = tasks
-        .slice(0, Math.max(firstIndex, 0))
-        .reverse()
-        .find((task) => latest.some((item) => item.id === task.id))
-      const after = tasks.slice(lastIndex + 1).find((task) => latest.some((item) => item.id === task.id))
-      if (before) useNotebook.getState().focusAt(before.id)
-      else if (after) useNotebook.getState().focusAt(after.id, 0)
     }
     document.addEventListener('keydown', onKeyDown, true)
-    return () => document.removeEventListener('keydown', onKeyDown, true)
+    const removeCut = installCrossTaskCut(listRef, () => {
+      keepHighlight.current = false
+      clearLiveSelectionPaint()
+    })
+    return () => {
+      document.removeEventListener('keydown', onKeyDown, true)
+      removeCut()
+    }
   }, [])
 
   useEffect(() => {
@@ -335,10 +315,22 @@ export function MainListNode() {
     }
     clearLiveSelectionPaint()
     const target = event.target
-    if (!(target instanceof Element) || target.closest('.task-check')) return
+    if (!(target instanceof Element) || target.closest('.task-check, .branch-dot')) return
     const text = target.closest<HTMLElement>('[data-task-text]')
     const id = text?.dataset.taskId
     if (!id || useNotebook.getState().focusedId === id) return
+    const selected = window.getSelection()
+    const selectedRange = selected && selected.rangeCount > 0 ? selected.getRangeAt(0) : null
+    if (
+      text &&
+      selectedRange &&
+      !selectedRange.collapsed &&
+      text.contains(selectedRange.startContainer) &&
+      text.contains(selectedRange.endContainer)
+    ) {
+      setFocusedId(id)
+      return
+    }
     rememberCaret({ id, x: event.clientX, y: event.clientY })
     setFocusedId(id)
   }
@@ -352,7 +344,7 @@ export function MainListNode() {
         onPointerDown={(event) => {
           if (event.button !== 0) return
           const target = event.target
-          if (target instanceof Element && target.closest('.task-check')) return
+          if (target instanceof Element && target.closest('.task-check, .branch-dot')) return
           const list = listRef.current
           if (!list) return
           dragListeners.current?.()
@@ -362,14 +354,14 @@ export function MainListNode() {
           const onMove = (move: PointerEvent): void => {
             if (move.pointerId !== event.pointerId) return
             if (!drag.selecting && Math.hypot(move.clientX - drag.x, move.clientY - drag.y) < 2) return
+            const range = rangeBetween(list, drag.x, drag.y, move.clientX, move.clientY)
+            if (!range || range.collapsed || !spansMultipleTasks(list, range)) return
             if (!drag.selecting) {
               drag.selecting = true
               list.querySelectorAll<HTMLElement>('[data-task-text]').forEach((node) => {
                 if (node.isContentEditable) node.contentEditable = 'false'
               })
             }
-            const range = rangeBetween(list, drag.x, drag.y, move.clientX, move.clientY)
-            if (!range || range.collapsed) return
             applyLiveSelection(range)
           }
           const onUp = (up: PointerEvent): void => {
@@ -404,13 +396,7 @@ export function MainListNode() {
                 const text = event.target.value
                 if (text !== '') createTask(null, text)
               }}
-              onKeyDown={(event) => {
-                event.stopPropagation()
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault()
-                  createTask(null, '')
-                }
-              }}
+              onKeyDown={(event) => handleNewTaskKey(event, createTask)}
             />
           </div>
         ) : null}

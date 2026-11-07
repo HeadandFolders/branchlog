@@ -3,7 +3,7 @@ import path from 'node:path'
 import Database from 'better-sqlite3'
 import { app } from 'electron'
 import { localDateKey } from '@shared/dates'
-import type { CreateTaskInput, Task, TaskSide, UpdateTaskInput } from '@shared/types'
+import type { CreateBranchInput, CreateTaskInput, Task, TaskSide, UpdateTaskInput } from '@shared/types'
 
 interface TaskRow {
   id: string
@@ -137,8 +137,8 @@ export function listTasksByDate(dateCreated: string): Task[] {
     .prepare(
       `SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, side, orderIndex
        FROM tasks
-       WHERE dateCreated = ? AND side = 'main'
-       ORDER BY orderIndex ASC, rowid ASC`,
+       WHERE dateCreated = ?
+       ORDER BY CASE side WHEN 'main' THEN 0 ELSE 1 END, orderIndex ASC, rowid ASC`,
     )
     .all(dateCreated) as TaskRow[]
   return rows.map(mapTask)
@@ -199,6 +199,50 @@ export function createTask(input: CreateTaskInput): Task {
   }
 }
 
+export function createBranch(input: CreateBranchInput): Task {
+  const db = getDatabase()
+  const insert = db.transaction((branch: CreateBranchInput): Task => {
+    const parent = db
+      .prepare(`SELECT id, dateCreated FROM tasks WHERE id = ?`)
+      .get(branch.parentId) as { id: string; dateCreated: string } | undefined
+    if (!parent || parent.id === branch.id) throw new Error('Invalid task')
+
+    const row = db
+      .prepare(
+        `SELECT COALESCE(MAX(orderIndex), -1) AS maxIndex
+         FROM tasks WHERE dateCreated = ? AND side = 'right'`,
+      )
+      .get(parent.dateCreated) as { maxIndex: number }
+    const orderIndex = row.maxIndex + 1
+
+    db.prepare(
+      `INSERT INTO tasks (
+         id, text, done, dateCreated, dateCompleted, parentId, x, y, side, orderIndex
+       ) VALUES (?, ?, 0, ?, NULL, ?, ?, ?, 'right', ?)`,
+    ).run(branch.id, branch.text, parent.dateCreated, parent.id, branch.x, branch.y, orderIndex)
+
+    return {
+      id: branch.id,
+      text: branch.text,
+      done: false,
+      dateCreated: parent.dateCreated,
+      dateCompleted: null,
+      parentId: parent.id,
+      x: branch.x,
+      y: branch.y,
+      side: 'right',
+      orderIndex,
+    }
+  })
+
+  try {
+    return insert(input)
+  } catch (error) {
+    if (isConstraint(error)) throw new Error('Invalid task')
+    throw error
+  }
+}
+
 export function updateTask(input: UpdateTaskInput): Task {
   const db = getDatabase()
   const existing = db
@@ -211,12 +255,16 @@ export function updateTask(input: UpdateTaskInput): Task {
 
   const hasText = input.text !== undefined
   const hasDone = input.done !== undefined
+  const hasX = input.x !== undefined
+  const hasY = input.y !== undefined
   const today = localDateKey()
   const result = db
     .prepare(
       `UPDATE tasks SET
          text = CASE WHEN @hasText = 1 THEN @text ELSE text END,
          done = CASE WHEN @hasDone = 1 THEN @done ELSE done END,
+         x = CASE WHEN @hasX = 1 THEN @x ELSE x END,
+         y = CASE WHEN @hasY = 1 THEN @y ELSE y END,
          dateCompleted = CASE
            WHEN @hasDone = 0 THEN dateCompleted
            WHEN @done = 1 THEN @today
@@ -230,6 +278,10 @@ export function updateTask(input: UpdateTaskInput): Task {
       text: input.text ?? '',
       hasDone: hasDone ? 1 : 0,
       done: input.done ? 1 : 0,
+      hasX: hasX ? 1 : 0,
+      x: input.x ?? 0,
+      hasY: hasY ? 1 : 0,
+      y: input.y ?? 0,
       today,
     })
 

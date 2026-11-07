@@ -20,13 +20,34 @@ export interface CreateTaskInput {
   afterId: string | null
 }
 
+export interface CreateBranchInput {
+  id: string
+  parentId: string
+  text: string
+  x: number
+  y: number
+}
+
 export interface UpdateTaskInput {
   id: string
   text?: string
   done?: boolean
+  x?: number
+  y?: number
 }
 
-export type MenuAction = 'new-task' | 'today' | 'prev-day' | 'next-day'
+export type MenuAction =
+  | 'new-task'
+  | 'today'
+  | 'prev-day'
+  | 'next-day'
+  | 'undo'
+  | 'redo'
+  | 'cut'
+  | 'copy'
+  | 'select-all'
+
+export type Ack = { ok: true } | { ok: false }
 
 export type WriteResult =
   | { ok: true; task: Task }
@@ -36,8 +57,10 @@ export interface BranchlogApi {
   tasks: {
     listByDate: (date: string) => Promise<Task[]>
     createSync: (input: CreateTaskInput) => WriteResult
+    createBranchSync: (input: CreateBranchInput) => WriteResult
     update: (input: UpdateTaskInput) => Promise<Task>
     updateSync: (input: UpdateTaskInput) => WriteResult
+    replaceDaySync: (date: string, tasks: Task[]) => Ack
     delete: (id: string) => Promise<void>
   }
   onMenuAction: (callback: (action: MenuAction) => void) => () => void
@@ -73,6 +96,20 @@ export function isTaskList(value: unknown): value is Task[] {
   return Array.isArray(value) && value.every(isTask)
 }
 
+export function isAck(value: unknown): value is Ack {
+  return isRecord(value) && (value.ok === true || value.ok === false)
+}
+
 export function isMenuAction(value: unknown): value is MenuAction {
-  return value === 'new-task' || value === 'today' || value === 'prev-day' || value === 'next-day'
+  return (
+    value === 'new-task' ||
+    value === 'today' ||
+    value === 'prev-day' ||
+    value === 'next-day' ||
+    value === 'undo' ||
+    value === 'redo' ||
+    value === 'cut' ||
+    value === 'copy' ||
+    value === 'select-all'
+  )
 }
