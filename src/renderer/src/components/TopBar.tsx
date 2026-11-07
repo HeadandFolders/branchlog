@@ -1,0 +1,85 @@
+import { useEffect, useId, useRef, useState } from 'react'
+import { Menu } from 'lucide-react'
+import { framePageNow } from '../lib/viewport'
+import { useNotebook } from '../store/notebook'
+
+const shortcutMod = /Mac/i.test(navigator.userAgent) ? '⌘' : 'Ctrl'
+
+export function TopBar() {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const menuId = useId()
+  const runMenuAction = useNotebook((state) => state.runMenuAction)
+
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (event: PointerEvent): void => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
+  const items: { action: 'new-task' | 'today' | 'prev-day' | 'next-day'; label: string; shortcut: string }[] = [
+    { action: 'new-task', label: 'New task', shortcut: `${shortcutMod}+N` },
+    { action: 'today', label: 'Go to Today', shortcut: `${shortcutMod}+T` },
+    { action: 'prev-day', label: 'Previous day', shortcut: '' },
+    { action: 'next-day', label: 'Next day', shortcut: '' },
+  ]
+
+  return (
+    <header className="flex h-10 shrink-0 items-center gap-3 px-4">
+      <div ref={rootRef} className="relative">
+        <button
+          type="button"
+          className="flex size-6 items-center justify-center text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:text-[var(--text)]"
+          aria-label="Menu"
+          aria-haspopup="menu"
+          aria-expanded={open}
+          aria-controls={menuId}
+          onClick={() => setOpen((value) => !value)}
+        >
+          <Menu size={16} strokeWidth={1.5} />
+        </button>
+        {open ? (
+          <div
+            id={menuId}
+            role="menu"
+            className="absolute left-0 top-8 z-20 min-w-56 rounded-[6px] border border-[var(--line)] bg-[var(--bg)] py-1"
+          >
+            {items.map((item) => (
+              <button
+                key={item.action}
+                type="button"
+                role="menuitem"
+                className="flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
+                onClick={() => {
+                  setOpen(false)
+                  runMenuAction(item.action)
+                }}
+              >
+                <span>{item.label}</span>
+                {item.shortcut ? <span className="text-[12px] text-[var(--text-faint)]">{item.shortcut}</span> : null}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+      <button
+        type="button"
+        className="flex items-center gap-2 font-serif text-[14px] font-semibold text-[var(--text)]"
+        onClick={framePageNow}
+      >
+        <span aria-hidden="true" className="size-1.5 rounded-full bg-[var(--accent-dot)]" />
+        branchlog.
+      </button>
+    </header>
+  )
+}

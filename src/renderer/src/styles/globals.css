@@ -1,0 +1,237 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Geist", system-ui, sans-serif;
+  --font-serif: "Newsreader", "Source Serif 4", Georgia, serif;
+}
+
+:root {
+  --bg: #f3f3ef;
+  --bg-subtle: #ecece7;
+  --text: #1a1a1a;
+  --text-muted: #8a8a85;
+  --text-faint: #b8b8b2;
+  --line: #d9d9d3;
+  --ai: #2f6f6a;
+  --ai-soft: #e4efee;
+  --ai-line: #9cc2be;
+  --accent-dot: #1a1a1a;
+  --active-0: #e6e6e0;
+  --active-1: #2f6f6a;
+  --font-sans: "Inter", "Geist", system-ui, sans-serif;
+  --font-serif: "Newsreader", "Source Serif 4", Georgia, serif;
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161614;
+    --bg-subtle: #232320;
+    --text: #edede8;
+    --text-muted: #9c9c96;
+    --text-faint: #6a6a64;
+    --line: #3a3a36;
+    --ai: #7fbfb8;
+    --ai-soft: #1c3330;
+    --ai-line: #4e7f7a;
+    --accent-dot: #edede8;
+    --active-0: #2a2a26;
+    --active-1: #7fbfb8;
+    color-scheme: dark;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  user-select: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: default;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+button:focus-visible,
+.date-input:focus-visible {
+  color: var(--text);
+  outline: none;
+}
+
+.date-input {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.date-input:hover,
+.date-input:focus {
+  color: var(--text);
+  outline: none;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  opacity: 0.45;
+}
+
+.date-input:hover::-webkit-calendar-picker-indicator {
+  opacity: 0.85;
+}
+
+.bullet-input,
+.bullet-text,
+.react-flow__node .task-list,
+.react-flow__node .bullet-text,
+.task-list,
+.bullet-text {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+::highlight(task-selection) {
+  background-color: Highlight;
+  color: HighlightText;
+}
+
+.bullet-input,
+.bullet-text {
+  min-height: 1.6em;
+  cursor: text;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bullet-text {
+  outline: none;
+}
+
+.task-check:focus-visible {
+  color: var(--bg);
+  outline: 1px solid var(--text);
+  outline-offset: 2px;
+}
+
+.task-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--text-muted);
+  pointer-events: none;
+  user-select: none;
+}
+
+.task-check {
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  margin-top: 5px;
+  flex-shrink: 0;
+  border: 1.5px solid color-mix(in srgb, var(--text) 58%, var(--bg));
+  background: var(--bg);
+  border-radius: 3px;
+  color: var(--bg);
+}
+
+.task-check[aria-checked='true'] {
+  border-color: var(--text);
+  background: var(--text);
+}
+
+.react-flow,
+.react-flow__renderer,
+.react-flow__pane {
+  background: var(--bg);
+}
+
+.react-flow__pane {
+  cursor: grab;
+}
+
+.react-flow__pane:active {
+  cursor: grabbing;
+}
+
+.react-flow__node {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  cursor: default;
+}
+
+.react-flow__node:focus,
+.react-flow__node:focus-visible {
+  outline: none;
+}
+
+.react-flow__attribution {
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 10px;
+}
+
+.react-flow__attribution a {
+  color: var(--text-faint);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*:hover {
+  scrollbar-color: var(--line) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background: var(--line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
