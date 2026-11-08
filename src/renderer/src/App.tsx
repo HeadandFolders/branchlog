@@ -1,9 +1,11 @@
 import { Component, useEffect, useLayoutEffect, type ReactNode } from 'react'
 import { DailyCanvas } from './components/DailyCanvas'
+import { EarlierSearch } from './components/EarlierSearch'
 import { ThemeLab } from './components/ThemeLab'
 import { DeleteNotice } from './components/DeleteNotice'
 import { TopBar } from './components/TopBar'
 import { branchFromShortcut, installBranchShortcut } from './lib/branch-from'
+import { installEarlierShortcut, openEarlierSearch } from './lib/earlier-search'
 import { installNewTaskShortcut } from './lib/new-task'
 import { copyFromMenu, cutFromMenu, selectAllFromMenu } from './lib/list-edit'
 import { installImagePaste } from './lib/paste-image'
@@ -60,11 +62,13 @@ function Notebook() {
       else if (action === 'copy') copyFromMenu()
       else if (action === 'select-all') selectAllFromMenu()
       else if (action === 'branch-task') branchFromShortcut()
+      else if (action === 'earlier-task') openEarlierSearch()
       else if (action === 'theme-lab') toggleThemeLab()
       else useNotebook.getState().runMenuAction(action)
     })
     const removeHistoryKeys = installHistoryKeys()
     const removeBranchShortcut = installBranchShortcut()
+    const removeEarlierShortcut = installEarlierShortcut()
     const removeNewTaskShortcut = installNewTaskShortcut()
     const removeThemeShortcut = installThemeShortcut()
     const removeImages = installImageLoader()
@@ -78,6 +82,7 @@ function Notebook() {
       unsubscribe()
       removeHistoryKeys()
       removeBranchShortcut()
+      removeEarlierShortcut()
       removeNewTaskShortcut()
       removeThemeShortcut()
       removeImages()
@@ -89,6 +94,7 @@ function Notebook() {
   return (
     <div className="relative flex h-full flex-col bg-[var(--bg)]">
       <TopBar />
+      <EarlierSearch />
       <main className="min-h-0 flex-1">
         <DailyCanvas />
       </main>

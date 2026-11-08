@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { addDays, localDateKey } from '@shared/dates'
 import { tempMark, tempMs } from '@shared/temp-timing'
-import type { MenuAction, Task } from '@shared/types'
+import type { Continuation, MenuAction, Task } from '@shared/types'
 import { removeDeletedTasks } from './delete-task'
 import { attachHistory, clearHistory } from './history'
 import { layoutAfterWrite, layoutBeforeWrite, prepareHistoryStep } from './layout-bridge'
@@ -15,6 +15,7 @@ interface FocusRequest {
 interface NotebookState {
   currentDate: string
   tasks: Task[]
+  continuations: Record<string, Continuation>
   ready: boolean
   error: string | null
   focusedId: string | null
@@ -118,6 +119,7 @@ function commitDay(tasks: Task[]): boolean {
 export const useNotebook = create<NotebookState>((set, get) => ({
   currentDate: localDateKey(),
   tasks: [],
+  continuations: {},
   ready: false,
   error: null,
   focusedId: null,
@@ -141,6 +143,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
     set({
       currentDate: date,
       tasks: [],
+      continuations: {},
       ready: false,
       error: null,
       focusedId: null,
@@ -150,12 +153,16 @@ export const useNotebook = create<NotebookState>((set, get) => ({
     try {
       const tasks = await window.branchlog.tasks.listByDate(date)
       if (get().currentDate !== date) return
-      set({ tasks, ready: true })
+      const marks = await window.branchlog.tasks.continuations(date)
+      if (get().currentDate !== date) return
+      const continuations: Record<string, Continuation> = {}
+      for (const mark of marks) continuations[mark.taskId] = mark
+      set({ tasks, continuations, ready: true })
       tempMark('store-filled', { date, rows: tasks.length, ms: tempMs(started) })
     } catch (error) {
       console.error(error)
       if (get().currentDate !== date) return
-      set({ tasks: [], ready: true, error: 'Could not open that day.' })
+      set({ tasks: [], continuations: {}, ready: true, error: 'Could not open that day.' })
     }
   },
 

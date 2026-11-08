@@ -12,6 +12,7 @@ import { Handle, Position } from '@xyflow/react'
 import { Check } from 'lucide-react'
 import type { Task } from '@shared/types'
 import { branchFromTask, branchShortcutLabel } from '../lib/branch-from'
+import { ContinuationMark } from './ContinuationMark'
 import { caretOffsets, insertPlainText } from '../lib/caret'
 import { useTaskFieldFocus } from '../lib/field-focus'
 import { textDirection } from '../lib/direction'
@@ -164,6 +165,7 @@ export function TaskBullet({ task }: TaskBulletProps) {
         editing ? 'bg-[var(--bg-subtle)]' : ''
       }`}
     >
+      <ContinuationMark taskId={task.id} />
       <button
         type="button"
         role="checkbox"

@@ -317,7 +317,7 @@ export function MainListNode() {
     }
     clearLiveSelectionPaint()
     const target = event.target
-    if (!(target instanceof Element) || target.closest('.task-check, .branch-dot')) return
+    if (!(target instanceof Element) || target.closest('.task-check, .branch-dot, .continuation-dot')) return
     const text = target.closest<HTMLElement>('[data-task-text]')
     const id = text?.dataset.taskId
     if (!id || useNotebook.getState().focusedId === id) return
@@ -346,7 +346,7 @@ export function MainListNode() {
         onPointerDown={(event) => {
           if (event.button !== 0) return
           const target = event.target
-          if (target instanceof Element && target.closest('.task-check, .branch-dot')) return
+          if (target instanceof Element && target.closest('.task-check, .branch-dot, .continuation-dot')) return
           const list = listRef.current
           if (!list) return
           dragListeners.current?.()

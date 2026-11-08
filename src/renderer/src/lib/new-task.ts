@@ -1,5 +1,6 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { flushSync } from 'react-dom'
+import { earlierSearchIsOpen } from './earlier-search'
 import { useNotebook } from '../store/notebook'
 
 function commandKey(event: KeyboardEvent): boolean {
@@ -10,6 +11,7 @@ function commandKey(event: KeyboardEvent): boolean {
 export function installNewTaskShortcut(): () => void {
   const onKeyDown = (event: KeyboardEvent): void => {
     if (event.isComposing || event.key === 'Process' || event.repeat) return
+    if (earlierSearchIsOpen()) return
     if (event.key.toLowerCase() !== 'n' || event.altKey || event.shiftKey || !commandKey(event)) return
     event.preventDefault()
     event.stopPropagation()

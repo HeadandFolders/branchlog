@@ -72,7 +72,8 @@ export function installMenu(): void {
         {
           label: 'Branch from an earlier task',
           accelerator: 'CmdOrCtrl+K',
-          enabled: false,
+          registerAccelerator: false,
+          click: () => send('earlier-task'),
         },
       ],
     },

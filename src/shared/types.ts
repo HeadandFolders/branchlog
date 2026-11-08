@@ -32,6 +32,26 @@ export interface CreateBranchInput {
   y: number
 }
 
+export interface CreateContinuationInput {
+  id: string
+  parentId: string
+  text: string
+}
+
+export interface Continuation {
+  taskId: string
+  parentId: string
+  parentText: string
+  parentDate: string
+}
+
+export interface EarlierTask {
+  id: string
+  text: string
+  dateCreated: string
+  done: boolean
+}
+
 export interface UpdateTaskInput {
   id: string
   text?: string
@@ -53,6 +73,7 @@ export type MenuAction =
   | 'copy'
   | 'select-all'
   | 'branch-task'
+  | 'earlier-task'
   | 'theme-lab'
 
 export interface MapPosition {
@@ -113,6 +134,10 @@ export type WriteResult =
   | { ok: true; task: Task }
   | { ok: false }
 
+export type ContinuationWriteResult =
+  | { ok: true; task: Task; continuation: Continuation }
+  | { ok: false }
+
 export type DeleteResult = { ok: true; removed: RemovedTasks } | { ok: false }
 
 export type ImageResult = { ok: true; image: CanvasImage } | { ok: false }
@@ -122,6 +147,9 @@ export interface BranchlogApi {
     listByDate: (date: string) => Promise<Task[]>
     createSync: (input: CreateTaskInput) => WriteResult
     createBranchSync: (input: CreateBranchInput) => WriteResult
+    createContinuationSync: (input: CreateContinuationInput) => ContinuationWriteResult
+    continuations: (date: string) => Promise<Continuation[]>
+    searchEarlier: (query: string) => Promise<EarlierTask[]>
     update: (input: UpdateTaskInput) => Promise<Task>
     updateSync: (input: UpdateTaskInput) => WriteResult
     replaceDaySync: (date: string, tasks: Task[]) => Ack
@@ -174,6 +202,40 @@ export function isWriteResult(value: unknown): value is WriteResult {
   if (!isRecord(value) || typeof value.ok !== 'boolean') return false
   if (value.ok === false) return true
   return isTask(value.task)
+}
+
+export function isContinuation(value: unknown): value is Continuation {
+  if (!isRecord(value)) return false
+  return (
+    typeof value.taskId === 'string' &&
+    typeof value.parentId === 'string' &&
+    typeof value.parentText === 'string' &&
+    typeof value.parentDate === 'string'
+  )
+}
+
+export function isContinuationList(value: unknown): value is Continuation[] {
+  return Array.isArray(value) && value.every(isContinuation)
+}
+
+export function isContinuationWriteResult(value: unknown): value is ContinuationWriteResult {
+  if (!isRecord(value) || typeof value.ok !== 'boolean') return false
+  if (value.ok === false) return true
+  return isTask(value.task) && isContinuation(value.continuation)
+}
+
+export function isEarlierTask(value: unknown): value is EarlierTask {
+  if (!isRecord(value)) return false
+  return (
+    typeof value.id === 'string' &&
+    typeof value.text === 'string' &&
+    typeof value.dateCreated === 'string' &&
+    typeof value.done === 'boolean'
+  )
+}
+
+export function isEarlierTaskList(value: unknown): value is EarlierTask[] {
+  return Array.isArray(value) && value.every(isEarlierTask)
 }
 
 export function isTaskList(value: unknown): value is Task[] {
@@ -236,6 +298,7 @@ export function isMenuAction(value: unknown): value is MenuAction {
     value === 'copy' ||
     value === 'select-all' ||
     value === 'branch-task' ||
+    value === 'earlier-task' ||
     value === 'theme-lab'
   )
 }

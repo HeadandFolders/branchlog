@@ -1,7 +1,8 @@
 import { BrowserWindow, ipcMain, nativeTheme } from 'electron'
 import { tempMark, tempMs } from '@shared/temp-timing'
 import { themeBackground, type ThemeDocument } from '@shared/theme'
-import type { WriteResult } from '@shared/types'
+import type { ContinuationWriteResult, WriteResult } from '@shared/types'
+import { createContinuation, listContinuations, searchEarlierTasks } from './continuation'
 import { createBranch, createTask, listTasksByDate, updateTask } from './database'
 import { replaceDay } from './day-sync'
 import { listImages, pasteImage, replaceImages } from './images'
@@ -11,7 +12,9 @@ import { readTheme, writeTheme } from './theme-store'
 import { deleteTask, restoreRemoved } from './task-tree'
 import {
   parseCreateBranch,
+  parseCreateContinuation,
   parseCreateTask,
+  parseEarlierQuery,
   parseImagePaste,
   parseImageReplace,
   parseLayoutCommit,
@@ -99,6 +102,40 @@ export function installIpc(): void {
       event.returnValue = { ok: true, task: createBranch(parseCreateBranch(payload)) } satisfies WriteResult
     } catch (error) {
       event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('tasks:createContinuationSync', (event, payload: unknown) => {
+    tempMark('ipc-call', { channel: 'tasks:createContinuationSync' })
+    try {
+      const created = createContinuation(parseCreateContinuation(payload))
+      event.returnValue = {
+        ok: true,
+        task: created.task,
+        continuation: created.continuation,
+      } satisfies ContinuationWriteResult
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.handle('tasks:continuations', (_event, payload: unknown) => {
+    try {
+      return listContinuations(requireDateKey(payload))
+    } catch (error) {
+      console.error('tasks:continuations', error)
+      if (error instanceof Error && error.message.startsWith('Invalid')) throw new Error(error.message)
+      throw new Error('Could not complete that request')
+    }
+  })
+
+  ipcMain.handle('tasks:searchEarlier', (_event, payload: unknown) => {
+    try {
+      return searchEarlierTasks(parseEarlierQuery(payload))
+    } catch (error) {
+      console.error('tasks:searchEarlier', error)
+      if (error instanceof Error && error.message.startsWith('Invalid')) throw new Error(error.message)
+      throw new Error('Could not complete that request')
     }
   })
 

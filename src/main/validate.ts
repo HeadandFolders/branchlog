@@ -2,6 +2,7 @@ import { BRANCH_MIN_WIDTH } from '@shared/branch-size'
 import { parseThemeDocument, type ThemeDocument } from '@shared/theme'
 import type {
   CreateBranchInput,
+  CreateContinuationInput,
   CreateTaskInput,
   ImagePasteInput,
   ImageRecord,
@@ -91,6 +92,23 @@ export function parseCreateBranch(value: unknown): CreateBranchInput {
     x: requireCoordinate(input.x),
     y: requireCoordinate(input.y),
   }
+}
+
+export function parseCreateContinuation(value: unknown): CreateContinuationInput {
+  const input = requireRecord(value)
+  const id = requireId(input.id)
+  const parentId = requireId(input.parentId)
+  if (id === parentId) throw new Error('Invalid task')
+  return {
+    id,
+    parentId,
+    text: input.text === undefined ? '' : requireText(input.text),
+  }
+}
+
+export function parseEarlierQuery(value: unknown): string {
+  if (value === undefined || value === null || value === '') return ''
+  return requireText(value)
 }
 
 export function parseUpdateTask(value: unknown): UpdateTaskInput {

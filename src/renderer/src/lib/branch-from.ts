@@ -1,3 +1,5 @@
+import { localDateKey } from '@shared/dates'
+import { continueOntoToday } from '../store/continuation'
 import { useNotebook } from '../store/notebook'
 
 type FlowPoint = (point: { x: number; y: number }) => { x: number; y: number }
@@ -22,10 +24,15 @@ export function branchShortcutLabel(): string {
 }
 
 export function branchFromTask(taskId: string): string | null {
+  const tasks = useNotebook.getState().tasks
+  const task = tasks.find((item) => item.id === taskId)
+  if (!task) return null
+  if (task.dateCreated < localDateKey()) {
+    void continueOntoToday(task.id)
+    return null
+  }
   const flow = toFlow
   if (!flow) return null
-  const tasks = useNotebook.getState().tasks
-  if (!tasks.some((task) => task.id === taskId)) return null
   const text = document.querySelector<HTMLElement>(`[data-task-id="${CSS.escape(taskId)}"]`)
   const dot = text?.closest('.task-line')?.querySelector<HTMLElement>('.branch-dot')
   if (!dot) return null

@@ -4,7 +4,10 @@ import { defaultTheme, parseThemeDocument, type ThemeDocument } from '@shared/th
 import {
   isAck,
   isCanvasImageList,
+  isContinuationList,
+  isContinuationWriteResult,
   isDeleteResult,
+  isEarlierTaskList,
   isImageResult,
   isMenuAction,
   isTask,
@@ -12,7 +15,9 @@ import {
   isWriteResult,
   type Ack,
   type BranchlogApi,
+  type ContinuationWriteResult,
   type CreateBranchInput,
+  type CreateContinuationInput,
   type CreateTaskInput,
   type DeleteResult,
   type ImagePasteInput,
@@ -61,6 +66,20 @@ const api: BranchlogApi = {
     },
     createBranchSync: (input: CreateBranchInput) => {
       return readWriteResult(ipcRenderer.sendSync('tasks:createBranchSync', input))
+    },
+    createContinuationSync: (input: CreateContinuationInput): ContinuationWriteResult => {
+      const value: unknown = ipcRenderer.sendSync('tasks:createContinuationSync', input)
+      return isContinuationWriteResult(value) ? value : { ok: false }
+    },
+    continuations: async (date) => {
+      const value: unknown = await ipcRenderer.invoke('tasks:continuations', date)
+      if (!isContinuationList(value)) throw new Error('Could not complete that request')
+      return value
+    },
+    searchEarlier: async (query) => {
+      const value: unknown = await ipcRenderer.invoke('tasks:searchEarlier', query)
+      if (!isEarlierTaskList(value)) throw new Error('Could not complete that request')
+      return value
     },
     update: async (input: UpdateTaskInput) => {
       const value: unknown = await ipcRenderer.invoke('tasks:update', input)
