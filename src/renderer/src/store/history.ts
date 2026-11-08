@@ -1,4 +1,6 @@
-import type { Task } from '@shared/types'
+import type { RemovedTasks, Task } from '@shared/types'
+import { hideDeleteNotice, showDeleteNotice } from './delete-notice'
+import { applyRemoval, takeRemoval } from './removed'
 
 interface FocusRequest {
   id: string
@@ -29,6 +31,7 @@ interface Entry {
   afterFocus: string | null
   textId: string | null
   open: boolean
+  removed: RemovedTasks | null
 }
 
 const BURST = new Set([
@@ -67,6 +70,8 @@ function sameTask(a: Task, b: Task): boolean {
     a.parentId === b.parentId &&
     a.x === b.x &&
     a.y === b.y &&
+    a.width === b.width &&
+    a.height === b.height &&
     a.side === b.side &&
     a.orderIndex === b.orderIndex
   )
@@ -96,6 +101,8 @@ function singleTextChange(before: Task[], after: Task[]): string | null {
       left.parentId === right.parentId &&
       left.x === right.x &&
       left.y === right.y &&
+      left.width === right.width &&
+      left.height === right.height &&
       left.side === right.side &&
       left.orderIndex === right.orderIndex
     if (!textOnly) return null
@@ -150,14 +157,16 @@ function pushChange(
   afterFocus: string | null,
   inputType: string,
 ): void {
-  if (sameTasks(beforeTasks, afterTasks)) return
+  const removed = takeRemoval()
+  if (sameTasks(beforeTasks, afterTasks) && !removed) return
   const last = undoStack.at(-1)
-  if (last && sameTasks(last.before, afterTasks) && sameTasks(last.after, beforeTasks)) {
+  if (!removed && last && sameTasks(last.before, afterTasks) && sameTasks(last.after, beforeTasks)) {
     undoStack.pop()
+    hideDeleteNotice()
     return
   }
-  const textId = singleTextChange(beforeTasks, afterTasks)
-  if (last?.open && last.textId && textId === last.textId && BURST.has(inputType) && sameTasks(last.after, beforeTasks)) {
+  const textId = removed ? null : singleTextChange(beforeTasks, afterTasks)
+  if (!removed && last?.open && last.textId && textId === last.textId && BURST.has(inputType) && sameTasks(last.after, beforeTasks)) {
     last.after = cloneTasks(afterTasks)
     last.afterFocus = afterFocus
     if (sameTasks(last.before, last.after)) undoStack.pop()
@@ -170,13 +179,26 @@ function pushChange(
     afterFocus,
     textId,
     open: textId !== null && BURST.has(inputType),
+    removed,
   })
   if (undoStack.length > 200) undoStack.shift()
   redoStack.length = 0
+  if (removed) showDeleteNotice(removed.tasks.length)
+  else hideDeleteNotice()
 }
 
-function restore(tasks: Task[], focus: string | null, from: Task[]): boolean {
+function restore(
+  tasks: Task[],
+  focus: string | null,
+  from: Task[],
+  removed: RemovedTasks | null,
+  direction: 'undo' | 'redo',
+): boolean {
   if (!api) return false
+  if (removed && !applyRemoval(direction, removed)) {
+    api.set({ error: 'Could not undo that edit.' })
+    return false
+  }
   const previous = api.get()
   const caret = textCaret(from, tasks, focus)
   applying = true
@@ -189,6 +211,7 @@ function restore(tasks: Task[], focus: string | null, from: Task[]): boolean {
   })
   applying = false
   if (api.commit(cloneTasks(tasks))) return true
+  if (removed) applyRemoval(direction === 'undo' ? 'redo' : 'undo', removed)
   applying = true
   api.set({
     tasks: cloneTasks(previous.tasks),
@@ -203,23 +226,26 @@ function restore(tasks: Task[], focus: string | null, from: Task[]): boolean {
 
 export function undoEditing(): void {
   const entry = undoStack.at(-1)
-  if (!entry || !restore(entry.before, entry.beforeFocus, entry.after)) return
+  if (!entry || !restore(entry.before, entry.beforeFocus, entry.after, entry.removed, 'undo')) return
   entry.open = false
   undoStack.pop()
   redoStack.push(entry)
+  if (entry.removed) hideDeleteNotice()
 }
 
 export function redoEditing(): void {
   const entry = redoStack.at(-1)
-  if (!entry || !restore(entry.after, entry.afterFocus, entry.before)) return
+  if (!entry || !restore(entry.after, entry.afterFocus, entry.before, entry.removed, 'redo')) return
   entry.open = false
   redoStack.pop()
   undoStack.push(entry)
+  if (entry.removed) showDeleteNotice(entry.removed.tasks.length)
 }
 
 export function clearHistory(): void {
   undoStack.length = 0
   redoStack.length = 0
+  hideDeleteNotice()
 }
 
 export function batchEdits(run: () => void): void {
@@ -266,8 +292,10 @@ export function attachHistory(next: HistoryApi): void {
   api = next
   next.subscribe((state, prev) => {
     if (applying || depth > 0) return
-    if (!prev.ready || !state.ready) return
-    if (prev.currentDate !== state.currentDate) return
+    if (!prev.ready || !state.ready || prev.currentDate !== state.currentDate) {
+      takeRemoval()
+      return
+    }
     pushChange(prev.tasks, prev.focusedId, state.tasks, state.focusedId, takeInput())
   })
 }

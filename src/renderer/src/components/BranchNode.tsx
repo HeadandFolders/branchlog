@@ -1,13 +1,27 @@
-import { useEffect, useRef } from 'react'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { memo, useEffect, useRef } from 'react'
+import { Handle, NodeResizer, Position, type NodeProps } from '@xyflow/react'
+import { BRANCH_LINE_HEIGHT, BRANCH_MIN_WIDTH } from '@shared/branch-size'
 import { rememberCaret } from '../lib/caret'
 import { useNotebook } from '../store/notebook'
 import { TaskBullet } from './TaskBullet'
 
-export function BranchNode({ id }: NodeProps) {
+const BRANCH_HANDLE = {
+  top: 21,
+  width: 1,
+  height: 1,
+  minWidth: 0,
+  minHeight: 0,
+  opacity: 0,
+  border: 'none',
+  background: 'transparent',
+}
+
+export const BranchNode = memo(function BranchNode({ id, selected }: NodeProps) {
   const rootRef = useRef<HTMLDivElement>(null)
+  const heightDrag = useRef(false)
   const task = useNotebook((state) => state.tasks.find((item) => item.id === id))
   const deleteTask = useNotebook((state) => state.deleteTask)
+  const updateSize = useNotebook((state) => state.updateSize)
 
   useEffect(() => {
     const root = rootRef.current
@@ -22,8 +36,8 @@ export function BranchNode({ id }: NodeProps) {
       if (!taskId) return
       const notebook = useNotebook.getState()
       if (notebook.focusedId === taskId && document.activeElement === text) return
-      const selected = window.getSelection()
-      const range = selected && selected.rangeCount > 0 ? selected.getRangeAt(0) : null
+      const selectedText = window.getSelection()
+      const range = selectedText && selectedText.rangeCount > 0 ? selectedText.getRangeAt(0) : null
       const keep =
         range !== null &&
         !range.collapsed &&
@@ -35,9 +49,9 @@ export function BranchNode({ id }: NodeProps) {
         return
       }
       text.focus({ preventScroll: true })
-      if (!keep || !selected || !range) return
-      selected.removeAllRanges()
-      selected.addRange(range)
+      if (!keep || !selectedText || !range) return
+      selectedText.removeAllRanges()
+      selectedText.addRange(range)
     }
     root.addEventListener('pointerup', onPointerUp)
     return () => root.removeEventListener('pointerup', onPointerUp)
@@ -47,13 +61,32 @@ export function BranchNode({ id }: NodeProps) {
 
   return (
     <div ref={rootRef} className="branch-node nopan">
+      <NodeResizer
+        isVisible={selected === true}
+        minWidth={BRANCH_MIN_WIDTH}
+        minHeight={BRANCH_LINE_HEIGHT}
+        handleClassName="branch-resize-handle"
+        lineClassName="branch-resize-line"
+        onResize={(_event, params) => {
+          if (params.direction[1] !== 0) heightDrag.current = true
+        }}
+        onResizeEnd={(_event, params) => {
+          const nodeEl = rootRef.current?.closest('.react-flow__node')
+          const content = nodeEl instanceof HTMLElement ? nodeEl.offsetHeight : params.height
+          const height = heightDrag.current
+            ? Math.max(Math.round(params.height), content, BRANCH_LINE_HEIGHT)
+            : Math.max(content, BRANCH_LINE_HEIGHT)
+          heightDrag.current = false
+          updateSize(id, params.x, params.y, Math.max(BRANCH_MIN_WIDTH, Math.round(params.width)), Math.round(height))
+        }}
+      />
       <Handle
-        id="out"
-        type="source"
+        id="in"
+        type="target"
         position={Position.Left}
         isConnectable={false}
         className="branch-handle"
-        style={{ width: 1, height: 1, minWidth: 0, minHeight: 0, opacity: 0, border: 'none', background: 'transparent' }}
+        style={BRANCH_HANDLE}
       />
       <TaskBullet task={task} />
       <button
@@ -68,13 +101,13 @@ export function BranchNode({ id }: NodeProps) {
         Delete
       </button>
       <Handle
-        id="in"
-        type="target"
+        id="out"
+        type="source"
         position={Position.Right}
         isConnectable={false}
         className="branch-handle"
-        style={{ width: 1, height: 1, minWidth: 0, minHeight: 0, opacity: 0, border: 'none', background: 'transparent' }}
+        style={BRANCH_HANDLE}
       />
     </div>
   )
-}
+})

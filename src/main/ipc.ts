@@ -1,8 +1,17 @@
 import { ipcMain } from 'electron'
 import type { WriteResult } from '@shared/types'
-import { createBranch, createTask, deleteTask, listTasksByDate, updateTask } from './database'
+import { createBranch, createTask, listTasksByDate, updateTask } from './database'
 import { replaceDay } from './day-sync'
-import { parseCreateBranch, parseCreateTask, parseReplaceDay, parseUpdateTask, requireDateKey, requireId } from './validate'
+import { deleteTask, restoreRemoved } from './task-tree'
+import {
+  parseCreateBranch,
+  parseCreateTask,
+  parseRemovedTasks,
+  parseReplaceDay,
+  parseUpdateTask,
+  requireDateKey,
+  requireId,
+} from './validate'
 
 function failure(error: unknown): WriteResult {
   console.error(error)
@@ -68,15 +77,20 @@ export function installIpc(): void {
     }
   })
 
-  ipcMain.handle('tasks:delete', (_event, payload: unknown) => {
+  ipcMain.on('tasks:deleteSync', (event, payload: unknown) => {
     try {
-      deleteTask(requireId(payload))
+      event.returnValue = { ok: true, removed: deleteTask(requireId(payload)) }
     } catch (error) {
-      console.error('tasks:delete', error)
-      if (error instanceof Error && error.message.startsWith('Invalid')) {
-        throw new Error(error.message)
-      }
-      throw new Error('Could not complete that request')
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('tasks:restore', (event, payload: unknown) => {
+    try {
+      restoreRemoved(parseRemovedTasks(payload))
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
     }
   })
 }

@@ -1,4 +1,5 @@
-import type { CreateBranchInput, CreateTaskInput, Task, UpdateTaskInput } from '@shared/types'
+import { BRANCH_MIN_WIDTH } from '@shared/branch-size'
+import type { CreateBranchInput, CreateTaskInput, MapPosition, RemovedTasks, Task, UpdateTaskInput } from '@shared/types'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -62,6 +63,13 @@ function requireCoordinate(value: unknown): number {
   return value
 }
 
+function requireSize(value: unknown, min: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > 8_000) {
+    throw new Error('Invalid size')
+  }
+  return value
+}
+
 export function parseCreateBranch(value: unknown): CreateBranchInput {
   const input = requireRecord(value)
   return {
@@ -86,7 +94,16 @@ export function parseUpdateTask(value: unknown): UpdateTaskInput {
   }
   if ('x' in input && input.x !== undefined) result.x = requireCoordinate(input.x)
   if ('y' in input && input.y !== undefined) result.y = requireCoordinate(input.y)
-  if (result.text === undefined && result.done === undefined && result.x === undefined && result.y === undefined) {
+  if ('width' in input && input.width !== undefined) result.width = requireSize(input.width, BRANCH_MIN_WIDTH)
+  if ('height' in input && input.height !== undefined) result.height = requireSize(input.height, 0)
+  if (
+    result.text === undefined &&
+    result.done === undefined &&
+    result.x === undefined &&
+    result.y === undefined &&
+    result.width === undefined &&
+    result.height === undefined
+  ) {
     throw new Error('Invalid request')
   }
   return result
@@ -122,9 +139,65 @@ function parseSnapshot(value: unknown, date: string): Task {
     parentId,
     x: requireCoordinate(input.x),
     y: requireCoordinate(input.y),
+    width: requireSize(input.width, BRANCH_MIN_WIDTH),
+    height: requireSize(input.height, 0),
     side: input.side,
     orderIndex: requireInteger(input.orderIndex),
   }
+}
+
+function parseRemovedTask(value: unknown): Task {
+  const input = requireRecord(value)
+  const id = requireId(input.id)
+  const dateCreated = requireDateKey(input.dateCreated)
+  let dateCompleted: string | null = null
+  if (input.dateCompleted !== null && input.dateCompleted !== undefined) {
+    dateCompleted = requireDateKey(input.dateCompleted)
+  }
+  let parentId: string | null = null
+  if (input.parentId !== null && input.parentId !== undefined) parentId = requireId(input.parentId)
+  if (parentId === id) throw new Error('Invalid task')
+  if (input.side !== 'main' && input.side !== 'right') throw new Error('Invalid task')
+  if (typeof input.done !== 'boolean') throw new Error('Invalid request')
+  return {
+    id,
+    text: input.text === undefined ? '' : requireText(input.text),
+    done: input.done,
+    dateCreated,
+    dateCompleted,
+    parentId,
+    x: requireCoordinate(input.x),
+    y: requireCoordinate(input.y),
+    width: requireSize(input.width, BRANCH_MIN_WIDTH),
+    height: requireSize(input.height, 0),
+    side: input.side,
+    orderIndex: requireInteger(input.orderIndex),
+  }
+}
+
+function parseMapPosition(value: unknown, taskIds: Set<string>): MapPosition {
+  const input = requireRecord(value)
+  const taskId = requireId(input.taskId)
+  if (!taskIds.has(taskId)) throw new Error('Invalid task')
+  return { taskId, x: requireCoordinate(input.x), y: requireCoordinate(input.y) }
+}
+
+export function parseRemovedTasks(value: unknown): RemovedTasks {
+  const input = requireRecord(value)
+  if (!Array.isArray(input.tasks) || input.tasks.length === 0 || input.tasks.length > 5_000) {
+    throw new Error('Invalid request')
+  }
+  if (!Array.isArray(input.mapPositions) || input.mapPositions.length > 5_000) {
+    throw new Error('Invalid request')
+  }
+  const tasks = input.tasks.map(parseRemovedTask)
+  if (new Set(tasks.map((task) => task.id)).size !== tasks.length) throw new Error('Invalid task')
+  const taskIds = new Set(tasks.map((task) => task.id))
+  const mapPositions = input.mapPositions.map((position) => parseMapPosition(position, taskIds))
+  if (new Set(mapPositions.map((position) => position.taskId)).size !== mapPositions.length) {
+    throw new Error('Invalid task')
+  }
+  return { tasks, mapPositions }
 }
 
 export function parseReplaceDay(value: unknown): { date: string; tasks: Task[] } {

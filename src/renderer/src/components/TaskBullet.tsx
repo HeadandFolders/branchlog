@@ -12,6 +12,7 @@ import { Handle, Position, useReactFlow } from '@xyflow/react'
 import { Check } from 'lucide-react'
 import type { Task } from '@shared/types'
 import { caretOffsets, insertPlainText, placeCaret, takeCaret } from '../lib/caret'
+import { armFocusSettle, keyIsDown } from '../lib/focus-field'
 import { textDirection } from '../lib/direction'
 import { handleTaskBeforeInput, handleTaskKey } from '../lib/task-keys'
 import { batchEdits, markInput } from '../store/history'
@@ -47,8 +48,7 @@ const BulletText = memo(
   }: BulletTextProps) {
     useLayoutEffect(() => {
       const element = textRef.current
-      if (!element || element.textContent === text) return
-      if (document.activeElement === element) return
+      if (!element || editing || element.textContent === text) return
       const selection = window.getSelection()
       if (
         selection &&
@@ -159,7 +159,10 @@ export function TaskBullet({ task }: TaskBulletProps) {
   const seenRev = useRef(historyRev)
 
   useLayoutEffect(() => {
-    if (!editing) return
+    if (!editing) {
+      if (useNotebook.getState().focusRequest?.id === task.id) clearFocusRequest()
+      return
+    }
     const element = ref.current
     if (!element) return
     const state = useNotebook.getState()
@@ -170,43 +173,51 @@ export function TaskBullet({ task }: TaskBulletProps) {
     const stored = state.tasks.find((item) => item.id === task.id)?.text
     const textChanged = stored !== undefined && element.textContent !== stored
     if (document.activeElement === element && focusPin === null && !(force && textChanged)) return
+    if (keyIsDown() && document.activeElement === element && !force) return
 
-    const selection = window.getSelection()
-    const existing = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null
-    const keepSelection =
-      !pinned &&
-      existing !== null &&
-      !existing.collapsed &&
-      element.contains(existing.startContainer) &&
-      element.contains(existing.endContainer)
-
-    if (!keepSelection && stored !== undefined && element.textContent !== stored) element.textContent = stored
-    element.focus({ preventScroll: true })
-    if (!selection) {
-      if (useNotebook.getState().focusRequest?.id === task.id) clearFocusRequest()
-      return
-    }
-    if (keepSelection && existing) {
-      takeCaret(task.id)
-      selection.removeAllRanges()
-      selection.addRange(existing)
-    } else if (pinned && request) {
-      placeCaret(element, request.offset ?? 0)
-    } else {
-      const caret = takeCaret(task.id)
-      const point = caret ? document.caretRangeFromPoint(caret.x, caret.y) : null
-      if (point && element.contains(point.startContainer)) {
-        selection.removeAllRanges()
-        selection.addRange(point)
-      } else {
-        const range = document.createRange()
-        range.selectNodeContents(element)
-        range.collapse(false)
-        selection.removeAllRanges()
-        selection.addRange(range)
+    const commit = (): void => {
+      const selection = window.getSelection()
+      const existing = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null
+      const keepSelection =
+        !pinned &&
+        existing !== null &&
+        !existing.collapsed &&
+        element.contains(existing.startContainer) &&
+        element.contains(existing.endContainer)
+      if (!keepSelection && stored !== undefined && element.textContent !== stored) {
+        const dom = element.textContent ?? ''
+        const typedAhead = !force && dom.length > stored.length
+        if (!typedAhead) element.textContent = stored
       }
+      element.focus({ preventScroll: true })
+      const node = element.closest<HTMLElement>('.react-flow__node')
+      if (document.activeElement !== element && node && getComputedStyle(node).visibility === 'hidden') return
+      if (!selection) return
+      if (keepSelection && existing) {
+        takeCaret(task.id)
+        selection.removeAllRanges()
+        selection.addRange(existing)
+      } else if (pinned && request) {
+        placeCaret(element, request.offset ?? 0)
+        armFocusSettle(task.id, request.offset ?? 0)
+      } else {
+        const caret = takeCaret(task.id)
+        const point = caret ? document.caretRangeFromPoint(caret.x, caret.y) : null
+        if (point && element.contains(point.startContainer)) {
+          selection.removeAllRanges()
+          selection.addRange(point)
+        } else {
+          const range = document.createRange()
+          range.selectNodeContents(element)
+          range.collapse(false)
+          selection.removeAllRanges()
+          selection.addRange(range)
+        }
+      }
+      if (useNotebook.getState().focusRequest?.id === task.id) clearFocusRequest()
     }
-    if (useNotebook.getState().focusRequest?.id === task.id) clearFocusRequest()
+
+    commit()
   }, [clearFocusRequest, editing, focusPin, historyRev, task.id])
 
   const branchFrom = (event: MouseEvent<HTMLButtonElement>): void => {
@@ -219,7 +230,7 @@ export function TaskBullet({ task }: TaskBulletProps) {
 
   return (
     <div
-      className={`nopan relative flex items-start gap-3 rounded-[3px] px-2 py-1.5 ${
+      className={`task-line nopan relative flex items-start gap-3 rounded-[3px] px-2 py-1.5 ${
         editing ? 'bg-[var(--bg-subtle)]' : ''
       }`}
     >
@@ -280,12 +291,12 @@ export function TaskBullet({ task }: TaskBulletProps) {
       />
       {task.side === 'main' ? (
         <Handle
-          id={`in-${task.id}`}
-          type="target"
+          id={`out-${task.id}`}
+          type="source"
           position={Position.Right}
           isConnectable={false}
           className="branch-handle"
-          style={{ width: 1, height: 1, minWidth: 0, minHeight: 0, opacity: 0, border: 'none', background: 'transparent' }}
+          style={{ top: 19, width: 1, height: 1, minWidth: 0, minHeight: 0, opacity: 0, border: 'none', background: 'transparent' }}
         />
       ) : null}
     </div>

@@ -2,8 +2,10 @@ import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import Database from 'better-sqlite3'
 import { app } from 'electron'
+import { BRANCH_WIDTH } from '@shared/branch-size'
 import { localDateKey } from '@shared/dates'
 import type { CreateBranchInput, CreateTaskInput, Task, TaskSide, UpdateTaskInput } from '@shared/types'
+import { migrateTasks } from './migrate'
 
 interface TaskRow {
   id: string
@@ -14,6 +16,8 @@ interface TaskRow {
   parentId: string | null
   x: number
   y: number
+  width: number
+  height: number
   side: string
   orderIndex: number
 }
@@ -25,9 +29,11 @@ CREATE TABLE IF NOT EXISTS tasks (
   done INTEGER NOT NULL DEFAULT 0 CHECK (done IN (0, 1)),
   dateCreated TEXT NOT NULL,
   dateCompleted TEXT,
-  parentId TEXT REFERENCES tasks(id) ON DELETE SET NULL,
+  parentId TEXT REFERENCES tasks(id) ON DELETE CASCADE,
   x REAL NOT NULL DEFAULT 0,
   y REAL NOT NULL DEFAULT 0,
+  width REAL NOT NULL DEFAULT ${BRANCH_WIDTH},
+  height REAL NOT NULL DEFAULT 0,
   side TEXT NOT NULL DEFAULT 'main' CHECK (side IN ('main', 'right')),
   orderIndex INTEGER NOT NULL DEFAULT 0
 );
@@ -96,6 +102,7 @@ export function initDatabase(): Database.Database {
   next.pragma('foreign_keys = ON')
   next.pragma('busy_timeout = 2000')
   next.exec(SCHEMA)
+  migrateTasks(next)
   database = next
   console.log(`Branchlog database: ${dbPath}`)
   return next
@@ -127,6 +134,8 @@ function mapTask(row: TaskRow): Task {
     parentId: row.parentId,
     x: row.x,
     y: row.y,
+    width: row.width,
+    height: row.height,
     side: asSide(row.side),
     orderIndex: row.orderIndex,
   }
@@ -135,7 +144,7 @@ function mapTask(row: TaskRow): Task {
 export function listTasksByDate(dateCreated: string): Task[] {
   const rows = getDatabase()
     .prepare(
-      `SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, side, orderIndex
+      `SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
        FROM tasks
        WHERE dateCreated = ?
        ORDER BY CASE side WHEN 'main' THEN 0 ELSE 1 END, orderIndex ASC, rowid ASC`,
@@ -173,9 +182,9 @@ export function createTask(input: CreateTaskInput): Task {
 
     db.prepare(
       `INSERT INTO tasks (
-         id, text, done, dateCreated, dateCompleted, parentId, x, y, side, orderIndex
-       ) VALUES (?, ?, 0, ?, NULL, NULL, 0, 0, 'main', ?)`,
-    ).run(task.id, task.text, task.dateCreated, orderIndex)
+         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
+       ) VALUES (?, ?, 0, ?, NULL, NULL, 0, 0, ?, 0, 'main', ?)`,
+    ).run(task.id, task.text, task.dateCreated, BRANCH_WIDTH, orderIndex)
 
     return {
       id: task.id,
@@ -186,6 +195,8 @@ export function createTask(input: CreateTaskInput): Task {
       parentId: null,
       x: 0,
       y: 0,
+      width: BRANCH_WIDTH,
+      height: 0,
       side: 'main',
       orderIndex,
     }
@@ -217,9 +228,9 @@ export function createBranch(input: CreateBranchInput): Task {
 
     db.prepare(
       `INSERT INTO tasks (
-         id, text, done, dateCreated, dateCompleted, parentId, x, y, side, orderIndex
-       ) VALUES (?, ?, 0, ?, NULL, ?, ?, ?, 'right', ?)`,
-    ).run(branch.id, branch.text, parent.dateCreated, parent.id, branch.x, branch.y, orderIndex)
+         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
+       ) VALUES (?, ?, 0, ?, NULL, ?, ?, ?, ?, 0, 'right', ?)`,
+    ).run(branch.id, branch.text, parent.dateCreated, parent.id, branch.x, branch.y, BRANCH_WIDTH, orderIndex)
 
     return {
       id: branch.id,
@@ -230,6 +241,8 @@ export function createBranch(input: CreateBranchInput): Task {
       parentId: parent.id,
       x: branch.x,
       y: branch.y,
+      width: BRANCH_WIDTH,
+      height: 0,
       side: 'right',
       orderIndex,
     }
@@ -247,7 +260,7 @@ export function updateTask(input: UpdateTaskInput): Task {
   const db = getDatabase()
   const existing = db
     .prepare(
-      `SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, side, orderIndex
+      `SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
        FROM tasks WHERE id = ?`,
     )
     .get(input.id) as TaskRow | undefined
@@ -257,6 +270,8 @@ export function updateTask(input: UpdateTaskInput): Task {
   const hasDone = input.done !== undefined
   const hasX = input.x !== undefined
   const hasY = input.y !== undefined
+  const hasWidth = input.width !== undefined
+  const hasHeight = input.height !== undefined
   const today = localDateKey()
   const result = db
     .prepare(
@@ -265,6 +280,8 @@ export function updateTask(input: UpdateTaskInput): Task {
          done = CASE WHEN @hasDone = 1 THEN @done ELSE done END,
          x = CASE WHEN @hasX = 1 THEN @x ELSE x END,
          y = CASE WHEN @hasY = 1 THEN @y ELSE y END,
+         width = CASE WHEN @hasWidth = 1 THEN @width ELSE width END,
+         height = CASE WHEN @hasHeight = 1 THEN @height ELSE height END,
          dateCompleted = CASE
            WHEN @hasDone = 0 THEN dateCompleted
            WHEN @done = 1 THEN @today
@@ -282,6 +299,10 @@ export function updateTask(input: UpdateTaskInput): Task {
       x: input.x ?? 0,
       hasY: hasY ? 1 : 0,
       y: input.y ?? 0,
+      hasWidth: hasWidth ? 1 : 0,
+      width: input.width ?? 0,
+      hasHeight: hasHeight ? 1 : 0,
+      height: input.height ?? 0,
       today,
     })
 
@@ -289,16 +310,12 @@ export function updateTask(input: UpdateTaskInput): Task {
 
   const updated = db
     .prepare(
-      `SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, side, orderIndex
+      `SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
        FROM tasks WHERE id = ?`,
     )
     .get(input.id) as TaskRow | undefined
   if (!updated) throw new Error('Invalid task')
   return mapTask(updated)
-}
-
-export function deleteTask(id: string): void {
-  getDatabase().prepare('DELETE FROM tasks WHERE id = ?').run(id)
 }
 
 function isConstraint(error: unknown): boolean {

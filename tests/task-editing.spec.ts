@@ -171,7 +171,6 @@ test.describe('task text editing', () => {
     await page.getByRole('button', { name: 'Branch from this task' }).click()
     const branch = page.locator('.react-flow__node-branch [data-task-text]')
     await expect(branch).toBeVisible()
-    await branch.click()
     await page.keyboard.type('keep me')
     await expect(branch).toHaveText('keep me')
     const point = await page.evaluate(() => {
@@ -243,7 +242,6 @@ test.describe('task text editing', () => {
     await page.getByRole('button', { name: 'Branch from this task' }).click()
     const branch = page.locator('.react-flow__node-branch [data-task-text]')
     await expect(branch).toBeVisible()
-    await branch.click()
     await page.keyboard.type('hello world')
     await expect(branch).toHaveText('hello world')
     for (let index = 0; index < 'world'.length; index += 1) {

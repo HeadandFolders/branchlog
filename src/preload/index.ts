@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import {
   isAck,
+  isDeleteResult,
   isMenuAction,
   isTask,
   isTaskList,
@@ -9,12 +10,15 @@ import {
   type BranchlogApi,
   type CreateBranchInput,
   type CreateTaskInput,
+  type DeleteResult,
+  type RemovedTasks,
   type Task,
   type UpdateTaskInput,
   type WriteResult,
 } from '@shared/types'
 
 const failed: WriteResult = { ok: false }
+const deleteFailed: DeleteResult = { ok: false }
 
 function readWriteResult(value: unknown): WriteResult {
   return isWriteResult(value) ? value : failed
@@ -46,7 +50,15 @@ const api: BranchlogApi = {
       if (!isAck(value) || !value.ok) return { ok: false }
       return { ok: true }
     },
-    delete: (id) => ipcRenderer.invoke('tasks:delete', id),
+    deleteSync: (id) => {
+      const value: unknown = ipcRenderer.sendSync('tasks:deleteSync', id)
+      return isDeleteResult(value) ? value : deleteFailed
+    },
+    restoreSync: (removed: RemovedTasks): Ack => {
+      const value: unknown = ipcRenderer.sendSync('tasks:restore', removed)
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
+    },
   },
   onMenuAction: (callback) => {
     const listener = (_event: IpcRendererEvent, action: unknown): void => {

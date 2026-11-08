@@ -22,23 +22,25 @@ Opening a day flushes any text or position still waiting, then loads that day's 
 
 Creating a task or a branch waits for the database. The store shows the row the database returned, so the page cannot show a task that was rejected. The page creates the id.
 
-Editing text, or dropping a branch in a new spot, updates the store right away. The write to SQLite waits a short moment and is sent once. Dragging does not write. The canvas holds the moving position until you let go, and only then does the store record it.
+Editing text, or dropping a branch in a new spot, updates the store right away. The write to SQLite waits a short moment and is sent once. Dragging does not write. The canvas holds the moving position until you let go, and only then does the store record it. Resizing a branch works the same way: the new width, height, and position are recorded when you let go, and that write waits the same short moment.
 
-Checking a box or deleting a task updates the store, then waits for the database. If that write fails, the store puts the old value back and shows an error. A failed text save is tried once more, then the store shows an error.
+Checking a box updates the store, then waits for the database. If that write fails, the store puts the old value back and shows an error. A failed text save is tried once more, then the store shows an error.
 
 Closing the window sends any waiting text and positions immediately.
 
 Undo keeps a short history of the open day in the renderer. It is a list of earlier rows, not a second notebook. Changing the day drops that history. Undo and redo write the restored rows back through the bridge, including a full replace of that day's tasks when a task was created, deleted, moved, or checked.
 
+Deleting a task removes that task and every descendant, on every day, in one database transaction. AI comments, replies, and concept-map positions are removed with those tasks by foreign keys. Edges are drawn from `parentId` and disappear with the tasks. Images are not attached to a task, so a delete does not remove them. The undo entry keeps the removed tasks, including ones from other days, and their concept-map positions. Undo writes that set back. For about eight seconds the page shows "Deleted N tasks. Undo", and that button uses the same undo as Cmd/Ctrl+Z.
+
 ## One owner for each fact
 
-The database owns saved tasks. The store owns the open day. The write queue inside the store (`pendingText`, `pendingPosition`) only remembers what still needs to be saved. The canvas owns a position only while you are dragging it. Edges are drawn from `parentId` and are not stored. The caret and the "frame this page" callback are momentary and are not saved.
+The database owns saved tasks. The store owns the open day. The write queue (`pendingText`, `pendingPosition`, and the branch size queue) only remembers what still needs to be saved. The canvas owns a position only while you are dragging it, and a branch's size only while you are resizing it. Edges are drawn from `parentId` and are not stored. The caret and the "frame this page" callback are momentary and are not saved.
 
-`x` and `y` on a task are the daily page. The database also has tables for AI comments, replies, images, concept-map positions, and settings. Nothing reads those yet. When those features are built, each table stays the owner of its rows, and concept-map positions stay in `mapPositions` rather than in the task's `x` and `y`.
+`x` and `y` on a task are its place on the daily page. `width` and `height` are the branch node's size there. A height of 0 means the branch is as tall as its text. The main list ignores both. The database also has tables for AI comments, replies, images, concept-map positions, and settings. Nothing reads those yet. When those features are built, each table stays the owner of its rows, and concept-map positions stay in `mapPositions` rather than in the task's `x` and `y`.
 
 ## Where the code lives
 
-- `src/main` — window, menu, security, backup, validation, IPC, and the database. `database.ts` opens SQLite and runs the day-to-day queries. `day-sync.ts` replaces one day's rows when undo needs the saved tasks to match the page again.
+- `src/main` — window, menu, security, backup, validation, IPC, and the database. `database.ts` opens SQLite and runs the day-to-day queries. `day-sync.ts` replaces one day's rows when undo needs the saved tasks to match the page again. `task-tree.ts` deletes a task with its descendants and restores that set. `migrate.ts` rebuilds an older tasks table so a parent delete cascades, adds `width` and `height` when those columns are missing, then once removes tasks whose parent row is already gone.
 - `src/preload` — the bridge, and nothing else
 - `src/renderer` — the React page, the store, and small helpers
 - `src/shared` — types and date helpers used by the other three

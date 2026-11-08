@@ -9,6 +9,8 @@ export interface Task {
   parentId: string | null
   x: number
   y: number
+  width: number
+  height: number
   side: TaskSide
   orderIndex: number
 }
@@ -34,6 +36,8 @@ export interface UpdateTaskInput {
   done?: boolean
   x?: number
   y?: number
+  width?: number
+  height?: number
 }
 
 export type MenuAction =
@@ -47,11 +51,24 @@ export type MenuAction =
   | 'copy'
   | 'select-all'
 
+export interface MapPosition {
+  taskId: string
+  x: number
+  y: number
+}
+
+export interface RemovedTasks {
+  tasks: Task[]
+  mapPositions: MapPosition[]
+}
+
 export type Ack = { ok: true } | { ok: false }
 
 export type WriteResult =
   | { ok: true; task: Task }
   | { ok: false }
+
+export type DeleteResult = { ok: true; removed: RemovedTasks } | { ok: false }
 
 export interface BranchlogApi {
   tasks: {
@@ -61,7 +78,8 @@ export interface BranchlogApi {
     update: (input: UpdateTaskInput) => Promise<Task>
     updateSync: (input: UpdateTaskInput) => WriteResult
     replaceDaySync: (date: string, tasks: Task[]) => Ack
-    delete: (id: string) => Promise<void>
+    deleteSync: (id: string) => DeleteResult
+    restoreSync: (removed: RemovedTasks) => Ack
   }
   onMenuAction: (callback: (action: MenuAction) => void) => () => void
 }
@@ -81,6 +99,8 @@ export function isTask(value: unknown): value is Task {
     (value.parentId === null || typeof value.parentId === 'string') &&
     typeof value.x === 'number' &&
     typeof value.y === 'number' &&
+    typeof value.width === 'number' &&
+    typeof value.height === 'number' &&
     (value.side === 'main' || value.side === 'right') &&
     typeof value.orderIndex === 'number'
   )
@@ -94,6 +114,22 @@ export function isWriteResult(value: unknown): value is WriteResult {
 
 export function isTaskList(value: unknown): value is Task[] {
   return Array.isArray(value) && value.every(isTask)
+}
+
+export function isMapPosition(value: unknown): value is MapPosition {
+  if (!isRecord(value)) return false
+  return typeof value.taskId === 'string' && typeof value.x === 'number' && typeof value.y === 'number'
+}
+
+export function isRemovedTasks(value: unknown): value is RemovedTasks {
+  if (!isRecord(value) || !Array.isArray(value.tasks) || !Array.isArray(value.mapPositions)) return false
+  return value.tasks.every(isTask) && value.mapPositions.every(isMapPosition)
+}
+
+export function isDeleteResult(value: unknown): value is DeleteResult {
+  if (!isRecord(value) || typeof value.ok !== 'boolean') return false
+  if (value.ok === false) return true
+  return isRemovedTasks(value.removed)
 }
 
 export function isAck(value: unknown): value is Ack {

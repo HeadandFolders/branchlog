@@ -14,9 +14,9 @@ export function replaceDay(date: string, tasks: Task[]): void {
 
     const upsert = db.prepare(
       `INSERT INTO tasks (
-         id, text, done, dateCreated, dateCompleted, parentId, x, y, side, orderIndex
+         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
        ) VALUES (
-         @id, @text, @done, @dateCreated, @dateCompleted, NULL, @x, @y, @side, @orderIndex
+         @id, @text, @done, @dateCreated, @dateCompleted, NULL, @x, @y, @width, @height, @side, @orderIndex
        )
        ON CONFLICT(id) DO UPDATE SET
          text = excluded.text,
@@ -25,6 +25,8 @@ export function replaceDay(date: string, tasks: Task[]): void {
          dateCompleted = excluded.dateCompleted,
          x = excluded.x,
          y = excluded.y,
+         width = excluded.width,
+         height = excluded.height,
          side = excluded.side,
          orderIndex = excluded.orderIndex`,
     )
@@ -41,6 +43,8 @@ export function replaceDay(date: string, tasks: Task[]): void {
         dateCompleted: task.dateCompleted,
         x: task.x,
         y: task.y,
+        width: task.width,
+        height: task.height,
         side: task.side,
         orderIndex: task.orderIndex,
       })

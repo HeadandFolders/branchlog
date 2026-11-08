@@ -1,5 +1,6 @@
 import { Component, useEffect, type ReactNode } from 'react'
 import { DailyCanvas } from './components/DailyCanvas'
+import { DeleteNotice } from './components/DeleteNotice'
 import { TopBar } from './components/TopBar'
 import { copyFromMenu, cutFromMenu, selectAllFromMenu } from './lib/list-edit'
 import { installHistoryKeys, redoEditing, undoEditing } from './store/history'
@@ -68,11 +69,14 @@ function Notebook() {
       <main className="min-h-0 flex-1">
         <DailyCanvas />
       </main>
-      {error ? (
-        <p className="pointer-events-none absolute bottom-4 left-0 right-0 text-center text-[12px] text-[var(--text-muted)]" role="status">
-          {error}
-        </p>
-      ) : null}
+      <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex flex-col items-center gap-2">
+        <DeleteNotice />
+        {error ? (
+          <p className="text-center text-[12px] text-[var(--text-muted)]" role="status">
+            {error}
+          </p>
+        ) : null}
+      </div>
     </div>
   )
 }

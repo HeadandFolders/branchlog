@@ -1,7 +1,9 @@
 import { create } from 'zustand'
 import { addDays, localDateKey } from '@shared/dates'
 import type { MenuAction, Task } from '@shared/types'
+import { removeDeletedTasks } from './delete-task'
 import { attachHistory, clearHistory } from './history'
+import { cancelPendingSizes, clearPendingSize, flushSizesSync, scheduleSize, shiftPendingSize } from './task-size'
 
 interface FocusRequest {
   id: string
@@ -27,10 +29,11 @@ interface NotebookState {
   createFromFocused: () => void
   updateText: (id: string, text: string) => void
   updatePosition: (id: string, x: number, y: number) => void
+  updateSize: (id: string, x: number, y: number, width: number, height: number) => void
   flushText: (id: string) => Promise<void>
   flushPendingSync: () => void
   toggleDone: (id: string) => Promise<void>
-  deleteTask: (id: string) => Promise<void>
+  deleteTask: (id: string) => void
   runMenuAction: (action: MenuAction) => void
 }
 
@@ -101,6 +104,7 @@ function commitDay(tasks: Task[]): boolean {
   pendingText.clear()
   for (const pending of pendingPosition.values()) clearTimeout(pending.timer)
   pendingPosition.clear()
+  cancelPendingSizes()
   try {
     return window.branchlog.tasks.replaceDaySync(useNotebook.getState().currentDate, tasks).ok
   } catch (error) {
@@ -128,6 +132,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
     const pendingIds = [...pendingText.keys()]
     await Promise.all(pendingIds.map((id) => persistText(id)))
     flushPositionsSync()
+    flushSizesSync()
     set({
       currentDate: date,
       tasks: [],
@@ -265,12 +270,14 @@ export const useNotebook = create<NotebookState>((set, get) => ({
     }
     pendingText.clear()
     flushPositionsSync()
+    flushSizesSync()
   },
 
   updatePosition: (id, x, y) => {
     set((state) => ({
       tasks: state.tasks.map((task) => (task.id === id ? { ...task, x, y } : task)),
     }))
+    if (shiftPendingSize(id, x, y)) return
     const existing = pendingPosition.get(id)
     if (existing) clearTimeout(existing.timer)
     pendingPosition.set(id, {
@@ -297,6 +304,29 @@ export const useNotebook = create<NotebookState>((set, get) => ({
         })
       }, 200),
     })
+  },
+
+  updateSize: (id, x, y, width, height) => {
+    const placed = pendingPosition.get(id)
+    if (placed) {
+      clearTimeout(placed.timer)
+      pendingPosition.delete(id)
+    }
+    set((state) => ({
+      tasks: state.tasks.map((task) => (task.id === id ? { ...task, x, y, width, height } : task)),
+    }))
+    scheduleSize(
+      id,
+      x,
+      y,
+      width,
+      height,
+      () => {
+        const task = useNotebook.getState().tasks.find((item) => item.id === id)
+        return task ? { x: task.x, y: task.y, width: task.width, height: task.height } : undefined
+      },
+      (message) => useNotebook.setState({ error: message }),
+    )
   },
 
   toggleDone: async (id) => {
@@ -330,49 +360,20 @@ export const useNotebook = create<NotebookState>((set, get) => ({
     }
   },
 
-  deleteTask: async (id) => {
-    const pending = pendingText.get(id)
-    if (pending) clearTimeout(pending.timer)
-    pendingText.delete(id)
-    const placed = pendingPosition.get(id)
-    if (placed) clearTimeout(placed.timer)
-    pendingPosition.delete(id)
-    const { tasks, focusedId } = get()
-    const index = tasks.findIndex((task) => task.id === id)
-    if (index < 0) return
-    const removed = tasks[index]
-    if (!removed) return
-    let nextFocused = focusedId
-    let focusRequest = get().focusRequest
-    if (focusedId === id) {
-      if (removed.side === 'main') {
-        const main = tasks.filter((task) => task.side === 'main')
-        const mainIndex = main.findIndex((task) => task.id === id)
-        const neighbor = main[mainIndex - 1] ?? main[mainIndex + 1] ?? null
-        nextFocused = neighbor?.id ?? null
-        focusRequest = neighbor ? { id: neighbor.id } : null
-      } else {
-        nextFocused = null
-        focusRequest = null
-      }
-    }
-    const snapshot = tasks
-    set({
-      tasks: tasks
-        .filter((task) => task.id !== id)
-        .map((task) => (task.parentId === id ? { ...task, parentId: null } : task)),
-      focusedId: nextFocused,
-      focusRequest,
+  deleteTask: (id) => {
+    removeDeletedTasks(id, {
+      get,
+      set,
+      clearPending: (taskId) => {
+        const pending = pendingText.get(taskId)
+        if (pending) clearTimeout(pending.timer)
+        pendingText.delete(taskId)
+        const placed = pendingPosition.get(taskId)
+        if (placed) clearTimeout(placed.timer)
+        pendingPosition.delete(taskId)
+        clearPendingSize(taskId)
+      },
     })
-    try {
-      await window.branchlog.tasks.delete(id)
-    } catch (error) {
-      console.error(error)
-      set({
-        tasks: snapshot,
-        error: 'Could not delete that task.',
-      })
-    }
   },
 
   runMenuAction: (action) => {

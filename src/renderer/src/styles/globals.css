@@ -216,22 +216,70 @@ button.branch-dot:focus-visible {
 
 .branch-node {
   position: relative;
-  width: max-content;
-  max-width: 320px;
-  border-radius: 3px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 42px;
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  background: transparent;
+}
+
+.branch-node .task-line {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 12px;
 }
 
 .react-flow__node-branch {
   cursor: move;
+  overflow: visible;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
 }
 
-.react-flow__node-branch:hover .branch-node,
-.react-flow__node-branch.selected .branch-node {
+.react-flow__node-branch:hover {
+  background: var(--bg-subtle);
+}
+
+.react-flow__node-branch.selected {
+  outline: 1px solid var(--line);
+  outline-offset: 0;
+}
+
+.react-flow__node-branch.selected:hover {
   background: var(--bg-subtle);
 }
 
 .react-flow__node-branch .bullet-text {
   cursor: text;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.react-flow__node-branch .react-flow__resize-control {
+  z-index: 2;
+}
+
+.react-flow__node-branch .react-flow__resize-control.handle {
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background-color: var(--bg);
+  border: 1px solid var(--text-faint);
+}
+
+.react-flow__node-branch .react-flow__resize-control.line {
+  border-color: transparent;
+}
+
+.react-flow__node-branch .react-flow__resize-control.line.left,
+.react-flow__node-branch .react-flow__resize-control.line.right {
+  width: 8px;
 }
 
 .react-flow .react-flow__nodesselection-rect {
@@ -239,7 +287,10 @@ button.branch-dot:focus-visible {
 }
 
 .branch-delete {
-  margin: 0 8px 4px 36px;
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 12px;
+  margin: 0;
   padding: 0;
   border: none;
   background: none;
@@ -247,6 +298,15 @@ button.branch-dot:focus-visible {
   font-size: 12px;
   line-height: 1.4;
   cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.react-flow__node-branch:hover .branch-delete,
+.react-flow__node-branch.selected .branch-delete,
+.branch-node:focus-within .branch-delete {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .branch-delete:hover,
