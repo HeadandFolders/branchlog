@@ -1,19 +1,25 @@
 import { Component, useEffect, useLayoutEffect, type ReactNode } from 'react'
+import { AiSettings } from './components/AiSettings'
+import { CalendarView } from './components/CalendarView'
 import { DailyCanvas } from './components/DailyCanvas'
 import { EarlierSearch } from './components/EarlierSearch'
 import { ThemeLab } from './components/ThemeLab'
 import { DeleteNotice } from './components/DeleteNotice'
 import { TopBar } from './components/TopBar'
 import { branchFromShortcut, installBranchShortcut } from './lib/branch-from'
+import { installAiSettingsShortcut } from './lib/ai-settings-keys'
 import { installEarlierShortcut, openEarlierSearch } from './lib/earlier-search'
 import { installNewTaskShortcut } from './lib/new-task'
 import { copyFromMenu, cutFromMenu, selectAllFromMenu } from './lib/list-edit'
 import { installImagePaste } from './lib/paste-image'
 import { flushTheme, installThemeShortcut, toggleThemeLab } from './lib/theme-engine'
+import { useCarrySync } from './store/carry-sync'
+import { toggleAiSettings } from './store/ai-settings'
 import { installHistoryKeys, redoEditing, undoEditing } from './store/history'
 import { installImageLoader } from './store/images'
 import { useNotebook } from './store/notebook'
 import { usePreferences } from './store/preferences'
+import { useView } from './store/view'
 import { tempCountRender, tempNoteCommit } from './temp-first-paint'
 
 interface BoundaryProps {
@@ -49,8 +55,10 @@ class AppErrorBoundary extends Component<BoundaryProps, BoundaryState> {
 
 function Notebook() {
   tempCountRender('Notebook')
+  useCarrySync()
   const error = useNotebook((state) => state.error)
   const goToDate = useNotebook((state) => state.goToDate)
+  const view = useView((state) => state.view)
 
   useEffect(() => {
     usePreferences.getState().load()
@@ -64,6 +72,8 @@ function Notebook() {
       else if (action === 'branch-task') branchFromShortcut()
       else if (action === 'earlier-task') openEarlierSearch()
       else if (action === 'theme-lab') toggleThemeLab()
+      else if (action === 'ai-settings') toggleAiSettings()
+      else if (action === 'show-calendar') useView.getState().showCalendar()
       else useNotebook.getState().runMenuAction(action)
     })
     const removeHistoryKeys = installHistoryKeys()
@@ -71,6 +81,7 @@ function Notebook() {
     const removeEarlierShortcut = installEarlierShortcut()
     const removeNewTaskShortcut = installNewTaskShortcut()
     const removeThemeShortcut = installThemeShortcut()
+    const removeAiSettingsShortcut = installAiSettingsShortcut()
     const removeImages = installImageLoader()
     const removePaste = installImagePaste()
     const onUnload = (): void => {
@@ -85,6 +96,7 @@ function Notebook() {
       removeEarlierShortcut()
       removeNewTaskShortcut()
       removeThemeShortcut()
+      removeAiSettingsShortcut()
       removeImages()
       removePaste()
       window.removeEventListener('beforeunload', onUnload)
@@ -96,9 +108,10 @@ function Notebook() {
       <TopBar />
       <EarlierSearch />
       <main className="min-h-0 flex-1">
-        <DailyCanvas />
+        {view === 'calendar' ? <CalendarView /> : <DailyCanvas />}
       </main>
       <ThemeLab />
+      <AiSettings />
       <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex flex-col items-center gap-2">
         <DeleteNotice />
         {error ? (

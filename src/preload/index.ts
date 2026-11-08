@@ -1,9 +1,14 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import { defaultAiSettings, parseAiSettings, type AiSettings } from '@shared/ai-settings'
 import { tempMark, tempMs } from '@shared/temp-timing'
 import { defaultTheme, parseThemeDocument, type ThemeDocument } from '@shared/theme'
 import {
   isAck,
+  isActivityCountList,
+  isAiConnectionResult,
   isCanvasImageList,
+  isCarryRun,
+  isCarryRunList,
   isContinuationList,
   isContinuationWriteResult,
   isDeleteResult,
@@ -14,7 +19,9 @@ import {
   isTaskList,
   isWriteResult,
   type Ack,
+  type AiConnectionResult,
   type BranchlogApi,
+  type CarryRun,
   type ContinuationWriteResult,
   type CreateBranchInput,
   type CreateContinuationInput,
@@ -23,6 +30,7 @@ import {
   type ImagePasteInput,
   type ImageRecord,
   type ImageResult,
+  type ImageSizeInput,
   type LayoutCommit,
   type RemovedTasks,
   type Task,
@@ -103,6 +111,11 @@ const api: BranchlogApi = {
       if (!isAck(value) || !value.ok) return { ok: false }
       return { ok: true }
     },
+    activityCounts: async () => {
+      const value: unknown = await ipcRenderer.invoke('tasks:activityCounts')
+      if (!isActivityCountList(value)) throw new Error('Could not complete that request')
+      return value
+    },
   },
   images: {
     listByDate: async (date) => {
@@ -113,6 +126,11 @@ const api: BranchlogApi = {
     paste: async (input: ImagePasteInput): Promise<ImageResult> => {
       const value: unknown = await ipcRenderer.invoke('images:paste', input)
       return isImageResult(value) ? value : { ok: false }
+    },
+    resizeSync: (input: ImageSizeInput): Ack => {
+      const value: unknown = ipcRenderer.sendSync('images:resize', input)
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
     },
     replaceSync: (date: string, images: ImageRecord[]): Ack => {
       const value: unknown = ipcRenderer.sendSync('images:replace', { date, images })
@@ -153,6 +171,32 @@ const api: BranchlogApi = {
       return { ok: true }
     },
   },
+  ai: {
+    settings: (): AiSettings => {
+      try {
+        return parseAiSettings(ipcRenderer.sendSync('ai:settings'))
+      } catch (error) {
+        console.error(error)
+        return defaultAiSettings()
+      }
+    },
+    setSettings: (settings: AiSettings): ThemeWriteResult => {
+      const value: unknown = ipcRenderer.sendSync('ai:setSettings', settings)
+      if (typeof value === 'object' && value !== null && 'ok' in value && (value as { ok: unknown }).ok === true) {
+        return { ok: true }
+      }
+      const message =
+        typeof value === 'object' && value !== null && 'message' in value && typeof (value as { message: unknown }).message === 'string'
+          ? (value as { message: string }).message
+          : 'Could not save the AI settings.'
+      return { ok: false, message }
+    },
+    testConnection: async (baseUrl: string): Promise<AiConnectionResult> => {
+      const value: unknown = await ipcRenderer.invoke('ai:testConnection', baseUrl)
+      if (!isAiConnectionResult(value)) return { ok: false, message: 'Could not complete that request' }
+      return value
+    },
+  },
   onMenuAction: (callback) => {
     const listener = (_event: IpcRendererEvent, action: unknown): void => {
       if (isMenuAction(action)) callback(action)
@@ -166,6 +210,20 @@ const api: BranchlogApi = {
     }
     ipcRenderer.on('clock:resume', listener)
     return () => ipcRenderer.removeListener('clock:resume', listener)
+  },
+  carry: {
+    ready: (): CarryRun[] => {
+      const value: unknown = ipcRenderer.sendSync('carry:ready')
+      if (!isCarryRunList(value)) throw new Error('Could not carry unfinished tasks.')
+      return value
+    },
+    onApplied: (callback) => {
+      const listener = (_event: IpcRendererEvent, payload: unknown): void => {
+        if (isCarryRun(payload)) callback(payload)
+      }
+      ipcRenderer.on('carry:applied', listener)
+      return () => ipcRenderer.removeListener('carry:applied', listener)
+    },
   },
 }
 

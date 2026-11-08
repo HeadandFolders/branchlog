@@ -3,20 +3,26 @@ import { tempMark, tempMs } from '@shared/temp-timing'
 import { themeBackground, type ThemeDocument } from '@shared/theme'
 import type { ContinuationWriteResult, WriteResult } from '@shared/types'
 import { createContinuation, listContinuations, searchEarlierTasks } from './continuation'
-import { createBranch, createTask, listTasksByDate, updateTask } from './database'
+import { readAiSettings, writeAiSettings } from './ai-settings-store'
+import { listModels } from './lm-studio'
+import { createBranch, createTask, listActivityCounts, listTasksByDate, updateTask } from './database'
 import { replaceDay } from './day-sync'
-import { listImages, pasteImage, replaceImages } from './images'
+import { listImages, pasteImage, replaceImages, resizeImage } from './images'
 import { commitLayout } from './layout-save'
 import { readAutoSeparate, readSwipeToPan, writeAutoSeparate, writeSwipeToPan } from './settings'
 import { readTheme, writeTheme } from './theme-store'
+import { takeStartupCarry } from './carry-schedule'
 import { deleteTask, restoreRemoved } from './task-tree'
 import {
+  parseAiBaseUrl,
+  parseAiSettingsPayload,
   parseCreateBranch,
   parseCreateContinuation,
   parseCreateTask,
   parseEarlierQuery,
   parseImagePaste,
   parseImageReplace,
+  parseImageSize,
   parseLayoutCommit,
   parseFlag,
   parseRemovedTasks,
@@ -139,6 +145,15 @@ export function installIpc(): void {
     }
   })
 
+  ipcMain.handle('tasks:activityCounts', () => {
+    try {
+      return listActivityCounts()
+    } catch (error) {
+      console.error('tasks:activityCounts', error)
+      throw new Error('Could not complete that request')
+    }
+  })
+
   ipcMain.handle('tasks:update', (_event, payload: unknown) => {
     tempMark('ipc-call', { channel: 'tasks:update' })
     try {
@@ -195,6 +210,15 @@ export function installIpc(): void {
       return { ok: true, image: await pasteImage(parseImagePaste(payload)) }
     } catch (error) {
       return failure(error)
+    }
+  })
+
+  ipcMain.on('images:resize', (event, payload: unknown) => {
+    try {
+      resizeImage(parseImageSize(payload))
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
     }
   })
 
@@ -273,6 +297,45 @@ export function installIpc(): void {
       event.returnValue = { ok: true }
     } catch (error) {
       event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('ai:settings', (event) => {
+    try {
+      event.returnValue = readAiSettings()
+    } catch (error) {
+      console.error(error)
+      event.returnValue = null
+    }
+  })
+
+  ipcMain.on('ai:setSettings', (event, payload: unknown) => {
+    try {
+      writeAiSettings(parseAiSettingsPayload(payload))
+      event.returnValue = { ok: true }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not save the AI settings.'
+      console.error(error)
+      event.returnValue = { ok: false, message }
+    }
+  })
+
+  ipcMain.handle('ai:testConnection', async (_event, payload: unknown) => {
+    let baseUrl: string
+    try {
+      baseUrl = parseAiBaseUrl(payload)
+    } catch (error) {
+      return { ok: false, message: error instanceof Error ? error.message : 'Invalid AI address' }
+    }
+    return listModels(baseUrl)
+  })
+
+  ipcMain.on('carry:ready', (event) => {
+    try {
+      event.returnValue = takeStartupCarry()
+    } catch (error) {
+      console.error(error)
+      event.returnValue = { ok: false }
     }
   })
 

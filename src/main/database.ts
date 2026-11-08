@@ -5,91 +5,10 @@ import { app } from 'electron'
 import { tempMark, tempMeasuring, tempMs } from '@shared/temp-timing'
 import { BRANCH_WIDTH } from '@shared/branch-size'
 import { localDateKey } from '@shared/dates'
-import type { CreateBranchInput, CreateTaskInput, Task, TaskSide, UpdateTaskInput } from '@shared/types'
+import type { ActivityCount, CreateBranchInput, CreateTaskInput, Task, UpdateTaskInput } from '@shared/types'
 import { migrateTasks } from './migrate'
-
-interface TaskRow {
-  id: string
-  text: string
-  done: number
-  dateCreated: string
-  dateCompleted: string | null
-  parentId: string | null
-  x: number
-  y: number
-  width: number
-  height: number
-  side: string
-  orderIndex: number
-}
-
-const SCHEMA = `
-CREATE TABLE IF NOT EXISTS tasks (
-  id TEXT PRIMARY KEY,
-  text TEXT NOT NULL DEFAULT '',
-  done INTEGER NOT NULL DEFAULT 0 CHECK (done IN (0, 1)),
-  dateCreated TEXT NOT NULL,
-  dateCompleted TEXT,
-  parentId TEXT REFERENCES tasks(id) ON DELETE CASCADE,
-  x REAL NOT NULL DEFAULT 0,
-  y REAL NOT NULL DEFAULT 0,
-  width REAL NOT NULL DEFAULT ${BRANCH_WIDTH},
-  height REAL NOT NULL DEFAULT 0,
-  side TEXT NOT NULL DEFAULT 'main' CHECK (side IN ('main', 'right')),
-  orderIndex INTEGER NOT NULL DEFAULT 0
-);
-
-CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(dateCreated, side, orderIndex);
-CREATE INDEX IF NOT EXISTS idx_tasks_parent ON tasks(parentId);
-CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(dateCompleted);
-
-CREATE TABLE IF NOT EXISTS aiComments (
-  id TEXT PRIMARY KEY,
-  taskId TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
-  side TEXT NOT NULL DEFAULT 'left' CHECK (side IN ('left')),
-  text TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved')),
-  keptRanges TEXT NOT NULL DEFAULT '[]',
-  x REAL NOT NULL DEFAULT 0,
-  y REAL NOT NULL DEFAULT 0,
-  createdAt TEXT NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_ai_comments_task ON aiComments(taskId);
-
-CREATE TABLE IF NOT EXISTS aiReplies (
-  id TEXT PRIMARY KEY,
-  commentId TEXT NOT NULL REFERENCES aiComments(id) ON DELETE CASCADE,
-  role TEXT NOT NULL CHECK (role IN ('user', 'ai')),
-  text TEXT NOT NULL,
-  createdAt TEXT NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_ai_replies_comment ON aiReplies(commentId);
-
-CREATE TABLE IF NOT EXISTS images (
-  id TEXT PRIMARY KEY,
-  dateKey TEXT NOT NULL,
-  fileName TEXT NOT NULL,
-  x REAL NOT NULL DEFAULT 0,
-  y REAL NOT NULL DEFAULT 0,
-  width REAL NOT NULL,
-  height REAL NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_images_date ON images(dateKey);
-
-CREATE TABLE IF NOT EXISTS mapPositions (
-  taskId TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,
-  x REAL NOT NULL,
-  y REAL NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS settings (
-  key TEXT PRIMARY KEY,
-  value TEXT NOT NULL
-);
-`
+import { SCHEMA } from './schema'
+import { mapTask, TASK_COLUMNS, type TaskRow } from './task-row'
 
 let database: Database.Database | null = null
 
@@ -144,32 +63,10 @@ export function closeDatabase(): void {
   database = null
 }
 
-function asSide(value: string): TaskSide {
-  if (value === 'main' || value === 'right') return value
-  throw new Error('Invalid task')
-}
-
-function mapTask(row: TaskRow): Task {
-  return {
-    id: row.id,
-    text: row.text,
-    done: row.done === 1,
-    dateCreated: row.dateCreated,
-    dateCompleted: row.dateCompleted,
-    parentId: row.parentId,
-    x: row.x,
-    y: row.y,
-    width: row.width,
-    height: row.height,
-    side: asSide(row.side),
-    orderIndex: row.orderIndex,
-  }
-}
-
 export function listTasksByDate(dateCreated: string): Task[] {
   const rows = getDatabase()
     .prepare(
-      `SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
+      `SELECT ${TASK_COLUMNS}
        FROM tasks
        WHERE dateCreated = ?
        ORDER BY CASE side WHEN 'main' THEN 0 ELSE 1 END, orderIndex ASC, rowid ASC`,
@@ -207,9 +104,10 @@ export function createTask(input: CreateTaskInput): Task {
 
     db.prepare(
       `INSERT INTO tasks (
-         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
-       ) VALUES (?, ?, 0, ?, NULL, NULL, 0, 0, ?, 0, 'main', ?)`,
-    ).run(task.id, task.text, task.dateCreated, BRANCH_WIDTH, orderIndex)
+         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
+         carriedFromId, chainId, droppedAt
+       ) VALUES (?, ?, 0, ?, NULL, NULL, 0, 0, ?, 0, 'main', ?, NULL, ?, NULL)`,
+    ).run(task.id, task.text, task.dateCreated, BRANCH_WIDTH, orderIndex, task.id)
 
     return {
       id: task.id,
@@ -224,6 +122,9 @@ export function createTask(input: CreateTaskInput): Task {
       height: 0,
       side: 'main',
       orderIndex,
+      carriedFromId: null,
+      chainId: task.id,
+      droppedAt: null,
     }
   })
 
@@ -253,9 +154,20 @@ export function createBranch(input: CreateBranchInput): Task {
 
     db.prepare(
       `INSERT INTO tasks (
-         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
-       ) VALUES (?, ?, 0, ?, NULL, ?, ?, ?, ?, 0, 'right', ?)`,
-    ).run(branch.id, branch.text, parent.dateCreated, parent.id, branch.x, branch.y, BRANCH_WIDTH, orderIndex)
+         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
+         carriedFromId, chainId, droppedAt
+       ) VALUES (?, ?, 0, ?, NULL, ?, ?, ?, ?, 0, 'right', ?, NULL, ?, NULL)`,
+    ).run(
+      branch.id,
+      branch.text,
+      parent.dateCreated,
+      parent.id,
+      branch.x,
+      branch.y,
+      BRANCH_WIDTH,
+      orderIndex,
+      branch.id,
+    )
 
     return {
       id: branch.id,
@@ -270,6 +182,9 @@ export function createBranch(input: CreateBranchInput): Task {
       height: 0,
       side: 'right',
       orderIndex,
+      carriedFromId: null,
+      chainId: branch.id,
+      droppedAt: null,
     }
   })
 
@@ -285,7 +200,7 @@ export function updateTask(input: UpdateTaskInput): Task {
   const db = getDatabase()
   const existing = db
     .prepare(
-      `SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
+      `SELECT ${TASK_COLUMNS}
        FROM tasks WHERE id = ?`,
     )
     .get(input.id) as TaskRow | undefined
@@ -335,12 +250,24 @@ export function updateTask(input: UpdateTaskInput): Task {
 
   const updated = db
     .prepare(
-      `SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
+      `SELECT ${TASK_COLUMNS}
        FROM tasks WHERE id = ?`,
     )
     .get(input.id) as TaskRow | undefined
   if (!updated) throw new Error('Invalid task')
   return mapTask(updated)
+}
+
+export function listActivityCounts(): ActivityCount[] {
+  const rows = getDatabase()
+    .prepare(
+      `SELECT dateCompleted AS date, COUNT(*) AS count
+       FROM tasks
+       WHERE dateCompleted IS NOT NULL
+       GROUP BY dateCompleted`,
+    )
+    .all() as ActivityCount[]
+  return rows
 }
 
 function isConstraint(error: unknown): boolean {

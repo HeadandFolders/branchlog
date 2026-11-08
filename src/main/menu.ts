@@ -30,6 +30,12 @@ export function installMenu(): void {
               registerAccelerator: false,
               click: () => send('theme-lab'),
             },
+            {
+              label: 'AI margin (LM Studio)',
+              accelerator: 'CmdOrCtrl+,',
+              registerAccelerator: false,
+              click: () => send('ai-settings'),
+            },
           ],
         },
         { type: 'separator' },
@@ -68,7 +74,7 @@ export function installMenu(): void {
         { label: 'Next day', click: () => send('next-day') },
         { type: 'separator' },
         { label: 'Concept Map', accelerator: 'CmdOrCtrl+M', enabled: false },
-        { label: 'Calendar', enabled: false },
+        { label: 'Calendar', click: () => send('show-calendar') },
         {
           label: 'Branch from an earlier task',
           accelerator: 'CmdOrCtrl+K',

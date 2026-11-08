@@ -4,6 +4,7 @@ import { toggleThemeLab } from '../lib/theme-engine'
 import { framePageNow } from '../lib/viewport'
 import { useNotebook } from '../store/notebook'
 import { usePreferences } from '../store/preferences'
+import { useView } from '../store/view'
 import { tempCountRender } from '../temp-first-paint'
 
 const shortcutMod = /Mac/i.test(navigator.userAgent) ? '⌘' : 'Ctrl'
@@ -18,6 +19,7 @@ export function TopBar() {
   const setAutoSeparate = usePreferences((state) => state.setAutoSeparate)
   const swipeToPan = usePreferences((state) => state.swipeToPan)
   const setSwipeToPan = usePreferences((state) => state.setSwipeToPan)
+  const showCalendar = useView((state) => state.showCalendar)
 
   useEffect(() => {
     if (!open) return
@@ -81,6 +83,17 @@ export function TopBar() {
             >
               <span>Trackpad: swipe to pan (off = scroll to zoom)</span>
               {swipeToPan ? <span className="text-[12px] text-[var(--text-faint)]">On</span> : null}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
+              onClick={() => {
+                setOpen(false)
+                showCalendar()
+              }}
+            >
+              <span>Calendar</span>
             </button>
             <button
               type="button"

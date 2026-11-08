@@ -1,3 +1,4 @@
+import type { AiSettings } from './ai-settings'
 import type { ThemeDocument } from './theme'
 
 export type TaskSide = 'main' | 'right'
@@ -15,6 +16,9 @@ export interface Task {
   height: number
   side: TaskSide
   orderIndex: number
+  carriedFromId: string | null
+  chainId: string
+  droppedAt: string | null
 }
 
 export interface CreateTaskInput {
@@ -62,6 +66,11 @@ export interface UpdateTaskInput {
   height?: number
 }
 
+export interface ActivityCount {
+  date: string
+  count: number
+}
+
 export type MenuAction =
   | 'new-task'
   | 'today'
@@ -75,6 +84,8 @@ export type MenuAction =
   | 'branch-task'
   | 'earlier-task'
   | 'theme-lab'
+  | 'ai-settings'
+  | 'show-calendar'
 
 export interface MapPosition {
   taskId: string
@@ -82,9 +93,21 @@ export interface MapPosition {
   y: number
 }
 
+export interface CarryLink {
+  id: string
+  carriedFromId: string | null
+}
+
+export interface CarryRun {
+  id: string
+  date: string
+  tasks: Task[]
+}
+
 export interface RemovedTasks {
   tasks: Task[]
   mapPositions: MapPosition[]
+  carryLinks: CarryLink[]
 }
 
 export interface LayoutPoint {
@@ -116,6 +139,14 @@ export interface ImagePasteInput {
   y: number
 }
 
+export interface ImageSizeInput {
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export interface ImageRecord {
   id: string
   dateKey: string
@@ -142,6 +173,8 @@ export type DeleteResult = { ok: true; removed: RemovedTasks } | { ok: false }
 
 export type ImageResult = { ok: true; image: CanvasImage } | { ok: false }
 
+export type AiConnectionResult = { ok: true; models: string[] } | { ok: false; message: string }
+
 export interface BranchlogApi {
   tasks: {
     listByDate: (date: string) => Promise<Task[]>
@@ -155,10 +188,12 @@ export interface BranchlogApi {
     replaceDaySync: (date: string, tasks: Task[]) => Ack
     deleteSync: (id: string) => DeleteResult
     restoreSync: (removed: RemovedTasks) => Ack
+    activityCounts: () => Promise<ActivityCount[]>
   }
   images: {
     listByDate: (date: string) => Promise<CanvasImage[]>
     paste: (input: ImagePasteInput) => Promise<ImageResult>
+    resizeSync: (input: ImageSizeInput) => Ack
     replaceSync: (date: string, images: ImageRecord[]) => Ack
   }
   settings: {
@@ -172,8 +207,17 @@ export interface BranchlogApi {
   layout: {
     commitSync: (input: LayoutCommit) => Ack
   }
+  ai: {
+    settings: () => AiSettings
+    setSettings: (settings: AiSettings) => ThemeWriteResult
+    testConnection: (baseUrl: string) => Promise<AiConnectionResult>
+  }
   onMenuAction: (callback: (action: MenuAction) => void) => () => void
   onResume: (callback: () => void) => () => void
+  carry: {
+    ready: () => CarryRun[]
+    onApplied: (callback: (run: CarryRun) => void) => () => void
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -194,7 +238,11 @@ export function isTask(value: unknown): value is Task {
     typeof value.width === 'number' &&
     typeof value.height === 'number' &&
     (value.side === 'main' || value.side === 'right') &&
-    typeof value.orderIndex === 'number'
+    typeof value.orderIndex === 'number' &&
+    (value.carriedFromId === null || typeof value.carriedFromId === 'string') &&
+    typeof value.chainId === 'string' &&
+    value.chainId.length > 0 &&
+    (value.droppedAt === null || typeof value.droppedAt === 'string')
   )
 }
 
@@ -242,14 +290,39 @@ export function isTaskList(value: unknown): value is Task[] {
   return Array.isArray(value) && value.every(isTask)
 }
 
+export function isCarryLink(value: unknown): value is CarryLink {
+  if (!isRecord(value)) return false
+  return typeof value.id === 'string' && (value.carriedFromId === null || typeof value.carriedFromId === 'string')
+}
+
+export function isCarryRun(value: unknown): value is CarryRun {
+  if (!isRecord(value)) return false
+  return typeof value.id === 'string' && typeof value.date === 'string' && isTaskList(value.tasks)
+}
+
+export function isCarryRunList(value: unknown): value is CarryRun[] {
+  return Array.isArray(value) && value.every(isCarryRun)
+}
+
 export function isMapPosition(value: unknown): value is MapPosition {
   if (!isRecord(value)) return false
   return typeof value.taskId === 'string' && typeof value.x === 'number' && typeof value.y === 'number'
 }
 
 export function isRemovedTasks(value: unknown): value is RemovedTasks {
-  if (!isRecord(value) || !Array.isArray(value.tasks) || !Array.isArray(value.mapPositions)) return false
-  return value.tasks.every(isTask) && value.mapPositions.every(isMapPosition)
+  if (
+    !isRecord(value) ||
+    !Array.isArray(value.tasks) ||
+    !Array.isArray(value.mapPositions) ||
+    !Array.isArray(value.carryLinks)
+  ) {
+    return false
+  }
+  return (
+    value.tasks.every(isTask) &&
+    value.mapPositions.every(isMapPosition) &&
+    value.carryLinks.every(isCarryLink)
+  )
 }
 
 export function isDeleteResult(value: unknown): value is DeleteResult {
@@ -286,6 +359,23 @@ export function isImageResult(value: unknown): value is ImageResult {
   return isCanvasImage(value.image)
 }
 
+export function isActivityCount(value: unknown): value is ActivityCount {
+  if (!isRecord(value)) return false
+  return typeof value.date === 'string' && typeof value.count === 'number' && Number.isInteger(value.count)
+}
+
+export function isActivityCountList(value: unknown): value is ActivityCount[] {
+  return Array.isArray(value) && value.every(isActivityCount)
+}
+
+export function isAiConnectionResult(value: unknown): value is AiConnectionResult {
+  if (!isRecord(value) || typeof value.ok !== 'boolean') return false
+  if (value.ok === true) {
+    return Array.isArray(value.models) && value.models.every((model) => typeof model === 'string')
+  }
+  return typeof value.message === 'string'
+}
+
 export function isMenuAction(value: unknown): value is MenuAction {
   return (
     value === 'new-task' ||
@@ -299,6 +389,8 @@ export function isMenuAction(value: unknown): value is MenuAction {
     value === 'select-all' ||
     value === 'branch-task' ||
     value === 'earlier-task' ||
-    value === 'theme-lab'
+    value === 'theme-lab' ||
+    value === 'ai-settings' ||
+    value === 'show-calendar'
   )
 }
