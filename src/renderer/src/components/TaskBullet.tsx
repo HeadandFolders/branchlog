@@ -81,7 +81,7 @@ const BulletText = memo(
         tabIndex={0}
         contentEditable={editing ? 'plaintext-only' : 'false'}
         suppressContentEditableWarning
-        className={`bullet-text nopan nodrag ${textClass}`}
+        className={`bullet-text nowheel nopan nodrag ${textClass}`}
         onFocus={onFocus}
         onPointerDown={(event) => {
           if (event.button !== 2) return

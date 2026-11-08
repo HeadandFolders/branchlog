@@ -66,6 +66,17 @@ const api: BranchlogApi = {
       return { ok: true }
     },
   },
+  settings: {
+    swipeToPan: () => {
+      const value: unknown = ipcRenderer.sendSync('settings:swipeToPan')
+      return value !== false
+    },
+    setSwipeToPan: (on: boolean): Ack => {
+      const value: unknown = ipcRenderer.sendSync('settings:setSwipeToPan', on)
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
+    },
+  },
   onMenuAction: (callback) => {
     const listener = (_event: IpcRendererEvent, action: unknown): void => {
       if (isMenuAction(action)) callback(action)

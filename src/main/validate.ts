@@ -208,3 +208,8 @@ export function parseReplaceDay(value: unknown): { date: string; tasks: Task[] }
   if (new Set(tasks.map((task) => task.id)).size !== tasks.length) throw new Error('Invalid task')
   return { date, tasks }
 }
+
+export function parseFlag(value: unknown): boolean {
+  if (typeof value !== 'boolean') throw new Error('Invalid request')
+  return value
+}

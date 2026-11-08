@@ -3,10 +3,12 @@ import { tempMark, tempMs } from '@shared/temp-timing'
 import type { WriteResult } from '@shared/types'
 import { createBranch, createTask, listTasksByDate, updateTask } from './database'
 import { replaceDay } from './day-sync'
+import { readSwipeToPan, writeSwipeToPan } from './settings'
 import { deleteTask, restoreRemoved } from './task-tree'
 import {
   parseCreateBranch,
   parseCreateTask,
+  parseFlag,
   parseRemovedTasks,
   parseReplaceDay,
   parseUpdateTask,
@@ -19,7 +21,32 @@ function failure(error: unknown): WriteResult {
   return { ok: false }
 }
 
+let ipcCalls = 0
+
+function watchIpc(): void {
+  ipcCalls = 0
+  const on = ipcMain.on.bind(ipcMain)
+  const handle = ipcMain.handle.bind(ipcMain)
+  ipcMain.on = ((channel: string, listener: (event: Electron.IpcMainEvent, ...args: unknown[]) => void) => {
+    return on(channel, (event, ...args: unknown[]) => {
+      ipcCalls += 1
+      listener(event, ...args)
+    })
+  }) as typeof ipcMain.on
+  ipcMain.handle = ((
+    channel: string,
+    listener: (event: Electron.IpcMainInvokeEvent, ...args: unknown[]) => unknown,
+  ) => {
+    return handle(channel, (event, ...args) => {
+      ipcCalls += 1
+      return listener(event, ...args)
+    })
+  }) as typeof ipcMain.handle
+  ;(globalThis as { __branchlogIpcCalls?: () => number }).__branchlogIpcCalls = () => ipcCalls
+}
+
 export function installIpc(): void {
+  watchIpc()
   ipcMain.handle('tasks:listByDate', (_event, payload: unknown) => {
     const handlerStart = performance.now()
     try {
@@ -108,6 +135,24 @@ export function installIpc(): void {
     tempMark('ipc-call', { channel: 'tasks:restore' })
     try {
       restoreRemoved(parseRemovedTasks(payload))
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('settings:swipeToPan', (event) => {
+    try {
+      event.returnValue = readSwipeToPan()
+    } catch (error) {
+      console.error(error)
+      event.returnValue = true
+    }
+  })
+
+  ipcMain.on('settings:setSwipeToPan', (event, payload: unknown) => {
+    try {
+      writeSwipeToPan(parseFlag(payload))
       event.returnValue = { ok: true }
     } catch (error) {
       event.returnValue = failure(error)

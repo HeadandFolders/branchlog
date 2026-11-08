@@ -15,10 +15,12 @@ import '@xyflow/react/dist/style.css'
 import { BRANCH_LINE_HEIGHT, BRANCH_MIN_WIDTH, BRANCH_WIDTH } from '@shared/branch-size'
 import type { Task } from '@shared/types'
 import { registerFlowPoint } from '../lib/branch-from'
+import { canvasNavigation, keepOwnScroll } from '../lib/canvas-navigation'
 import { registerFramePage } from '../lib/viewport'
 import { settleFocusRequest, focusSettlePending } from '../lib/focus-field'
 import { tempMark } from '@shared/temp-timing'
 import { useNotebook } from '../store/notebook'
+import { usePreferences } from '../store/preferences'
 import { tempCountRender, tempNoteFlowDimensions } from '../temp-first-paint'
 import { BranchNode } from './BranchNode'
 import { MainListNode } from './MainListNode'
@@ -121,6 +123,7 @@ function DailyFlow() {
   const draggingId = useRef<string | null>(null)
   const resizingId = useRef<string | null>(null)
   const resizeBaseline = useRef<number | null>(null)
+  const swipeToPan = usePreferences((state) => state.swipeToPan)
   const tasks = useNotebook((state) => state.tasks)
   const tasksRef = useRef(tasks)
   tasksRef.current = tasks
@@ -142,6 +145,9 @@ function DailyFlow() {
     instance.setViewport({ x: Math.round((width - LIST_WIDTH) / 2), y: 28, zoom: 1 }, { duration: 0 })
   }, [])
 
+  useEffect(() => {
+    usePreferences.getState().load()
+  }, [])
   useEffect(() => registerFramePage(frame), [frame])
   useEffect(() => registerFlowPoint(screenToFlowPosition), [screenToFlowPosition])
 
@@ -215,7 +221,12 @@ function DailyFlow() {
   }, [])
 
   return (
-    <div ref={wrapperRef} className="h-full w-full">
+    <div
+      ref={wrapperRef}
+      className="h-full w-full"
+      data-swipe-pan={swipeToPan ? '1' : '0'}
+      onWheelCapture={keepOwnScroll}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -243,9 +254,7 @@ function DailyFlow() {
         fitView={false}
         minZoom={0.5}
         maxZoom={1.6}
-        panOnScroll={false}
-        zoomOnScroll
-        zoomOnPinch
+        {...canvasNavigation(swipeToPan)}
         zoomOnDoubleClick={false}
         panOnDrag
         selectionOnDrag={false}

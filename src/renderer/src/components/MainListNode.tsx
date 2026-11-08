@@ -390,7 +390,7 @@ export function MainListNode() {
             <span aria-hidden="true" className="task-check" />
             <textarea
               ref={placeholderRef}
-              className="bullet-input nopan nodrag w-full resize-none overflow-hidden bg-transparent text-[16px] leading-[1.6] text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
+              className="bullet-input nowheel nopan nodrag w-full resize-none overflow-hidden bg-transparent text-[16px] leading-[1.6] text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
               rows={1}
               placeholder="Write a task"
               aria-label="New task"

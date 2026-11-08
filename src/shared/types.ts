@@ -82,6 +82,10 @@ export interface BranchlogApi {
     deleteSync: (id: string) => DeleteResult
     restoreSync: (removed: RemovedTasks) => Ack
   }
+  settings: {
+    swipeToPan: () => boolean
+    setSwipeToPan: (on: boolean) => Ack
+  }
   onMenuAction: (callback: (action: MenuAction) => void) => () => void
 }
 

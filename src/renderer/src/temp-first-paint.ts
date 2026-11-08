@@ -22,6 +22,10 @@ tempMark('js-eval-start')
 if (tempMeasuring()) installTempProbes()
 
 export function tempCountRender(name: string): void {
+  const host = globalThis as { __blRenders?: Record<string, number> }
+  const live = host.__blRenders ?? {}
+  live[name] = (live[name] ?? 0) + 1
+  host.__blRenders = live
   if (!tempMeasuring()) return
   counts[name] = (counts[name] ?? 0) + 1
 }

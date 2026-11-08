@@ -92,6 +92,10 @@ function createWindow(): BrowserWindow {
     },
   })
   tempMark('window-constructed', { ms: tempMs(constructStart) })
+  void win.webContents.setVisualZoomLevelLimits(1, 1).catch((error: unknown) => {
+    console.error(error)
+  })
+
 
   win.webContents.on('preload-error', (_event, preloadPath, error) => {
     console.error('Preload failed', preloadPath, error)
@@ -110,7 +114,12 @@ function createWindow(): BrowserWindow {
   })
   win.webContents.on('did-start-loading', () => tempMark('did-start-loading'))
   win.webContents.on('dom-ready', () => tempMark('dom-ready'))
-  win.webContents.on('did-finish-load', () => tempMark('did-finish-load'))
+  win.webContents.on('did-finish-load', () => {
+    tempMark('did-finish-load')
+  void win.webContents.setVisualZoomLevelLimits(1, 1).catch((error: unknown) => {
+    console.error(error)
+  })
+  })
   if (state.isMaximized) win.maximize()
   trackWindowState(win)
   win.on('ready-to-show', () => {
