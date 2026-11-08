@@ -1,0 +1,42 @@
+
+(node:20364) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/LENOVO%20-%20PC/Desktop/branchlog/release-measure-2/Branchlog/resources/app.asar/out/main/index.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\LENOVO - PC\Desktop\branchlog\release-measure-2\Branchlog\resources\app.asar\package.json.
+(Use `Branchlog --trace-warnings ...` to show where the warning was created)
+TEMP_MARK {"label":"main-evaluated","now":1794113367810,"perf":407.55,"origin":1794113367402.661,"uptimeMs":246}
+TEMP_MARK {"label":"when-ready","now":1794113367980,"perf":577.96,"origin":1794113367402.661,"uptimeMs":418,"packaged":1}
+TEMP_MARK {"label":"db-mkdir","now":1794113367982,"perf":579.96,"origin":1794113367402.661,"ms":0.78}
+TEMP_MARK {"label":"db-open","now":1794113368101,"perf":699.54,"origin":1794113367402.661,"ms":118.72}
+TEMP_MARK {"label":"db-pragma-journal","now":1794113368109,"perf":707.48,"origin":1794113367402.661,"ms":7.33}
+TEMP_MARK {"label":"db-pragma-foreign-keys","now":1794113368110,"perf":708.26,"origin":1794113367402.661,"ms":0.09}
+TEMP_MARK {"label":"db-pragma-busy","now":1794113368111,"perf":709.02,"origin":1794113367402.661,"ms":0.16}
+TEMP_MARK {"label":"db-schema","now":1794113368112,"perf":709.86,"origin":1794113367402.661,"ms":0.23}
+TEMP_MARK {"label":"migrate-fk","now":1794113368113,"perf":711.01,"origin":1794113367402.661,"ms":0.41,"action":"CASCADE"}
+TEMP_MARK {"label":"migrate-rebuild-skipped","now":1794113368113,"perf":711.46,"origin":1794113367402.661}
+TEMP_MARK {"label":"migrate-size","now":1794113368114,"perf":712.15,"origin":1794113367402.661,"ms":0.29}
+TEMP_MARK {"label":"migrate-orphan","now":1794113368115,"perf":712.89,"origin":1794113367402.661,"ms":0.44,"skipped":true}
+TEMP_MARK {"label":"db-migrate","now":1794113368115,"perf":713.19,"origin":1794113367402.661,"ms":2.69}
+TEMP_MARK {"label":"db-pragma-values","now":1794113368115,"perf":713.51,"origin":1794113367402.661,"journal":"wal","synchronous":1,"foreignKeys":1,"busyTimeout":2000}
+TEMP_MARK {"label":"db-init-total","now":1794113368115,"perf":713.73,"origin":1794113367402.661,"ms":134.57}
+Branchlog database: C:\Users\LENOVO - PC\Desktop\branchlog\first-paint-results\userdata\branchlog.sqlite
+TEMP_MARK {"label":"init-database-returned","now":1794113368116,"perf":713.91,"origin":1794113367402.661,"ms":134.9}
+TEMP_MARK {"label":"install-ipc","now":1794113368116,"perf":714.38,"origin":1794113367402.661,"ms":0.15}
+TEMP_MARK {"label":"install-security","now":1794113368133,"perf":731.47,"origin":1794113367402.661,"ms":16.82}
+TEMP_MARK {"label":"install-menu","now":1794113368134,"perf":732.65,"origin":1794113367402.661,"ms":0.68}
+TEMP_MARK {"label":"window-state","now":1794113368137,"perf":735.13,"origin":1794113367402.661,"ms":1.72}
+TEMP_MARK {"label":"window-constructed","now":1794113368191,"perf":789.04,"origin":1794113367402.661,"ms":53.35}
+(electron) 'console-message' arguments are deprecated and will be removed. Please use Event<WebContentsConsoleMessageEventParams> object instead.
+TEMP_MARK {"label":"did-start-loading","now":1794113368206,"perf":804.47,"origin":1794113367402.661}
+TEMP_MARK {"label":"load-called","now":1794113368209,"perf":807.09,"origin":1794113367402.661}
+TEMP_MARK {"label":"backup-start","now":1794113368210,"perf":807.99,"origin":1794113367402.661}
+TEMP_MARK {"label":"backup-skipped-existing","now":1794113368211,"perf":809.18,"origin":1794113367402.661}
+TEMP_MARK {"label":"backup-end","now":1794113368212,"perf":810.34,"origin":1794113367402.661,"ms":2.33,"copied":false,"removed":0}
+TEMP_MARK {"label":"backup-scheduled","now":1794113368213,"perf":810.9,"origin":1794113367402.661}
+TEMP_MARK {"label":"dom-ready","now":1794113373367,"perf":5965.36,"origin":1794113367402.661}
+TEMP_MARK {"label":"did-finish-load","now":1794113373370,"perf":5968.08,"origin":1794113367402.661}
+TEMP_MARK {"label":"ready-to-show","now":1794113373375,"perf":5972.91,"origin":1794113367402.661}
+TEMP_MARK {"label":"window-shown","now":1794113373419,"perf":6016.98,"origin":1794113367402.661}
+TEMP_MARK {"label":"ipc-listByDate","now":1794113373648,"perf":6246.5,"origin":1794113367402.661,"handlerMs":12.65,"validateMs":0.34,"queryMs":12.33,"rows":15}
+TEMP_MARK {"label":"devtools-opened","now":1794113374008,"perf":6606.57,"origin":1794113367402.661,"open":0}
+TEMP_MARK {"label":"window-count","now":1794113374010,"perf":6608.59,"origin":1794113367402.661,"count":1}
+TEMP_MARK {"label":"csp-header-checks","now":1794113374012,"perf":6610.63,"origin":1794113367402.661,"count":5}

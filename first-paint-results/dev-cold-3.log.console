@@ -1,0 +1,75 @@
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> branchlog@0.1.0 dev
+> electron-vite dev
+
+vite v8.3.6 building ssr environment for development...
+transforming...
+✓ 16 modules transformed.
+rendering chunks...
+out/main/index.js  43.29 kB
+
+✓ built in 70ms
+
+electron main process built successfully
+
+-----
+
+vite v8.3.6 building ssr environment for development...
+transforming...
+✓ 4 modules transformed.
+rendering chunks...
+out/preload/index.cjs  4.98 kB
+
+✓ built in 29ms
+
+electron preload scripts built successfully
+
+-----
+
+dev server running for the electron renderer process at:
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+
+starting electron app...
+
+
+TEMP_MARK {"label":"main-evaluated","now":1794113570199,"perf":106.23,"origin":1794113570093.69,"uptimeMs":84}
+TEMP_MARK {"label":"when-ready","now":1794113570296,"perf":203.11,"origin":1794113570093.69,"uptimeMs":182,"packaged":0}
+TEMP_MARK {"label":"db-mkdir","now":1794113570298,"perf":204.94,"origin":1794113570093.69,"ms":0.45}
+TEMP_MARK {"label":"db-open","now":1794113570303,"perf":210.16,"origin":1794113570093.69,"ms":4.48}
+TEMP_MARK {"label":"db-pragma-journal","now":1794113570307,"perf":214.49,"origin":1794113570093.69,"ms":3.59}
+TEMP_MARK {"label":"db-pragma-foreign-keys","now":1794113570308,"perf":215.52,"origin":1794113570093.69,"ms":0.11}
+TEMP_MARK {"label":"db-pragma-busy","now":1794113570309,"perf":216.58,"origin":1794113570093.69,"ms":0.22}
+TEMP_MARK {"label":"db-schema","now":1794113570310,"perf":217.52,"origin":1794113570093.69,"ms":0.35}
+TEMP_MARK {"label":"migrate-fk","now":1794113570311,"perf":218.64,"origin":1794113570093.69,"ms":0.4,"action":"CASCADE"}
+TEMP_MARK {"label":"migrate-rebuild-skipped","now":1794113570312,"perf":219.34,"origin":1794113570093.69}
+TEMP_MARK {"label":"migrate-size","now":1794113570313,"perf":220.37,"origin":1794113570093.69,"ms":0.48}
+TEMP_MARK {"label":"migrate-orphan","now":1794113570314,"perf":221.36,"origin":1794113570093.69,"ms":0.4,"skipped":true}
+TEMP_MARK {"label":"db-migrate","now":1794113570315,"perf":221.93,"origin":1794113570093.69,"ms":3.82}
+TEMP_MARK {"label":"db-pragma-values","now":1794113570315,"perf":222.56,"origin":1794113570093.69,"journal":"wal","synchronous":1,"foreignKeys":1,"busyTimeout":2000}
+TEMP_MARK {"label":"db-init-total","now":1794113570316,"perf":223.05,"origin":1794113570093.69,"ms":18.59}
+Branchlog database: C:\Users\LENOVO - PC\Desktop\branchlog\first-paint-results\userdata\branchlog.sqlite
+TEMP_MARK {"label":"init-database-returned","now":1794113570316,"perf":223.47,"origin":1794113570093.69,"ms":19.25}
+TEMP_MARK {"label":"install-ipc","now":1794113570317,"perf":224.19,"origin":1794113570093.69,"ms":0.24}
+TEMP_MARK {"label":"install-security","now":1794113570325,"perf":232.32,"origin":1794113570093.69,"ms":7.69}
+TEMP_MARK {"label":"install-menu","now":1794113570326,"perf":233.55,"origin":1794113570093.69,"ms":0.68}
+TEMP_MARK {"label":"window-state","now":1794113570328,"perf":235.17,"origin":1794113570093.69,"ms":0.79}
+TEMP_MARK {"label":"window-constructed","now":1794113570373,"perf":279.99,"origin":1794113570093.69,"ms":44.28}
+(electron) 'console-message' arguments are deprecated and will be removed. Please use Event<WebContentsConsoleMessageEventParams> object instead.
+TEMP_MARK {"label":"did-start-loading","now":1794113570382,"perf":289.1,"origin":1794113570093.69}
+TEMP_MARK {"label":"load-called","now":1794113570383,"perf":290.77,"origin":1794113570093.69}
+TEMP_MARK {"label":"backup-start","now":1794113570384,"perf":291.61,"origin":1794113570093.69}
+TEMP_MARK {"label":"backup-skipped-existing","now":1794113570385,"perf":292.57,"origin":1794113570093.69}
+TEMP_MARK {"label":"backup-end","now":1794113570386,"perf":293.5,"origin":1794113570093.69,"ms":1.88,"copied":false,"removed":0}
+TEMP_MARK {"label":"backup-scheduled","now":1794113570387,"perf":294.08,"origin":1794113570093.69}
+TEMP_MARK {"label":"dom-ready","now":1794113571408,"perf":1315.29,"origin":1794113570093.69}
+TEMP_MARK {"label":"ready-to-show","now":1794113571409,"perf":1316.22,"origin":1794113570093.69}
+TEMP_MARK {"label":"window-shown","now":1794113571442,"perf":1349.46,"origin":1794113570093.69}
+TEMP_MARK {"label":"did-finish-load","now":1794113571444,"perf":1351.63,"origin":1794113570093.69}
+TEMP_MARK {"label":"ipc-listByDate","now":1794113571616,"perf":1523.79,"origin":1794113570093.69,"handlerMs":0.91,"validateMs":0.16,"queryMs":0.76,"rows":15}
+TEMP_MARK {"label":"ipc-listByDate","now":1794113571619,"perf":1526.7,"origin":1794113570093.69,"handlerMs":0.31,"validateMs":0.02,"queryMs":0.29,"rows":15}
+TEMP_MARK {"label":"devtools-opened","now":1794113571753,"perf":1660.42,"origin":1794113570093.69,"open":0}
+TEMP_MARK {"label":"window-count","now":1794113571753,"perf":1660.87,"origin":1794113570093.69,"count":1}
+TEMP_MARK {"label":"csp-header-checks","now":1794113571754,"perf":1661.29,"origin":1794113570093.69,"count":54}

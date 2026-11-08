@@ -1,0 +1,247 @@
+{
+  "fromShown": {
+    "htmlParse": null,
+    "didStartLoading": -999,
+    "preloadStart": -111,
+    "preloadEnd": -110,
+    "domReady": -25,
+    "didFinishLoad": -24,
+    "jsEval": -36,
+    "reactRenderStart": -27,
+    "reactCommit": -1,
+    "reactCommits": 1,
+    "shellVisible": 79,
+    "ipcSend": 50,
+    "ipcRecv": 89,
+    "storeCleared": 50,
+    "storeFilled": 89,
+    "flowInit": 88,
+    "flowInits": 1,
+    "canvasRebuilds": 2,
+    "flowMeasureEvents": 3,
+    "taskVisible": 101,
+    "taskReady": 101,
+    "fcp": 45,
+    "lcp": 113,
+    "fontsReady": 119
+  },
+  "durations": {
+    "processToMainMs": 63,
+    "processToShownMs": 1187,
+    "dbInitMs": 15.48,
+    "dbOpenMs": 3.3,
+    "dbSchemaMs": 0.24,
+    "dbMigrateMs": 2.82,
+    "migrateRebuild": null,
+    "migrateRebuildSkipped": true,
+    "orphanSkipped": true,
+    "orphanMs": 0.42,
+    "windowStateMs": 0.52,
+    "menuMs": 0.45,
+    "ipcRoundTripMs": 38.9,
+    "handlerMs": 1.02,
+    "queryMs": 0.84,
+    "validateMs": 0.18,
+    "rows": 15,
+    "gotoFlushMs": 10.7,
+    "backupMs": 1.73,
+    "backupCopied": false,
+    "preloadMs": 0.7,
+    "jsEvalToRenderMs": 8.5,
+    "renderToCommitMs": 26.5
+  },
+  "ipcChannels": [
+    "tasks:listByDate"
+  ],
+  "renderCounts": {
+    "label": "render-counts",
+    "now": 1794113425658,
+    "perf": 1141.6,
+    "origin": 1794113424516.9,
+    "App": 1,
+    "Notebook": 1,
+    "TopBar": 1,
+    "DailyCanvas": 1,
+    "DailyFlow": 7,
+    "DeleteNotice": 1,
+    "MainListNode": 10,
+    "DateHeader": 10,
+    "TaskBullet": 66,
+    "BranchNode": 6,
+    "commits": 1,
+    "dimensionEvents": 3,
+    "dimensionNodes": 6
+  },
+  "resources": {
+    "label": "resources",
+    "now": 1794113425657,
+    "perf": 1140.4,
+    "origin": 1794113424516.9,
+    "count": 0,
+    "scripts": 0,
+    "styles": 0,
+    "fonts": 0,
+    "other": 0,
+    "encodedBytes": 0
+  },
+  "slowResources": [],
+  "fonts": [
+    {
+      "label": "font-loadingdone",
+      "now": 1794113425642,
+      "perf": 1125.9,
+      "origin": 1794113424516.9,
+      "family": "Inter",
+      "weight": "400",
+      "status": "loaded"
+    },
+    {
+      "label": "font-loadingdone",
+      "now": 1794113425643,
+      "perf": 1126.1,
+      "origin": 1794113424516.9,
+      "family": "Inter",
+      "weight": "600",
+      "status": "loaded"
+    },
+    {
+      "label": "fonts-ready",
+      "now": 1794113425643,
+      "perf": 1126.3,
+      "origin": 1794113424516.9,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    {
+      "label": "font-faces",
+      "now": 1794113425658,
+      "perf": 1141.6,
+      "origin": 1794113424516.9,
+      "count": 4,
+      "rules": "Inter 400 display=swap src=url(\"./inter-latin-400-normal-C38fXH4l.woff2\") format(\"woff2\"), url(\"./inter-latin-400-normal-CyCys3Eg.woff\") format(\"woff\") || Inter 600 display=swap src=url(\"./inter-latin-600-normal-LgqL8muc.woff2\") format(\"woff2\"), url(\"./inter-latin-600-normal-CiBQ2DWP.woff\") format(\"woff\") || Newsreader 400 display=swap src=url(\"./newsreader-latin-400-normal-BFBkh4jY.woff2\") format(\"woff2\"), url(\"./newsreader-latin-400-normal-gRTjlS2D.woff\") format(\"woff\") || Newsreader 600 display=swap src=url(\"./newsreader-latin-600-normal-30OJ_TG_.woff2\") format(\"woff2\"), url(\"./newsreader-latin-600-normal-DUnT2r2g.woff\") format(\"woff\")"
+    }
+  ],
+  "longTasks": [
+    {
+      "label": "loaf",
+      "now": 1794113425656,
+      "perf": 1139.1,
+      "origin": 1794113424516.9,
+      "startTime": 899.2,
+      "duration": 54.6,
+      "scripts": ""
+    },
+    {
+      "label": "loaf",
+      "now": 1794113425656,
+      "perf": 1139.2,
+      "origin": 1794113424516.9,
+      "startTime": 983.4,
+      "duration": 55.7,
+      "scripts": ""
+    },
+    {
+      "label": "loaf",
+      "now": 1794113425659,
+      "perf": 1142.7,
+      "origin": 1794113424516.9,
+      "startTime": 1039.7,
+      "duration": 53.8,
+      "scripts": ""
+    }
+  ],
+  "shell": {
+    "label": "shell-visible",
+    "now": 1794113425603,
+    "perf": 1086.8,
+    "origin": 1794113424516.9,
+    "text": "Sunday, November 8",
+    "fontFamily": "Inter, Geist, system-ui, sans-serif",
+    "newsreaderReady": 0,
+    "left": 0,
+    "top": 104
+  },
+  "task": {
+    "label": "task-visible",
+    "now": 1794113425625,
+    "perf": 1108.2,
+    "origin": 1794113424516.9,
+    "w": 492,
+    "h": 26,
+    "left": 389,
+    "top": 213,
+    "text": "Call the school about the Thursday pickup",
+    "fontFamily": "Inter, Geist, system-ui, sans-serif"
+  },
+  "ready": {
+    "label": "task-ready-for-input",
+    "now": 1794113425625,
+    "perf": 1108.5,
+    "origin": 1794113424516.9,
+    "contentEditable": "false",
+    "tabIndex": 0,
+    "pointerEvents": "all",
+    "visibility": "visible",
+    "display": "block",
+    "interReady": 1
+  },
+  "flow": {
+    "label": "react-flow-init",
+    "now": 1794113425612,
+    "perf": 1095.7,
+    "origin": 1794113424516.9,
+    "x": 353,
+    "y": 28,
+    "zoom": 1,
+    "nodes": 1
+  },
+  "pragmas": {
+    "label": "db-pragma-values",
+    "now": 1794113424468,
+    "perf": 168.78,
+    "origin": 1794113424300.195,
+    "journal": "wal",
+    "synchronous": 1,
+    "foreignKeys": 1,
+    "busyTimeout": 2000
+  },
+  "devtools": {
+    "label": "devtools-opened",
+    "now": 1794113425661,
+    "perf": 1361.84,
+    "origin": 1794113424300.195,
+    "open": 0
+  },
+  "windows": {
+    "label": "window-count",
+    "now": 1794113425662,
+    "perf": 1362.55,
+    "origin": 1794113424300.195,
+    "count": 1
+  },
+  "csp": {
+    "label": "csp-header-checks",
+    "now": 1794113425662,
+    "perf": 1362.82,
+    "origin": 1794113424300.195,
+    "count": 5
+  },
+  "packaged": 1,
+  "navigation": {
+    "label": "navigation",
+    "now": 1794113425657,
+    "perf": 1140.3,
+    "origin": 1794113424516.9,
+    "responseEnd": 22.9,
+    "domInteractive": 936.7,
+    "domContentLoaded": 982.6,
+    "loadEventEnd": 982.8,
+    "transferSize": 1231,
+    "decodedBodySize": 931,
+    "type": "navigate"
+  },
+  "reason": "ready",
+  "backupOverlapsIpc": false
+}

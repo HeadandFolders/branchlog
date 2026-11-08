@@ -1,0 +1,80 @@
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> branchlog@0.1.0 dev
+> electron-vite dev
+
+vite v8.3.6 building ssr environment for development...
+transforming...
+✓ 16 modules transformed.
+rendering chunks...
+out/main/index.js  43.29 kB
+
+✓ built in 98ms
+
+electron main process built successfully
+
+-----
+
+vite v8.3.6 building ssr environment for development...
+transforming...
+✓ 4 modules transformed.
+rendering chunks...
+out/preload/index.cjs  4.98 kB
+
+✓ built in 27ms
+
+electron preload scripts built successfully
+
+-----
+
+4:52:04 AM [vite] (client) Re-optimizing dependencies because vite config has changed
+dev server running for the electron renderer process at:
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+
+starting electron app...
+
+
+TEMP_MARK {"label":"main-evaluated","now":1794113525172,"perf":173.51,"origin":1794113524999.715,"uptimeMs":87}
+TEMP_MARK {"label":"when-ready","now":1794113525239,"perf":240.17,"origin":1794113524999.715,"uptimeMs":157,"packaged":0}
+TEMP_MARK {"label":"db-mkdir","now":1794113525241,"perf":242.17,"origin":1794113524999.715,"ms":0.33}
+TEMP_MARK {"label":"db-open","now":1794113525245,"perf":246.68,"origin":1794113524999.715,"ms":3.93}
+TEMP_MARK {"label":"db-pragma-journal","now":1794113525248,"perf":250.09,"origin":1794113524999.715,"ms":2.88}
+TEMP_MARK {"label":"db-pragma-foreign-keys","now":1794113525249,"perf":250.68,"origin":1794113524999.715,"ms":0.07}
+TEMP_MARK {"label":"db-pragma-busy","now":1794113525250,"perf":251.36,"origin":1794113524999.715,"ms":0.13}
+TEMP_MARK {"label":"db-schema","now":1794113525250,"perf":252.02,"origin":1794113524999.715,"ms":0.23}
+TEMP_MARK {"label":"migrate-fk","now":1794113525251,"perf":252.8,"origin":1794113524999.715,"ms":0.25,"action":"CASCADE"}
+TEMP_MARK {"label":"migrate-rebuild-skipped","now":1794113525252,"perf":253.37,"origin":1794113524999.715}
+TEMP_MARK {"label":"migrate-size","now":1794113525253,"perf":254.76,"origin":1794113524999.715,"ms":0.27}
+TEMP_MARK {"label":"migrate-orphan","now":1794113525254,"perf":255.34,"origin":1794113524999.715,"ms":0.22,"skipped":true}
+TEMP_MARK {"label":"db-migrate","now":1794113525254,"perf":255.81,"origin":1794113524999.715,"ms":3.33}
+TEMP_MARK {"label":"db-pragma-values","now":1794113525255,"perf":256.3,"origin":1794113524999.715,"journal":"wal","synchronous":1,"foreignKeys":1,"busyTimeout":2000}
+TEMP_MARK {"label":"db-init-total","now":1794113525255,"perf":256.78,"origin":1794113524999.715,"ms":14.96}
+Branchlog database: C:\Users\LENOVO - PC\Desktop\branchlog\first-paint-results\userdata\branchlog.sqlite
+TEMP_MARK {"label":"init-database-returned","now":1794113525255,"perf":257.03,"origin":1794113524999.715,"ms":15.4}
+TEMP_MARK {"label":"install-ipc","now":1794113525256,"perf":257.52,"origin":1794113524999.715,"ms":0.14}
+TEMP_MARK {"label":"install-security","now":1794113525267,"perf":268.76,"origin":1794113524999.715,"ms":10.91}
+TEMP_MARK {"label":"install-menu","now":1794113525268,"perf":269.65,"origin":1794113524999.715,"ms":0.43}
+TEMP_MARK {"label":"window-state","now":1794113525271,"perf":272.94,"origin":1794113524999.715,"ms":2.67}
+TEMP_MARK {"label":"window-constructed","now":1794113525323,"perf":324.45,"origin":1794113524999.715,"ms":51.09}
+(electron) 'console-message' arguments are deprecated and will be removed. Please use Event<WebContentsConsoleMessageEventParams> object instead.
+TEMP_MARK {"label":"did-start-loading","now":1794113525335,"perf":336.55,"origin":1794113524999.715}
+TEMP_MARK {"label":"load-called","now":1794113525338,"perf":339.21,"origin":1794113524999.715}
+TEMP_MARK {"label":"backup-start","now":1794113525338,"perf":339.84,"origin":1794113524999.715}
+TEMP_MARK {"label":"backup-skipped-existing","now":1794113525339,"perf":340.67,"origin":1794113524999.715}
+TEMP_MARK {"label":"backup-end","now":1794113525340,"perf":341.32,"origin":1794113524999.715,"ms":1.47,"copied":false,"removed":0}
+TEMP_MARK {"label":"backup-scheduled","now":1794113525340,"perf":341.62,"origin":1794113524999.715}
+4:52:05 AM [vite] (client) [optimizer] bundling dependencies...
+TEMP_MARK {"label":"dom-ready","now":1794113530818,"perf":5819.55,"origin":1794113524999.715}
+TEMP_MARK {"label":"ready-to-show","now":1794113530826,"perf":5827.46,"origin":1794113524999.715}
+TEMP_MARK {"label":"window-shown","now":1794113530872,"perf":5873.32,"origin":1794113524999.715}
+TEMP_MARK {"label":"did-finish-load","now":1794113530876,"perf":5877.84,"origin":1794113524999.715}
+TEMP_MARK {"label":"ipc-listByDate","now":1794113531353,"perf":6354.21,"origin":1794113524999.715,"handlerMs":3.46,"validateMs":0.29,"queryMs":3.19,"rows":15}
+TEMP_MARK {"label":"ipc-listByDate","now":1794113531360,"perf":6361.84,"origin":1794113524999.715,"handlerMs":0.62,"validateMs":0.04,"queryMs":0.58,"rows":15}
+4:52:11 AM [vite] (client) [Unhandled error] Error: ResizeObserver loop completed with undelivered notifications.
+ > ../../../../../../@vite/client:370:50
+
+TEMP_MARK {"label":"devtools-opened","now":1794113532061,"perf":7062.7,"origin":1794113524999.715,"open":0}
+TEMP_MARK {"label":"window-count","now":1794113532062,"perf":7064,"origin":1794113524999.715,"count":1}
+TEMP_MARK {"label":"csp-header-checks","now":1794113532065,"perf":7066.53,"origin":1794113524999.715,"count":54}

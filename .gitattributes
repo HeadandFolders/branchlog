@@ -1,0 +1,1 @@
+release-measure-2/Branchlog/Branchlog.exe filter=lfs diff=lfs merge=lfs -text

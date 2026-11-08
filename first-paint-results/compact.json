@@ -1,0 +1,3090 @@
+[
+  {
+    "run": "dev-cold-1",
+    "reason": "ready",
+    "task": 720,
+    "shell": 567,
+    "fcp": 478,
+    "lcp": 726,
+    "commit": 137,
+    "js": -358,
+    "html": -5152,
+    "loadStart": -5537,
+    "ipc": 149.1,
+    "query": 3.19,
+    "handler": 3.46,
+    "rows": 15,
+    "db": 14.96,
+    "dbOpen": 3.93,
+    "toShown": 5787,
+    "evalMs": 245.3,
+    "renderMs": 249.3,
+    "preload": 6.4,
+    "flush": 124.3,
+    "backup": 1.47,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 52,
+    "scripts": 50,
+    "fonts": 2,
+    "csp": 54,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 2,
+    "flowRenders": 20,
+    "listRenders": 22,
+    "bulletRenders": 162,
+    "measures": 3,
+    "rebuilds": 3,
+    "channels": [
+      "tasks:listByDate",
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 304,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 172,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 182,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 131,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 93,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 182,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 61.2,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 307.2,
+        "scripts": "http://localhost:5173/src/main.tsx@http://localhost:5173/src/main.tsx:265"
+      },
+      {
+        "type": "loaf",
+        "ms": 329.9,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=919bfcd1:171"
+      },
+      {
+        "type": "longtask",
+        "ms": 67,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 308,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=919bfcd1:182 | FrameRequestCallback@http://localhost:5173/src/temp-first-paint.ts:84 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=5b42c00c:30 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=5b42c00c:6"
+      },
+      {
+        "type": "loaf",
+        "ms": 278.7,
+        "scripts": "VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=919bfcd1:82 | MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=919bfcd1:5 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=5b42c00c:159 | DOMWindow.onerror@http://localhost:5173/@vite/client:7"
+      },
+      {
+        "type": "loaf",
+        "ms": 154.7,
+        "scripts": "TimerHandler:setTimeout@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=5b42c00c:29 | VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=919bfcd1:43 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=5b42c00c:52"
+      },
+      {
+        "type": "loaf",
+        "ms": 53.6,
+        "scripts": "FrameRequestCallback@http://localhost:5173/src/temp-first-paint.ts:18"
+      }
+    ],
+    "slow": [
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/lucide-react.js?v=7e9388f7",
+        "ms": 4509.5,
+        "bytes": 5547558,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=919bfcd1",
+        "ms": 3965.3,
+        "bytes": 3132171,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=5b42c00c",
+        "ms": 3362.1,
+        "bytes": 1465110,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=5b2f94f1",
+        "ms": 3078.5,
+        "bytes": 35684,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/components/DateHeader.tsx",
+        "ms": 3044.3,
+        "bytes": 10640,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/lib/new-task.ts",
+        "ms": 3042.3,
+        "bytes": 3376,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/components/TaskBullet.tsx",
+        "ms": 3026.3,
+        "bytes": 36577,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/store/task-size.ts",
+        "ms": 3007.4,
+        "bytes": 6851,
+        "type": "script"
+      }
+    ],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113531943,
+      "perf": 6617.6,
+      "origin": 1794113525325.9,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "ms": 420.9,
+        "bytes": 23664
+      },
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "ms": 291,
+        "bytes": 24452
+      }
+    ],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 4,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "dev-cold-2",
+    "reason": "ready",
+    "task": 261,
+    "shell": 176,
+    "fcp": 100,
+    "lcp": 216,
+    "commit": 45,
+    "js": -101,
+    "html": -890,
+    "loadStart": -1174,
+    "ipc": 67.7,
+    "query": 0.79,
+    "handler": 0.95,
+    "rows": 15,
+    "db": 16.67,
+    "dbOpen": 3.81,
+    "toShown": 1472,
+    "evalMs": 66.6,
+    "renderMs": 79.8,
+    "preload": 0.4,
+    "flush": 33.4,
+    "backup": 1.54,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 52,
+    "scripts": 50,
+    "fonts": 2,
+    "csp": 54,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 2,
+    "flowRenders": 18,
+    "listRenders": 18,
+    "bulletRenders": 108,
+    "measures": 2,
+    "rebuilds": 3,
+    "channels": [
+      "tasks:listByDate",
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 86,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 51,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 52,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 57,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 88.2,
+        "scripts": "http://localhost:5173/src/main.tsx@http://localhost:5173/src/main.tsx:73"
+      },
+      {
+        "type": "loaf",
+        "ms": 91.1,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:51"
+      },
+      {
+        "type": "loaf",
+        "ms": 110.5,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:52 | FrameRequestCallback@http://localhost:5173/src/temp-first-paint.ts:36 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:12"
+      },
+      {
+        "type": "loaf",
+        "ms": 87.4,
+        "scripts": "VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:23 | VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:27 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:19"
+      }
+    ],
+    "slow": [
+      {
+        "name": "http://localhost:5173/@vite/client",
+        "ms": 551.7,
+        "bytes": 223015,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/temp-first-paint.ts",
+        "ms": 393.1,
+        "bytes": 28627,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541",
+        "ms": 382.4,
+        "bytes": 3132171,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/App.tsx",
+        "ms": 379.3,
+        "bytes": 13151,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/styles/globals.css",
+        "ms": 378.8,
+        "bytes": 19240,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/newsreader/latin-400.css",
+        "ms": 375.8,
+        "bytes": 1028,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/newsreader/latin-600.css",
+        "ms": 375.8,
+        "bytes": 1028,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@react-refresh",
+        "ms": 374.8,
+        "bytes": 118969,
+        "type": "script"
+      }
+    ],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113552289,
+      "perf": 1472.3,
+      "origin": 1794113550817,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "ms": 30.8,
+        "bytes": 23664
+      },
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "ms": 48.5,
+        "bytes": 24452
+      }
+    ],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "dev-cold-3",
+    "reason": "ready",
+    "task": 252,
+    "shell": 199,
+    "fcp": 153,
+    "lcp": null,
+    "commit": 110,
+    "js": -75,
+    "html": -221,
+    "loadStart": -1060,
+    "ipc": 35.7,
+    "query": 0.76,
+    "handler": 0.91,
+    "rows": 15,
+    "db": 18.59,
+    "dbOpen": 4.48,
+    "toShown": 1327,
+    "evalMs": 35.8,
+    "renderMs": 148.6,
+    "preload": 0.6,
+    "flush": 20,
+    "backup": 1.88,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 52,
+    "scripts": 50,
+    "fonts": 2,
+    "csp": 54,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 2,
+    "flowRenders": 18,
+    "listRenders": 18,
+    "bulletRenders": 108,
+    "measures": 2,
+    "rebuilds": 3,
+    "channels": [
+      "tasks:listByDate",
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 95,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 171.6,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:46"
+      },
+      {
+        "type": "loaf",
+        "ms": 66.6,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:35 | DIV.onwheel@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:18 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:7"
+      },
+      {
+        "type": "loaf",
+        "ms": 62.6,
+        "scripts": "VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:18 | VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:18 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:17"
+      }
+    ],
+    "slow": [
+      {
+        "name": "http://localhost:5173/@vite/client",
+        "ms": 143.8,
+        "bytes": 223023,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/lucide-react.js?v=80eaf541",
+        "ms": 46.2,
+        "bytes": 5547558,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541",
+        "ms": 34.9,
+        "bytes": 3132171,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "ms": 34.3,
+        "bytes": 23664,
+        "type": "css"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "ms": 30.2,
+        "bytes": 24452,
+        "type": "css"
+      },
+      {
+        "name": "http://localhost:5173/src/lib/task-keys.ts",
+        "ms": 30.1,
+        "bytes": 15143,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/store/task-size.ts",
+        "ms": 29.5,
+        "bytes": 6851,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/main.tsx",
+        "ms": 29.1,
+        "bytes": 3109,
+        "type": "script"
+      }
+    ],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113571715,
+      "perf": 1340.5,
+      "origin": 1794113570375,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "ms": 34.3,
+        "bytes": 23664
+      },
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "ms": 30.2,
+        "bytes": 24452
+      }
+    ],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "dev-cold-4",
+    "reason": "ready",
+    "task": 155,
+    "shell": 90,
+    "fcp": 57,
+    "lcp": 137,
+    "commit": 12,
+    "js": -82,
+    "html": -598,
+    "loadStart": -785,
+    "ipc": 28.8,
+    "query": 0.59,
+    "handler": 0.71,
+    "rows": 15,
+    "db": 16.55,
+    "dbOpen": 3.94,
+    "toShown": 987,
+    "evalMs": 46.3,
+    "renderMs": 48.2,
+    "preload": 0.4,
+    "flush": 19.9,
+    "backup": 2.34,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 52,
+    "scripts": 50,
+    "fonts": 2,
+    "csp": 54,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 2,
+    "flowRenders": 18,
+    "listRenders": 18,
+    "bulletRenders": 108,
+    "measures": 2,
+    "rebuilds": 3,
+    "channels": [
+      "tasks:listByDate",
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 52,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 53.4,
+        "scripts": "http://localhost:5173/src/main.tsx@http://localhost:5173/src/main.tsx:50"
+      },
+      {
+        "type": "loaf",
+        "ms": 67.4,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:41"
+      },
+      {
+        "type": "loaf",
+        "ms": 57.5,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:34 | FrameRequestCallback@http://localhost:5173/src/temp-first-paint.ts:14 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:8"
+      }
+    ],
+    "slow": [
+      {
+        "name": "http://localhost:5173/@vite/client",
+        "ms": 363.1,
+        "bytes": 223015,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@react-refresh",
+        "ms": 232.9,
+        "bytes": 118969,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/temp-first-paint.ts",
+        "ms": 210.7,
+        "bytes": 28627,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/App.tsx",
+        "ms": 205.3,
+        "bytes": 13151,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/styles/globals.css",
+        "ms": 204.4,
+        "bytes": 19240,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/src/shared/temp-timing.ts",
+        "ms": 202.2,
+        "bytes": 4562,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/newsreader/latin-600.css",
+        "ms": 201,
+        "bytes": 1028,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/newsreader/latin-400.css",
+        "ms": 199.5,
+        "bytes": 1028,
+        "type": "script"
+      }
+    ],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113590108,
+      "perf": 975.4,
+      "origin": 1794113589132.6,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "ms": 23.7,
+        "bytes": 23664
+      },
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "ms": 26.6,
+        "bytes": 24452
+      }
+    ],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "dev-cold-5",
+    "reason": "ready",
+    "task": 165,
+    "shell": 99,
+    "fcp": 58,
+    "lcp": 126,
+    "commit": 13,
+    "js": -75,
+    "html": -540,
+    "loadStart": -3537,
+    "ipc": 38.5,
+    "query": 0.82,
+    "handler": 1,
+    "rows": 15,
+    "db": 16.62,
+    "dbOpen": 4.31,
+    "toShown": 3749,
+    "evalMs": 41,
+    "renderMs": 47.3,
+    "preload": 0.7,
+    "flush": 22.3,
+    "backup": 1.67,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 52,
+    "scripts": 50,
+    "fonts": 2,
+    "csp": 54,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 2,
+    "flowRenders": 18,
+    "listRenders": 18,
+    "bulletRenders": 108,
+    "measures": 2,
+    "rebuilds": 3,
+    "channels": [
+      "tasks:listByDate",
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 65.4,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:40"
+      },
+      {
+        "type": "loaf",
+        "ms": 70.1,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:39 | FrameRequestCallback@http://localhost:5173/src/temp-first-paint.ts:21 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:8"
+      }
+    ],
+    "slow": [
+      {
+        "name": "http://localhost:5173/@vite/client",
+        "ms": 337,
+        "bytes": 223015,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@react-refresh",
+        "ms": 218.4,
+        "bytes": 118969,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/store/paste-tree.ts",
+        "ms": 136.8,
+        "bytes": 10030,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/main.tsx",
+        "ms": 133,
+        "bytes": 3109,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/components/BranchNode.tsx",
+        "ms": 127.7,
+        "bytes": 15760,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/src/shared/branch-size.ts",
+        "ms": 123.1,
+        "bytes": 511,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/store/task-size.ts",
+        "ms": 123,
+        "bytes": 6851,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/store/delete-task.ts",
+        "ms": 122.8,
+        "bytes": 6131,
+        "type": "script"
+      }
+    ],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113611925,
+      "perf": 3734.7,
+      "origin": 1794113608190.4,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "ms": 25.2,
+        "bytes": 23664
+      },
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "ms": 45.3,
+        "bytes": 24452
+      }
+    ],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "dev-warm-1",
+    "reason": "ready",
+    "task": 140,
+    "shell": 61,
+    "fcp": 40,
+    "lcp": 88,
+    "commit": -21,
+    "js": -90,
+    "html": -542,
+    "loadStart": -710,
+    "ipc": 41.1,
+    "query": 0.65,
+    "handler": 0.8,
+    "rows": 15,
+    "db": 31.33,
+    "dbOpen": 5.84,
+    "toShown": 988,
+    "evalMs": 34.2,
+    "renderMs": 34.8,
+    "preload": 0.6,
+    "flush": 23.8,
+    "backup": 1.6,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 52,
+    "scripts": 50,
+    "fonts": 2,
+    "csp": 54,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 2,
+    "flowRenders": 18,
+    "listRenders": 18,
+    "bulletRenders": 108,
+    "measures": 2,
+    "rebuilds": 3,
+    "channels": [
+      "tasks:listByDate",
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 74.7,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:39 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:10"
+      }
+    ],
+    "slow": [
+      {
+        "name": "http://localhost:5173/@vite/client",
+        "ms": 325.8,
+        "bytes": 223015,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@react-refresh",
+        "ms": 194.7,
+        "bytes": 118969,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/store/paste-tree.ts",
+        "ms": 135.3,
+        "bytes": 10030,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/temp-first-paint.ts",
+        "ms": 129.1,
+        "bytes": 28627,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/components/BranchNode.tsx",
+        "ms": 128.5,
+        "bytes": 15760,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/src/shared/dates.ts",
+        "ms": 124.5,
+        "bytes": 2393,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/store/task-size.ts",
+        "ms": 124.3,
+        "bytes": 6851,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/src/shared/branch-size.ts",
+        "ms": 124,
+        "bytes": 511,
+        "type": "script"
+      }
+    ],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113625987,
+      "perf": 881.2,
+      "origin": 1794113625106.6,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "ms": 62.5,
+        "bytes": 23664
+      },
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "ms": 36.7,
+        "bytes": 24452
+      }
+    ],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "dev-warm-2",
+    "reason": "ready",
+    "task": 793,
+    "shell": 611,
+    "fcp": 405,
+    "lcp": 741,
+    "commit": 135,
+    "js": -273,
+    "html": -7229,
+    "loadStart": -11189,
+    "ipc": 185.3,
+    "query": 2.18,
+    "handler": 2.83,
+    "rows": 15,
+    "db": 13.21,
+    "dbOpen": 3.3,
+    "toShown": 11396,
+    "evalMs": 171.3,
+    "renderMs": 236.4,
+    "preload": 17.7,
+    "flush": 100.4,
+    "backup": 1.49,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 52,
+    "scripts": 50,
+    "fonts": 2,
+    "csp": 54,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 2,
+    "flowRenders": 18,
+    "listRenders": 22,
+    "bulletRenders": 162,
+    "measures": 3,
+    "rebuilds": 3,
+    "channels": [
+      "tasks:listByDate",
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 225,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 161,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 202,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 111,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 140,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 139.7,
+        "scripts": "http://localhost:5173/?measure=1@http://localhost:5173/?measure=1:5"
+      },
+      {
+        "type": "loaf",
+        "ms": 231.2,
+        "scripts": "http://localhost:5173/src/main.tsx@http://localhost:5173/src/main.tsx:188"
+      },
+      {
+        "type": "loaf",
+        "ms": 332.5,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:160"
+      },
+      {
+        "type": "longtask",
+        "ms": 66,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 356,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:202 | FrameRequestCallback@http://localhost:5173/src/temp-first-paint.ts:99 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:38 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:10"
+      },
+      {
+        "type": "loaf",
+        "ms": 253.9,
+        "scripts": "VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:108 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:120"
+      }
+    ],
+    "slow": [
+      {
+        "name": "http://localhost:5173/@vite/client",
+        "ms": 4843.9,
+        "bytes": 223015,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/temp-first-paint.ts",
+        "ms": 3125.2,
+        "bytes": 28627,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/styles/globals.css",
+        "ms": 3077.9,
+        "bytes": 19240,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/src/shared/temp-timing.ts",
+        "ms": 3058.6,
+        "bytes": 4562,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/App.tsx",
+        "ms": 3018.3,
+        "bytes": 13151,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/newsreader/latin-600.css",
+        "ms": 2994.7,
+        "bytes": 1028,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/latin-400.css",
+        "ms": 2970.8,
+        "bytes": 988,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/latin-600.css",
+        "ms": 2959.9,
+        "bytes": 988,
+        "type": "script"
+      }
+    ],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113653248,
+      "perf": 12260.2,
+      "origin": 1794113640987.8,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "ms": 235.8,
+        "bytes": 23664
+      },
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "ms": 381.6,
+        "bytes": 24452
+      }
+    ],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 4,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "dev-warm-3",
+    "reason": "ready",
+    "task": 837,
+    "shell": 668,
+    "fcp": 466,
+    "lcp": 802,
+    "commit": 113,
+    "js": -370,
+    "html": -11606,
+    "loadStart": -15259,
+    "ipc": 180.2,
+    "query": 3.75,
+    "handler": 4.25,
+    "rows": 15,
+    "db": 15.09,
+    "dbOpen": 3.65,
+    "toShown": 15476,
+    "evalMs": 231.2,
+    "renderMs": 251,
+    "preload": 8.8,
+    "flush": 131.7,
+    "backup": 1.84,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 52,
+    "scripts": 50,
+    "fonts": 2,
+    "csp": 54,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 2,
+    "flowRenders": 18,
+    "listRenders": 22,
+    "bulletRenders": 162,
+    "measures": 3,
+    "rebuilds": 3,
+    "channels": [
+      "tasks:listByDate",
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 54,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 298,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 54.1,
+        "scripts": "http://localhost:5173/?measure=1@http://localhost:5173/?measure=1:54"
+      },
+      {
+        "type": "longtask",
+        "ms": 161,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 244,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 149,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 110,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 152,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 120.4,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 300.9,
+        "scripts": "http://localhost:5173/src/main.tsx@http://localhost:5173/src/main.tsx:253"
+      },
+      {
+        "type": "loaf",
+        "ms": 373.6,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:160"
+      },
+      {
+        "type": "longtask",
+        "ms": 90,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 386.6,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:244 | FrameRequestCallback@http://localhost:5173/src/temp-first-paint.ts:97 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:33 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:6"
+      },
+      {
+        "type": "loaf",
+        "ms": 257,
+        "scripts": "VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:108 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:128 | DOMWindow.onerror@http://localhost:5173/@vite/client:6"
+      },
+      {
+        "type": "loaf",
+        "ms": 173.5,
+        "scripts": "TimerHandler:setTimeout@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:38 | VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:28 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:73"
+      }
+    ],
+    "slow": [
+      {
+        "name": "http://localhost:5173/@vite/client",
+        "ms": 6645.9,
+        "bytes": 223015,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/temp-first-paint.ts",
+        "ms": 5330.4,
+        "bytes": 28627,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/styles/globals.css",
+        "ms": 5322.8,
+        "bytes": 19240,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/src/shared/temp-timing.ts",
+        "ms": 4941.1,
+        "bytes": 4562,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/App.tsx",
+        "ms": 4902.1,
+        "bytes": 13151,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/newsreader/latin-600.css",
+        "ms": 4892.5,
+        "bytes": 1028,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/latin-400.css",
+        "ms": 4835.4,
+        "bytes": 988,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/newsreader/latin-400.css",
+        "ms": 4822.8,
+        "bytes": 1028,
+        "type": "script"
+      }
+    ],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113684479,
+      "perf": 16458,
+      "origin": 1794113668021.3,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "ms": 641.9,
+        "bytes": 23664
+      },
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "ms": 504.5,
+        "bytes": 24452
+      }
+    ],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 4,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "dev-warm-4",
+    "reason": null,
+    "task": null,
+    "shell": null,
+    "fcp": null,
+    "lcp": null,
+    "commit": null,
+    "js": null,
+    "html": null,
+    "loadStart": null,
+    "ipc": null,
+    "query": null,
+    "handler": null,
+    "rows": null,
+    "db": null,
+    "dbOpen": null,
+    "toShown": null,
+    "evalMs": null,
+    "renderMs": null,
+    "preload": null,
+    "flush": null,
+    "backup": null,
+    "copied": null,
+    "rebuildSkipped": false,
+    "orphanSkipped": null,
+    "resources": null,
+    "scripts": null,
+    "fonts": null,
+    "csp": null,
+    "devtools": null,
+    "packaged": null,
+    "commits": 0,
+    "flowRenders": null,
+    "listRenders": null,
+    "bulletRenders": null,
+    "measures": 0,
+    "rebuilds": 0,
+    "channels": [],
+    "long": [],
+    "slow": [],
+    "fontReady": null,
+    "fontFiles": [],
+    "taskFont": null,
+    "editable": null,
+    "zoom": null,
+    "nodes": null,
+    "sync": null,
+    "journal": null
+  },
+  {
+    "run": "dev-warm-5",
+    "reason": "ready",
+    "task": 160,
+    "shell": 104,
+    "fcp": 74,
+    "lcp": 122,
+    "commit": 32,
+    "js": -56,
+    "html": -726,
+    "loadStart": -975,
+    "ipc": 30.7,
+    "query": 0.67,
+    "handler": 0.79,
+    "rows": 15,
+    "db": 14.38,
+    "dbOpen": 3.32,
+    "toShown": 1151,
+    "evalMs": 38.2,
+    "renderMs": 49.9,
+    "preload": 0.5,
+    "flush": 18.1,
+    "backup": 1.66,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 52,
+    "scripts": 50,
+    "fonts": 2,
+    "csp": 54,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 2,
+    "flowRenders": 18,
+    "listRenders": 18,
+    "bulletRenders": 108,
+    "measures": 2,
+    "rebuilds": 3,
+    "channels": [
+      "tasks:listByDate",
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 64.2,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:44"
+      },
+      {
+        "type": "loaf",
+        "ms": 60.2,
+        "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:34 | FrameRequestCallback@http://localhost:5173/src/temp-first-paint.ts:18 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:7"
+      }
+    ],
+    "slow": [
+      {
+        "name": "http://localhost:5173/@vite/client",
+        "ms": 462.7,
+        "bytes": 223015,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@react-refresh",
+        "ms": 325.5,
+        "bytes": 118969,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/lucide-react.js?v=80eaf541",
+        "ms": 239.5,
+        "bytes": 5547558,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/temp-first-paint.ts",
+        "ms": 217.1,
+        "bytes": 28627,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=80eaf541",
+        "ms": 215,
+        "bytes": 35684,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/styles/globals.css",
+        "ms": 211.4,
+        "bytes": 19240,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/App.tsx",
+        "ms": 210.2,
+        "bytes": 13151,
+        "type": "script"
+      },
+      {
+        "name": "http://localhost:5173/src/store/paste-tree.ts",
+        "ms": 208,
+        "bytes": 10030,
+        "type": "script"
+      }
+    ],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113723414,
+      "perf": 1163.6,
+      "origin": 1794113722251.1,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "ms": 27.6,
+        "bytes": 23664
+      },
+      {
+        "name": "ktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "ms": 28,
+        "bytes": 24452
+      }
+    ],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "packaged-cold-1",
+    "reason": "ready",
+    "task": 426,
+    "shell": 292,
+    "fcp": 238,
+    "lcp": 422,
+    "commit": 25,
+    "js": -86,
+    "html": null,
+    "loadStart": -5213,
+    "ipc": 140.5,
+    "query": 12.33,
+    "handler": 12.65,
+    "rows": 15,
+    "db": 134.57,
+    "dbOpen": 118.72,
+    "toShown": 5855,
+    "evalMs": 26.2,
+    "renderMs": 84.5,
+    "preload": 1.6,
+    "flush": 54.2,
+    "backup": 2.33,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 1,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 76,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 114,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 89,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 78,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 71,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 145.2,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 163.6,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 54,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 201.2,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 174.1,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113373975,
+      "perf": 5781.7,
+      "origin": 1794113368193.3,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "packaged-cold-2",
+    "reason": "ready",
+    "task": 52,
+    "shell": 32,
+    "fcp": 25,
+    "lcp": 57,
+    "commit": -34,
+    "js": -59,
+    "html": null,
+    "loadStart": -1148,
+    "ipc": 36.3,
+    "query": 0.88,
+    "handler": 1.06,
+    "rows": 15,
+    "db": 32.51,
+    "dbOpen": 7.31,
+    "toShown": 1453,
+    "evalMs": 5.8,
+    "renderMs": 19.8,
+    "preload": 0.3,
+    "flush": 10.6,
+    "backup": 2.28,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 1,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 54.4,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 53.2,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113391403,
+      "perf": 1226.3,
+      "origin": 1794113390176.9,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "packaged-cold-3",
+    "reason": "ready",
+    "task": 129,
+    "shell": 98,
+    "fcp": 75,
+    "lcp": 123,
+    "commit": 13,
+    "js": -33,
+    "html": null,
+    "loadStart": -1721,
+    "ipc": 43.3,
+    "query": 1.09,
+    "handler": 1.3,
+    "rows": 15,
+    "db": 23.47,
+    "dbOpen": 5.64,
+    "toShown": 1971,
+    "evalMs": 10.1,
+    "renderMs": 35.8,
+    "preload": 0.3,
+    "flush": 15.1,
+    "backup": 1.62,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 1,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 62.1,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 62.1,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113409041,
+      "perf": 1888.4,
+      "origin": 1794113407152.7,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "packaged-cold-4",
+    "reason": "ready",
+    "task": 101,
+    "shell": 79,
+    "fcp": 45,
+    "lcp": 113,
+    "commit": -1,
+    "js": -36,
+    "html": null,
+    "loadStart": -999,
+    "ipc": 38.9,
+    "query": 0.84,
+    "handler": 1.02,
+    "rows": 15,
+    "db": 15.48,
+    "dbOpen": 3.3,
+    "toShown": 1187,
+    "evalMs": 8.5,
+    "renderMs": 26.5,
+    "preload": 0.7,
+    "flush": 10.7,
+    "backup": 1.73,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 1,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 54.6,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 55.7,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 53.8,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113425643,
+      "perf": 1126.3,
+      "origin": 1794113424516.9,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "packaged-cold-5",
+    "reason": "ready",
+    "task": 86,
+    "shell": 62,
+    "fcp": 34,
+    "lcp": 86,
+    "commit": 3,
+    "js": -28,
+    "html": null,
+    "loadStart": -2038,
+    "ipc": 34.2,
+    "query": 0.95,
+    "handler": 1.13,
+    "rows": 15,
+    "db": 18.89,
+    "dbOpen": 4.38,
+    "toShown": 2223,
+    "evalMs": 8.1,
+    "renderMs": 23.4,
+    "preload": 0.9,
+    "flush": 10,
+    "backup": 1.81,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 1,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113443417,
+      "perf": 2162.1,
+      "origin": 1794113441255.2,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "packaged-warm-1",
+    "reason": "ready",
+    "task": 85,
+    "shell": 58,
+    "fcp": 43,
+    "lcp": 79,
+    "commit": -10,
+    "js": -49,
+    "html": null,
+    "loadStart": -1921,
+    "ipc": 34.7,
+    "query": 0.79,
+    "handler": 0.95,
+    "rows": 15,
+    "db": 20.75,
+    "dbOpen": 4.42,
+    "toShown": 2198,
+    "evalMs": 10.4,
+    "renderMs": 27.7,
+    "preload": 0.6,
+    "flush": 12.6,
+    "backup": 1.58,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 1,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113456390,
+      "perf": 2044.7,
+      "origin": 1794113454345.8,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "packaged-warm-2",
+    "reason": "ready",
+    "task": 92,
+    "shell": 68,
+    "fcp": 55,
+    "lcp": 91,
+    "commit": -5,
+    "js": -44,
+    "html": null,
+    "loadStart": -2813,
+    "ipc": 32.3,
+    "query": 0.92,
+    "handler": 1.08,
+    "rows": 15,
+    "db": 12.98,
+    "dbOpen": 3.05,
+    "toShown": 3059,
+    "evalMs": 11,
+    "renderMs": 28.4,
+    "preload": 0.7,
+    "flush": 11.2,
+    "backup": 1.47,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 1,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 58,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113470218,
+      "perf": 2943.7,
+      "origin": 1794113467274.7,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "packaged-warm-3",
+    "reason": "ready",
+    "task": 102,
+    "shell": 68,
+    "fcp": 50,
+    "lcp": 102,
+    "commit": 6,
+    "js": -44,
+    "html": null,
+    "loadStart": -1110,
+    "ipc": 37.7,
+    "query": 0.79,
+    "handler": 0.94,
+    "rows": 15,
+    "db": 16.23,
+    "dbOpen": 4.35,
+    "toShown": 1306,
+    "evalMs": 13.1,
+    "renderMs": 36.1,
+    "preload": 0.8,
+    "flush": 10.4,
+    "backup": 2.43,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 1,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 56,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113482501,
+      "perf": 1253,
+      "origin": 1794113481248,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "packaged-warm-4",
+    "reason": "ready",
+    "task": 286,
+    "shell": 223,
+    "fcp": 148,
+    "lcp": 268,
+    "commit": 21,
+    "js": -87,
+    "html": null,
+    "loadStart": -4062,
+    "ipc": 103.8,
+    "query": 1.85,
+    "handler": 2.18,
+    "rows": 15,
+    "db": 20.83,
+    "dbOpen": 3.56,
+    "toShown": 4328,
+    "evalMs": 22.7,
+    "renderMs": 85.2,
+    "preload": 1.2,
+    "flush": 34.1,
+    "backup": 1.38,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 1,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 76,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 65,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 73,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 55,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 124.2,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 147.7,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 142.1,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 100.1,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113498124,
+      "perf": 4456.9,
+      "origin": 1794113493667.1,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "packaged-warm-5",
+    "reason": "ready",
+    "task": 120,
+    "shell": 74,
+    "fcp": 54,
+    "lcp": 118,
+    "commit": -17,
+    "js": -57,
+    "html": null,
+    "loadStart": -1647,
+    "ipc": 56.1,
+    "query": 1.29,
+    "handler": 1.56,
+    "rows": 15,
+    "db": 13.64,
+    "dbOpen": 3.03,
+    "toShown": 1867,
+    "evalMs": 8.2,
+    "renderMs": 32,
+    "preload": 0.5,
+    "flush": 17.1,
+    "backup": 1.6,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 1,
+    "commits": 1,
+    "flowRenders": 8,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 79.1,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113510973,
+      "perf": 1814.3,
+      "origin": 1794113509159.4,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "prod-cold-1",
+    "reason": "ready",
+    "task": 481,
+    "shell": 378,
+    "fcp": 300,
+    "lcp": 484,
+    "commit": 31,
+    "js": -146,
+    "html": null,
+    "loadStart": -6146,
+    "ipc": 125.9,
+    "query": 2.33,
+    "handler": 3.14,
+    "rows": 15,
+    "db": 19.57,
+    "dbOpen": 3.45,
+    "toShown": 6448,
+    "evalMs": 55.1,
+    "renderMs": 121.9,
+    "preload": 11.7,
+    "flush": 50.5,
+    "backup": 2.19,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 1,
+    "flowRenders": 8,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 77,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 99,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 96,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 78.9,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 100,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 50,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 74,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 51,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 187.6,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 196.5,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 131.3,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 50.4,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 76.4,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113203317,
+      "perf": 6775.7,
+      "origin": 1794113196541.9,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "prod-cold-2",
+    "reason": "ready",
+    "task": 454,
+    "shell": 345,
+    "fcp": 233,
+    "lcp": 633,
+    "commit": 2,
+    "js": -118,
+    "html": null,
+    "loadStart": -5894,
+    "ipc": 132.8,
+    "query": 4.71,
+    "handler": 5.25,
+    "rows": 15,
+    "db": 19.16,
+    "dbOpen": 4.53,
+    "toShown": 6209,
+    "evalMs": 27.8,
+    "renderMs": 92.5,
+    "preload": 1.1,
+    "flush": 47,
+    "backup": 2.28,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 1,
+    "flowRenders": 8,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 79,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 93,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 115,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 57,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 160,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 151.6,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 235.5,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 63,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 205.1,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113226893,
+      "perf": 6528.7,
+      "origin": 1794113220365,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "prod-cold-3",
+    "reason": "ready",
+    "task": 385,
+    "shell": 253,
+    "fcp": 197,
+    "lcp": 361,
+    "commit": 24,
+    "js": -90,
+    "html": null,
+    "loadStart": -6473,
+    "ipc": 146.3,
+    "query": 2.36,
+    "handler": 2.79,
+    "rows": 15,
+    "db": 15.39,
+    "dbOpen": 2.5,
+    "toShown": 6673,
+    "evalMs": 26.5,
+    "renderMs": 87.3,
+    "preload": 1.5,
+    "flush": 46.9,
+    "backup": 1.68,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 75,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 91,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 100,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 82,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 144,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 130.5,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 132.1,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 190.3,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113250892,
+      "perf": 7054.1,
+      "origin": 1794113243838.5,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 4,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "prod-cold-4",
+    "reason": "ready",
+    "task": 78,
+    "shell": 54,
+    "fcp": 42,
+    "lcp": 78,
+    "commit": 1,
+    "js": -30,
+    "html": null,
+    "loadStart": -1014,
+    "ipc": 28.4,
+    "query": 0.91,
+    "handler": 1.08,
+    "rows": 15,
+    "db": 15.49,
+    "dbOpen": 3,
+    "toShown": 1256,
+    "evalMs": 7.6,
+    "renderMs": 23.1,
+    "preload": 0.5,
+    "flush": 9.4,
+    "backup": 1.53,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113267943,
+      "perf": 1133.8,
+      "origin": 1794113266809.8,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "prod-cold-5",
+    "reason": "ready",
+    "task": 82,
+    "shell": 58,
+    "fcp": 44,
+    "lcp": 80,
+    "commit": 4,
+    "js": -35,
+    "html": null,
+    "loadStart": -681,
+    "ipc": 30,
+    "query": 0.81,
+    "handler": 0.91,
+    "rows": 15,
+    "db": 15.82,
+    "dbOpen": 3.18,
+    "toShown": 914,
+    "evalMs": 13.2,
+    "renderMs": 25.1,
+    "preload": 0.9,
+    "flush": 8.8,
+    "backup": 2.01,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113284722,
+      "perf": 795.2,
+      "origin": 1794113283927.7,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "prod-warm-1",
+    "reason": "ready",
+    "task": 338,
+    "shell": 242,
+    "fcp": 119,
+    "lcp": 283,
+    "commit": 28,
+    "js": -84,
+    "html": null,
+    "loadStart": -5170,
+    "ipc": 119.9,
+    "query": 3.67,
+    "handler": 4.13,
+    "rows": 15,
+    "db": 40.09,
+    "dbOpen": 7.96,
+    "toShown": 5534,
+    "evalMs": 27.4,
+    "renderMs": 84.8,
+    "preload": 1.4,
+    "flush": 39.5,
+    "backup": 1.94,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 1,
+    "flowRenders": 8,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 73,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 89,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 83,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 52,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 143.3,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 79,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 130.3,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 173.7,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 151.4,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113301901,
+      "perf": 5651.9,
+      "origin": 1794113296249.1,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "prod-warm-2",
+    "reason": "ready",
+    "task": 271,
+    "shell": 202,
+    "fcp": 131,
+    "lcp": 247,
+    "commit": 26,
+    "js": -92,
+    "html": null,
+    "loadStart": -3718,
+    "ipc": 81.5,
+    "query": 2.11,
+    "handler": 2.53,
+    "rows": 15,
+    "db": 11.04,
+    "dbOpen": 2.85,
+    "toShown": 3965,
+    "evalMs": 30.8,
+    "renderMs": 86.9,
+    "preload": 1.7,
+    "flush": 25.4,
+    "backup": 1.62,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 1,
+    "flowRenders": 8,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "longtask",
+        "ms": 76,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 59,
+        "scripts": ""
+      },
+      {
+        "type": "longtask",
+        "ms": 61,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 141.1,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 143.7,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 121.2,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 96,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113317231,
+      "perf": 4077.6,
+      "origin": 1794113313154.1,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "prod-warm-3",
+    "reason": "ready",
+    "task": 116,
+    "shell": 83,
+    "fcp": 57,
+    "lcp": 105,
+    "commit": 6,
+    "js": -43,
+    "html": null,
+    "loadStart": -609,
+    "ipc": 37,
+    "query": 0.89,
+    "handler": 1.1,
+    "rows": 15,
+    "db": 33.58,
+    "dbOpen": 5.84,
+    "toShown": 901,
+    "evalMs": 15.1,
+    "renderMs": 34,
+    "preload": 0.4,
+    "flush": 12.4,
+    "backup": 1.34,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 64,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113329494,
+      "perf": 774.1,
+      "origin": 1794113328720.6,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "prod-warm-4",
+    "reason": "ready",
+    "task": 103,
+    "shell": 74,
+    "fcp": 54,
+    "lcp": 106,
+    "commit": 11,
+    "js": -41,
+    "html": null,
+    "loadStart": -651,
+    "ipc": 29.4,
+    "query": 0.89,
+    "handler": 1.05,
+    "rows": 15,
+    "db": 21.67,
+    "dbOpen": 4.54,
+    "toShown": 969,
+    "evalMs": 14.3,
+    "renderMs": 38.4,
+    "preload": 0.3,
+    "flush": 9.8,
+    "backup": 1.73,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 1,
+    "flowRenders": 8,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 61.5,
+        "scripts": ""
+      },
+      {
+        "type": "loaf",
+        "ms": 57.5,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113341867,
+      "perf": 789.1,
+      "origin": 1794113341078.9,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  },
+  {
+    "run": "prod-warm-5",
+    "reason": "ready",
+    "task": 89,
+    "shell": 67,
+    "fcp": 42,
+    "lcp": 94,
+    "commit": 9,
+    "js": -33,
+    "html": null,
+    "loadStart": -2080,
+    "ipc": 32.5,
+    "query": 0.81,
+    "handler": 0.96,
+    "rows": 15,
+    "db": 23.43,
+    "dbOpen": 4.85,
+    "toShown": 2360,
+    "evalMs": 11.4,
+    "renderMs": 29.9,
+    "preload": 1.1,
+    "flush": 10.3,
+    "backup": 2.38,
+    "copied": false,
+    "rebuildSkipped": true,
+    "orphanSkipped": true,
+    "resources": 0,
+    "scripts": 0,
+    "fonts": 0,
+    "csp": 5,
+    "devtools": 0,
+    "packaged": 0,
+    "commits": 1,
+    "flowRenders": 7,
+    "listRenders": 10,
+    "bulletRenders": 66,
+    "measures": 3,
+    "rebuilds": 2,
+    "channels": [
+      "tasks:listByDate"
+    ],
+    "long": [
+      {
+        "type": "loaf",
+        "ms": 54.3,
+        "scripts": ""
+      }
+    ],
+    "slow": [],
+    "fontReady": {
+      "label": "fonts-ready",
+      "now": 1794113355347,
+      "perf": 2202.2,
+      "origin": 1794113353145.5,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    "fontFiles": [],
+    "taskFont": "Inter, Geist, system-ui, sans-serif",
+    "editable": "false",
+    "zoom": 1,
+    "nodes": 1,
+    "sync": 1,
+    "journal": "wal"
+  }
+]

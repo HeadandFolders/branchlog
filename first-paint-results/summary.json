@@ -1,0 +1,5157 @@
+{
+  "machine": {
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "cores": 12,
+    "memoryMb": 16045
+  },
+  "database": {
+    "today": "2026-11-08",
+    "totalRows": 55,
+    "todayRows": 15,
+    "otherRows": 40,
+    "plan": [
+      {
+        "id": 4,
+        "parent": 0,
+        "notused": 62,
+        "detail": "SEARCH tasks USING INDEX idx_tasks_date (dateCreated=?)"
+      },
+      {
+        "id": 36,
+        "parent": 0,
+        "notused": 0,
+        "detail": "USE TEMP B-TREE FOR ORDER BY"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_tasks_date",
+        "sql": "CREATE INDEX idx_tasks_date ON tasks(dateCreated, side, orderIndex)"
+      },
+      {
+        "name": "idx_tasks_parent",
+        "sql": "CREATE INDEX idx_tasks_parent ON tasks(parentId)"
+      },
+      {
+        "name": "idx_tasks_completed",
+        "sql": "CREATE INDEX idx_tasks_completed ON tasks(dateCompleted)"
+      }
+    ],
+    "outsideQueryMedianMs": 0.555
+  },
+  "bundles": {
+    "out": {
+      "files": 13,
+      "bytes": 1423832
+    },
+    "outFiles": [
+      {
+        "name": "index-CaHkMe5u.css",
+        "bytes": 38640
+      },
+      {
+        "name": "index-COoLneJT.js",
+        "bytes": 1121489
+      },
+      {
+        "name": "inter-latin-400-normal-C38fXH4l.woff2",
+        "bytes": 23664
+      },
+      {
+        "name": "inter-latin-400-normal-CyCys3Eg.woff",
+        "bytes": 30696
+      },
+      {
+        "name": "inter-latin-600-normal-CiBQ2DWP.woff",
+        "bytes": 31260
+      },
+      {
+        "name": "inter-latin-600-normal-LgqL8muc.woff2",
+        "bytes": 24452
+      },
+      {
+        "name": "newsreader-latin-400-normal-BFBkh4jY.woff2",
+        "bytes": 22480
+      },
+      {
+        "name": "newsreader-latin-400-normal-gRTjlS2D.woff",
+        "bytes": 28288
+      },
+      {
+        "name": "newsreader-latin-600-normal-30OJ_TG_.woff2",
+        "bytes": 23876
+      },
+      {
+        "name": "newsreader-latin-600-normal-DUnT2r2g.woff",
+        "bytes": 29784
+      }
+    ],
+    "electronDist": {
+      "files": 73,
+      "bytes": 374135075
+    },
+    "fonts": [
+      {
+        "file": "node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+        "bytes": 23664
+      },
+      {
+        "file": "node_modules/@fontsource/inter/files/inter-latin-400-normal.woff",
+        "bytes": 30696
+      },
+      {
+        "file": "node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+        "bytes": 24452
+      },
+      {
+        "file": "node_modules/@fontsource/inter/files/inter-latin-600-normal.woff",
+        "bytes": 31260
+      },
+      {
+        "file": "node_modules/@fontsource/newsreader/files/newsreader-latin-400-normal.woff2",
+        "bytes": 22480
+      },
+      {
+        "file": "node_modules/@fontsource/newsreader/files/newsreader-latin-400-normal.woff",
+        "bytes": 28288
+      },
+      {
+        "file": "node_modules/@fontsource/newsreader/files/newsreader-latin-600-normal.woff2",
+        "bytes": 23876
+      },
+      {
+        "file": "node_modules/@fontsource/newsreader/files/newsreader-latin-600-normal.woff",
+        "bytes": 29784
+      }
+    ],
+    "packaged": {
+      "dest": "C:\\Users\\LENOVO - PC\\Desktop\\branchlog\\release-measure-2\\Branchlog",
+      "asar": {
+        "files": 3,
+        "bytes": 3564344
+      },
+      "folder": {
+        "files": 75,
+        "bytes": 377588584
+      }
+    }
+  },
+  "defender": {
+    "status": 0,
+    "stdout": "{\r\n    \"RealTimeProtectionEnabled\":  true,\r\n    \"IoavProtectionEnabled\":  true,\r\n    \"AMServiceEnabled\":  true\r\n}\r\n",
+    "stderr": ""
+  },
+  "stats": {
+    "prod": {
+      "cold": {
+        "fromShown": {
+          "htmlParse": {
+            "median": null,
+            "slowest": null,
+            "values": [
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          },
+          "didStartLoading": {
+            "median": -5894,
+            "slowest": -681,
+            "values": [
+              -6146,
+              -5894,
+              -6473,
+              -1014,
+              -681
+            ]
+          },
+          "preloadStart": {
+            "median": -530,
+            "slowest": -92,
+            "values": [
+              -558,
+              -676,
+              -530,
+              -92,
+              -145
+            ]
+          },
+          "preloadEnd": {
+            "median": -528,
+            "slowest": -92,
+            "values": [
+              -547,
+              -675,
+              -528,
+              -92,
+              -144
+            ]
+          },
+          "domReady": {
+            "median": -53,
+            "slowest": -19,
+            "values": [
+              -77,
+              -79,
+              -53,
+              -19,
+              -19
+            ]
+          },
+          "didFinishLoad": {
+            "median": -51,
+            "slowest": -18,
+            "values": [
+              -73,
+              -75,
+              -51,
+              -18,
+              -18
+            ]
+          },
+          "jsEval": {
+            "median": -90,
+            "slowest": -30,
+            "values": [
+              -146,
+              -118,
+              -90,
+              -30,
+              -35
+            ]
+          },
+          "reactRenderStart": {
+            "median": -63,
+            "slowest": -22,
+            "values": [
+              -91,
+              -91,
+              -63,
+              -22,
+              -22
+            ]
+          },
+          "reactCommit": {
+            "median": 4,
+            "slowest": 31,
+            "values": [
+              31,
+              2,
+              24,
+              1,
+              4
+            ]
+          },
+          "reactCommits": {
+            "median": 1,
+            "slowest": 1,
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "shellVisible": {
+            "median": 253,
+            "slowest": 378,
+            "values": [
+              378,
+              345,
+              253,
+              54,
+              58
+            ]
+          },
+          "ipcSend": {
+            "median": 156,
+            "slowest": 296,
+            "values": [
+              296,
+              238,
+              156,
+              39,
+              41
+            ]
+          },
+          "ipcRecv": {
+            "median": 302,
+            "slowest": 422,
+            "values": [
+              422,
+              371,
+              302,
+              67,
+              71
+            ]
+          },
+          "storeCleared": {
+            "median": 155,
+            "slowest": 296,
+            "values": [
+              296,
+              238,
+              155,
+              39,
+              41
+            ]
+          },
+          "storeFilled": {
+            "median": 318,
+            "slowest": 423,
+            "values": [
+              423,
+              372,
+              318,
+              68,
+              71
+            ]
+          },
+          "flowInit": {
+            "median": 448,
+            "slowest": 532,
+            "values": [
+              476,
+              448,
+              532,
+              67,
+              71
+            ]
+          },
+          "flowInits": {
+            "median": 1,
+            "slowest": 1,
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "canvasRebuilds": {
+            "median": 2,
+            "slowest": 2,
+            "values": [
+              2,
+              2,
+              2,
+              2,
+              2
+            ]
+          },
+          "flowMeasureEvents": {
+            "median": 3,
+            "slowest": 3,
+            "values": [
+              3,
+              3,
+              3,
+              3,
+              3
+            ]
+          },
+          "taskVisible": {
+            "median": 385,
+            "slowest": 481,
+            "values": [
+              481,
+              454,
+              385,
+              78,
+              82
+            ]
+          },
+          "taskReady": {
+            "median": 386,
+            "slowest": 486,
+            "values": [
+              486,
+              456,
+              386,
+              78,
+              82
+            ]
+          },
+          "fcp": {
+            "median": 197,
+            "slowest": 300,
+            "values": [
+              300,
+              233,
+              197,
+              42,
+              44
+            ]
+          },
+          "lcp": {
+            "median": 361,
+            "slowest": 633,
+            "values": [
+              484,
+              633,
+              361,
+              78,
+              80
+            ]
+          },
+          "fontsReady": {
+            "median": 574,
+            "slowest": 629,
+            "values": [
+              619,
+              629,
+              574,
+              107,
+              106
+            ]
+          }
+        },
+        "durations": {
+          "processToMainMs": {
+            "median": 75,
+            "slowest": 125,
+            "values": [
+              125,
+              93,
+              61,
+              69,
+              75
+            ]
+          },
+          "processToShownMs": {
+            "median": 6209,
+            "slowest": 6673,
+            "values": [
+              6448,
+              6209,
+              6673,
+              1256,
+              914
+            ]
+          },
+          "dbInitMs": {
+            "median": 15.82,
+            "slowest": 19.57,
+            "values": [
+              19.57,
+              19.16,
+              15.39,
+              15.49,
+              15.82
+            ]
+          },
+          "dbOpenMs": {
+            "median": 3.18,
+            "slowest": 4.53,
+            "values": [
+              3.45,
+              4.53,
+              2.5,
+              3,
+              3.18
+            ]
+          },
+          "dbSchemaMs": {
+            "median": 0.25,
+            "slowest": 3.4,
+            "values": [
+              3.4,
+              0.57,
+              0.25,
+              0.21,
+              0.21
+            ]
+          },
+          "dbMigrateMs": {
+            "median": 3.82,
+            "slowest": 4.17,
+            "values": [
+              4.1,
+              3.82,
+              3.11,
+              3.63,
+              4.17
+            ]
+          },
+          "migrateRebuild": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "migrateRebuildSkipped": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "orphanSkipped": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "orphanMs": {
+            "median": 0.36,
+            "slowest": 0.67,
+            "values": [
+              0.31,
+              0.67,
+              0.33,
+              0.51,
+              0.36
+            ]
+          },
+          "windowStateMs": {
+            "median": 0.55,
+            "slowest": 2.04,
+            "values": [
+              2.04,
+              0.55,
+              0.56,
+              0.48,
+              0.52
+            ]
+          },
+          "menuMs": {
+            "median": 0.52,
+            "slowest": 0.54,
+            "values": [
+              0.54,
+              0.43,
+              0.52,
+              0.42,
+              0.53
+            ]
+          },
+          "ipcRoundTripMs": {
+            "median": 125.9,
+            "slowest": 146.3,
+            "values": [
+              125.9,
+              132.8,
+              146.3,
+              28.4,
+              30
+            ]
+          },
+          "handlerMs": {
+            "median": 2.79,
+            "slowest": 5.25,
+            "values": [
+              3.14,
+              5.25,
+              2.79,
+              1.08,
+              0.91
+            ]
+          },
+          "queryMs": {
+            "median": 2.33,
+            "slowest": 4.71,
+            "values": [
+              2.33,
+              4.71,
+              2.36,
+              0.91,
+              0.81
+            ]
+          },
+          "validateMs": {
+            "median": 0.45,
+            "slowest": 0.82,
+            "values": [
+              0.82,
+              0.56,
+              0.45,
+              0.18,
+              0.12
+            ]
+          },
+          "rows": {
+            "median": 15,
+            "slowest": 15,
+            "values": [
+              15,
+              15,
+              15,
+              15,
+              15
+            ]
+          },
+          "gotoFlushMs": {
+            "median": 46.9,
+            "slowest": 50.5,
+            "values": [
+              50.5,
+              47,
+              46.9,
+              9.4,
+              8.8
+            ]
+          },
+          "backupMs": {
+            "median": 2.01,
+            "slowest": 2.28,
+            "values": [
+              2.19,
+              2.28,
+              1.68,
+              1.53,
+              2.01
+            ]
+          },
+          "backupCopied": [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "preloadMs": {
+            "median": 1.1,
+            "slowest": 11.7,
+            "values": [
+              11.7,
+              1.1,
+              1.5,
+              0.5,
+              0.9
+            ]
+          },
+          "jsEvalToRenderMs": {
+            "median": 26.5,
+            "slowest": 55.1,
+            "values": [
+              55.1,
+              27.8,
+              26.5,
+              7.6,
+              13.2
+            ]
+          },
+          "renderToCommitMs": {
+            "median": 87.3,
+            "slowest": 121.9,
+            "values": [
+              121.9,
+              92.5,
+              87.3,
+              23.1,
+              25.1
+            ]
+          }
+        },
+        "medianRun": {
+          "fromShown": {
+            "htmlParse": null,
+            "didStartLoading": -6473,
+            "preloadStart": -530,
+            "preloadEnd": -528,
+            "domReady": -53,
+            "didFinishLoad": -51,
+            "jsEval": -90,
+            "reactRenderStart": -63,
+            "reactCommit": 24,
+            "reactCommits": 1,
+            "shellVisible": 253,
+            "ipcSend": 156,
+            "ipcRecv": 302,
+            "storeCleared": 155,
+            "storeFilled": 318,
+            "flowInit": 532,
+            "flowInits": 1,
+            "canvasRebuilds": 2,
+            "flowMeasureEvents": 3,
+            "taskVisible": 385,
+            "taskReady": 386,
+            "fcp": 197,
+            "lcp": 361,
+            "fontsReady": 574
+          },
+          "durations": {
+            "processToMainMs": 61,
+            "processToShownMs": 6673,
+            "dbInitMs": 15.39,
+            "dbOpenMs": 2.5,
+            "dbSchemaMs": 0.25,
+            "dbMigrateMs": 3.11,
+            "migrateRebuild": null,
+            "migrateRebuildSkipped": true,
+            "orphanSkipped": true,
+            "orphanMs": 0.33,
+            "windowStateMs": 0.56,
+            "menuMs": 0.52,
+            "ipcRoundTripMs": 146.3,
+            "handlerMs": 2.79,
+            "queryMs": 2.36,
+            "validateMs": 0.45,
+            "rows": 15,
+            "gotoFlushMs": 46.9,
+            "backupMs": 1.68,
+            "backupCopied": false,
+            "preloadMs": 1.5,
+            "jsEvalToRenderMs": 26.5,
+            "renderToCommitMs": 87.3
+          },
+          "ipcChannels": [
+            "tasks:listByDate"
+          ],
+          "renderCounts": {
+            "label": "render-counts",
+            "now": 1794113250906,
+            "perf": 7067.8,
+            "origin": 1794113243838.5,
+            "App": 1,
+            "Notebook": 1,
+            "TopBar": 1,
+            "DailyCanvas": 1,
+            "DailyFlow": 7,
+            "DeleteNotice": 1,
+            "MainListNode": 10,
+            "DateHeader": 10,
+            "TaskBullet": 66,
+            "BranchNode": 6,
+            "commits": 1,
+            "dimensionEvents": 3,
+            "dimensionNodes": 6
+          },
+          "resources": {
+            "label": "resources",
+            "now": 1794113250904,
+            "perf": 7065.9,
+            "origin": 1794113243838.5,
+            "count": 0,
+            "scripts": 0,
+            "styles": 0,
+            "fonts": 0,
+            "other": 0,
+            "encodedBytes": 0
+          },
+          "slowResources": [],
+          "fonts": [
+            {
+              "label": "font-loadingdone",
+              "now": 1794113250888,
+              "perf": 7050.5,
+              "origin": 1794113243838.5,
+              "family": "Inter",
+              "weight": "400",
+              "status": "loaded"
+            },
+            {
+              "label": "font-loadingdone",
+              "now": 1794113250890,
+              "perf": 7051.8,
+              "origin": 1794113243838.5,
+              "family": "Inter",
+              "weight": "600",
+              "status": "loaded"
+            },
+            {
+              "label": "fonts-ready",
+              "now": 1794113250892,
+              "perf": 7054.1,
+              "origin": 1794113243838.5,
+              "status": "loaded",
+              "faces": 4,
+              "inter": 1,
+              "newsreader": 0
+            },
+            {
+              "label": "font-faces",
+              "now": 1794113250906,
+              "perf": 7067.6,
+              "origin": 1794113243838.5,
+              "count": 4,
+              "rules": "Inter 400 display=swap src=url(\"./inter-latin-400-normal-C38fXH4l.woff2\") format(\"woff2\"), url(\"./inter-latin-400-normal-CyCys3Eg.woff\") format(\"woff\") || Inter 600 display=swap src=url(\"./inter-latin-600-normal-LgqL8muc.woff2\") format(\"woff2\"), url(\"./inter-latin-600-normal-CiBQ2DWP.woff\") format(\"woff\") || Newsreader 400 display=swap src=url(\"./newsreader-latin-400-normal-BFBkh4jY.woff2\") format(\"woff2\"), url(\"./newsreader-latin-400-normal-gRTjlS2D.woff\") format(\"woff\") || Newsreader 600 display=swap src=url(\"./newsreader-latin-600-normal-30OJ_TG_.woff2\") format(\"woff2\"), url(\"./newsreader-latin-600-normal-DUnT2r2g.woff\") format(\"woff\")"
+            }
+          ],
+          "longTasks": [
+            {
+              "label": "longtask",
+              "now": 1794113250498,
+              "perf": 6659.5,
+              "origin": 1794113243838.5,
+              "startTime": 6429.2,
+              "duration": 75,
+              "scripts": ""
+            },
+            {
+              "label": "longtask",
+              "now": 1794113250498,
+              "perf": 6659.8,
+              "origin": 1794113243838.5,
+              "startTime": 6563.7,
+              "duration": 91,
+              "scripts": ""
+            },
+            {
+              "label": "longtask",
+              "now": 1794113250850,
+              "perf": 7012.4,
+              "origin": 1794113243838.5,
+              "startTime": 6660,
+              "duration": 100,
+              "scripts": ""
+            },
+            {
+              "label": "longtask",
+              "now": 1794113250850,
+              "perf": 7012.5,
+              "origin": 1794113243838.5,
+              "startTime": 6781.8,
+              "duration": 82,
+              "scripts": ""
+            },
+            {
+              "label": "longtask",
+              "now": 1794113250851,
+              "perf": 7012.6,
+              "origin": 1794113243838.5,
+              "startTime": 6864.4,
+              "duration": 144,
+              "scripts": ""
+            },
+            {
+              "label": "loaf",
+              "now": 1794113250893,
+              "perf": 7055.5,
+              "origin": 1794113243838.5,
+              "startTime": 5957.5,
+              "duration": 130.5,
+              "scripts": ""
+            },
+            {
+              "label": "loaf",
+              "now": 1794113250894,
+              "perf": 7055.7,
+              "origin": 1794113243838.5,
+              "startTime": 6429.2,
+              "duration": 132.1,
+              "scripts": ""
+            },
+            {
+              "label": "loaf",
+              "now": 1794113250902,
+              "perf": 7063.7,
+              "origin": 1794113243838.5,
+              "startTime": 6563.6,
+              "duration": 190.3,
+              "scripts": ""
+            }
+          ],
+          "shell": {
+            "label": "shell-visible",
+            "now": 1794113250571,
+            "perf": 6733.3,
+            "origin": 1794113243838.5,
+            "text": "Sunday, November 8",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif",
+            "newsreaderReady": 0,
+            "left": 0,
+            "top": 104
+          },
+          "task": {
+            "label": "task-visible",
+            "now": 1794113250703,
+            "perf": 6865.1,
+            "origin": 1794113243838.5,
+            "w": 492,
+            "h": 26,
+            "left": 36,
+            "top": 185,
+            "text": "Call the school about the Thursday pickup",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif"
+          },
+          "ready": {
+            "label": "task-ready-for-input",
+            "now": 1794113250704,
+            "perf": 6866,
+            "origin": 1794113243838.5,
+            "contentEditable": "false",
+            "tabIndex": 0,
+            "pointerEvents": "all",
+            "visibility": "visible",
+            "display": "block",
+            "interReady": 1
+          },
+          "flow": {
+            "label": "react-flow-init",
+            "now": 1794113250850,
+            "perf": 7011.8,
+            "origin": 1794113243838.5,
+            "x": 353,
+            "y": 28,
+            "zoom": 1,
+            "nodes": 4
+          },
+          "pragmas": {
+            "label": "db-pragma-values",
+            "now": 1794113243780,
+            "perf": 167.91,
+            "origin": 1794113243612.053,
+            "journal": "wal",
+            "synchronous": 1,
+            "foreignKeys": 1,
+            "busyTimeout": 2000
+          },
+          "devtools": {
+            "label": "devtools-opened",
+            "now": 1794113250939,
+            "perf": 7326.65,
+            "origin": 1794113243612.053,
+            "open": 0
+          },
+          "windows": {
+            "label": "window-count",
+            "now": 1794113250940,
+            "perf": 7328.18,
+            "origin": 1794113243612.053,
+            "count": 1
+          },
+          "csp": {
+            "label": "csp-header-checks",
+            "now": 1794113250942,
+            "perf": 7330.34,
+            "origin": 1794113243612.053,
+            "count": 5
+          },
+          "packaged": 0,
+          "navigation": {
+            "label": "navigation",
+            "now": 1794113250904,
+            "perf": 7065.7,
+            "origin": 1794113243838.5,
+            "responseEnd": 20.1,
+            "domInteractive": 6084.1,
+            "domContentLoaded": 6425.9,
+            "loadEventEnd": 6427.7,
+            "transferSize": 1231,
+            "decodedBodySize": 931,
+            "type": "navigate"
+          },
+          "reason": "ready",
+          "backupOverlapsIpc": false
+        },
+        "failures": 0
+      },
+      "warm": {
+        "fromShown": {
+          "htmlParse": {
+            "median": null,
+            "slowest": null,
+            "values": [
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          },
+          "didStartLoading": {
+            "median": -2080,
+            "slowest": -609,
+            "values": [
+              -5170,
+              -3718,
+              -609,
+              -651,
+              -2080
+            ]
+          },
+          "preloadStart": {
+            "median": -167,
+            "slowest": -102,
+            "values": [
+              -502,
+              -463,
+              -102,
+              -167,
+              -153
+            ]
+          },
+          "preloadEnd": {
+            "median": -167,
+            "slowest": -102,
+            "values": [
+              -501,
+              -461,
+              -102,
+              -167,
+              -152
+            ]
+          },
+          "domReady": {
+            "median": -24,
+            "slowest": -16,
+            "values": [
+              -48,
+              -50,
+              -24,
+              -22,
+              -16
+            ]
+          },
+          "didFinishLoad": {
+            "median": -22,
+            "slowest": -16,
+            "values": [
+              -45,
+              -47,
+              -22,
+              -21,
+              -16
+            ]
+          },
+          "jsEval": {
+            "median": -43,
+            "slowest": -33,
+            "values": [
+              -84,
+              -92,
+              -43,
+              -41,
+              -33
+            ]
+          },
+          "reactRenderStart": {
+            "median": -28,
+            "slowest": -21,
+            "values": [
+              -57,
+              -61,
+              -28,
+              -27,
+              -21
+            ]
+          },
+          "reactCommit": {
+            "median": 11,
+            "slowest": 28,
+            "values": [
+              28,
+              26,
+              6,
+              11,
+              9
+            ]
+          },
+          "reactCommits": {
+            "median": 1,
+            "slowest": 1,
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "shellVisible": {
+            "median": 83,
+            "slowest": 242,
+            "values": [
+              242,
+              202,
+              83,
+              74,
+              67
+            ]
+          },
+          "ipcSend": {
+            "median": 62,
+            "slowest": 154,
+            "values": [
+              154,
+              144,
+              62,
+              55,
+              47
+            ]
+          },
+          "ipcRecv": {
+            "median": 99,
+            "slowest": 274,
+            "values": [
+              274,
+              226,
+              99,
+              84,
+              80
+            ]
+          },
+          "storeCleared": {
+            "median": 62,
+            "slowest": 153,
+            "values": [
+              153,
+              144,
+              62,
+              54,
+              47
+            ]
+          },
+          "storeFilled": {
+            "median": 100,
+            "slowest": 275,
+            "values": [
+              275,
+              227,
+              100,
+              84,
+              80
+            ]
+          },
+          "flowInit": {
+            "median": 102,
+            "slowest": 332,
+            "values": [
+              332,
+              270,
+              99,
+              102,
+              79
+            ]
+          },
+          "flowInits": {
+            "median": 1,
+            "slowest": 1,
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "canvasRebuilds": {
+            "median": 2,
+            "slowest": 2,
+            "values": [
+              2,
+              2,
+              2,
+              2,
+              2
+            ]
+          },
+          "flowMeasureEvents": {
+            "median": 3,
+            "slowest": 3,
+            "values": [
+              3,
+              3,
+              3,
+              3,
+              3
+            ]
+          },
+          "taskVisible": {
+            "median": 116,
+            "slowest": 338,
+            "values": [
+              338,
+              271,
+              116,
+              103,
+              89
+            ]
+          },
+          "taskReady": {
+            "median": 116,
+            "slowest": 339,
+            "values": [
+              339,
+              272,
+              116,
+              103,
+              89
+            ]
+          },
+          "fcp": {
+            "median": 57,
+            "slowest": 131,
+            "values": [
+              119,
+              131,
+              57,
+              54,
+              42
+            ]
+          },
+          "lcp": {
+            "median": 106,
+            "slowest": 283,
+            "values": [
+              283,
+              247,
+              105,
+              106,
+              94
+            ]
+          },
+          "fontsReady": {
+            "median": 158,
+            "slowest": 475,
+            "values": [
+              475,
+              352,
+              158,
+              130,
+              115
+            ]
+          }
+        },
+        "durations": {
+          "processToMainMs": {
+            "median": 100,
+            "slowest": 118,
+            "values": [
+              118,
+              113,
+              86,
+              100,
+              98
+            ]
+          },
+          "processToShownMs": {
+            "median": 2360,
+            "slowest": 5534,
+            "values": [
+              5534,
+              3965,
+              901,
+              969,
+              2360
+            ]
+          },
+          "dbInitMs": {
+            "median": 23.43,
+            "slowest": 40.09,
+            "values": [
+              40.09,
+              11.04,
+              33.58,
+              21.67,
+              23.43
+            ]
+          },
+          "dbOpenMs": {
+            "median": 4.85,
+            "slowest": 7.96,
+            "values": [
+              7.96,
+              2.85,
+              5.84,
+              4.54,
+              4.85
+            ]
+          },
+          "dbSchemaMs": {
+            "median": 0.44,
+            "slowest": 0.71,
+            "values": [
+              0.71,
+              0.23,
+              0.44,
+              0.44,
+              0.54
+            ]
+          },
+          "dbMigrateMs": {
+            "median": 4.7,
+            "slowest": 7.22,
+            "values": [
+              7.22,
+              2.03,
+              5.07,
+              4.69,
+              4.7
+            ]
+          },
+          "migrateRebuild": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "migrateRebuildSkipped": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "orphanSkipped": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "orphanMs": {
+            "median": 0.43,
+            "slowest": 0.6,
+            "values": [
+              0.6,
+              0.21,
+              0.45,
+              0.43,
+              0.27
+            ]
+          },
+          "windowStateMs": {
+            "median": 0.91,
+            "slowest": 1.06,
+            "values": [
+              1.06,
+              0.6,
+              0.91,
+              1.02,
+              0.59
+            ]
+          },
+          "menuMs": {
+            "median": 0.83,
+            "slowest": 1,
+            "values": [
+              1,
+              0.59,
+              0.93,
+              0.83,
+              0.51
+            ]
+          },
+          "ipcRoundTripMs": {
+            "median": 37,
+            "slowest": 119.9,
+            "values": [
+              119.9,
+              81.5,
+              37,
+              29.4,
+              32.5
+            ]
+          },
+          "handlerMs": {
+            "median": 1.1,
+            "slowest": 4.13,
+            "values": [
+              4.13,
+              2.53,
+              1.1,
+              1.05,
+              0.96
+            ]
+          },
+          "queryMs": {
+            "median": 0.89,
+            "slowest": 3.67,
+            "values": [
+              3.67,
+              2.11,
+              0.89,
+              0.89,
+              0.81
+            ]
+          },
+          "validateMs": {
+            "median": 0.22,
+            "slowest": 0.49,
+            "values": [
+              0.49,
+              0.44,
+              0.22,
+              0.17,
+              0.15
+            ]
+          },
+          "rows": {
+            "median": 15,
+            "slowest": 15,
+            "values": [
+              15,
+              15,
+              15,
+              15,
+              15
+            ]
+          },
+          "gotoFlushMs": {
+            "median": 12.4,
+            "slowest": 39.5,
+            "values": [
+              39.5,
+              25.4,
+              12.4,
+              9.8,
+              10.3
+            ]
+          },
+          "backupMs": {
+            "median": 1.73,
+            "slowest": 2.38,
+            "values": [
+              1.94,
+              1.62,
+              1.34,
+              1.73,
+              2.38
+            ]
+          },
+          "backupCopied": [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "preloadMs": {
+            "median": 1.1,
+            "slowest": 1.7,
+            "values": [
+              1.4,
+              1.7,
+              0.4,
+              0.3,
+              1.1
+            ]
+          },
+          "jsEvalToRenderMs": {
+            "median": 15.1,
+            "slowest": 30.8,
+            "values": [
+              27.4,
+              30.8,
+              15.1,
+              14.3,
+              11.4
+            ]
+          },
+          "renderToCommitMs": {
+            "median": 38.4,
+            "slowest": 86.9,
+            "values": [
+              84.8,
+              86.9,
+              34,
+              38.4,
+              29.9
+            ]
+          }
+        },
+        "medianRun": {
+          "fromShown": {
+            "htmlParse": null,
+            "didStartLoading": -609,
+            "preloadStart": -102,
+            "preloadEnd": -102,
+            "domReady": -24,
+            "didFinishLoad": -22,
+            "jsEval": -43,
+            "reactRenderStart": -28,
+            "reactCommit": 6,
+            "reactCommits": 1,
+            "shellVisible": 83,
+            "ipcSend": 62,
+            "ipcRecv": 99,
+            "storeCleared": 62,
+            "storeFilled": 100,
+            "flowInit": 99,
+            "flowInits": 1,
+            "canvasRebuilds": 2,
+            "flowMeasureEvents": 3,
+            "taskVisible": 116,
+            "taskReady": 116,
+            "fcp": 57,
+            "lcp": 105,
+            "fontsReady": 158
+          },
+          "durations": {
+            "processToMainMs": 86,
+            "processToShownMs": 901,
+            "dbInitMs": 33.58,
+            "dbOpenMs": 5.84,
+            "dbSchemaMs": 0.44,
+            "dbMigrateMs": 5.07,
+            "migrateRebuild": null,
+            "migrateRebuildSkipped": true,
+            "orphanSkipped": true,
+            "orphanMs": 0.45,
+            "windowStateMs": 0.91,
+            "menuMs": 0.93,
+            "ipcRoundTripMs": 37,
+            "handlerMs": 1.1,
+            "queryMs": 0.89,
+            "validateMs": 0.22,
+            "rows": 15,
+            "gotoFlushMs": 12.4,
+            "backupMs": 1.34,
+            "backupCopied": false,
+            "preloadMs": 0.4,
+            "jsEvalToRenderMs": 15.1,
+            "renderToCommitMs": 34
+          },
+          "ipcChannels": [
+            "tasks:listByDate"
+          ],
+          "renderCounts": {
+            "label": "render-counts",
+            "now": 1794113329508,
+            "perf": 788.3,
+            "origin": 1794113328720.6,
+            "App": 1,
+            "Notebook": 1,
+            "TopBar": 1,
+            "DailyCanvas": 1,
+            "DailyFlow": 7,
+            "DeleteNotice": 1,
+            "MainListNode": 10,
+            "DateHeader": 10,
+            "TaskBullet": 66,
+            "BranchNode": 6,
+            "commits": 1,
+            "dimensionEvents": 3,
+            "dimensionNodes": 6
+          },
+          "resources": {
+            "label": "resources",
+            "now": 1794113329508,
+            "perf": 787.4,
+            "origin": 1794113328720.6,
+            "count": 0,
+            "scripts": 0,
+            "styles": 0,
+            "fonts": 0,
+            "other": 0,
+            "encodedBytes": 0
+          },
+          "slowResources": [],
+          "fonts": [
+            {
+              "label": "font-loadingdone",
+              "now": 1794113329494,
+              "perf": 773.7,
+              "origin": 1794113328720.6,
+              "family": "Inter",
+              "weight": "400",
+              "status": "loaded"
+            },
+            {
+              "label": "font-loadingdone",
+              "now": 1794113329494,
+              "perf": 773.8,
+              "origin": 1794113328720.6,
+              "family": "Inter",
+              "weight": "600",
+              "status": "loaded"
+            },
+            {
+              "label": "fonts-ready",
+              "now": 1794113329494,
+              "perf": 774.1,
+              "origin": 1794113328720.6,
+              "status": "loaded",
+              "faces": 4,
+              "inter": 1,
+              "newsreader": 0
+            },
+            {
+              "label": "font-faces",
+              "now": 1794113329508,
+              "perf": 788.2,
+              "origin": 1794113328720.6,
+              "count": 4,
+              "rules": "Inter 400 display=swap src=url(\"./inter-latin-400-normal-C38fXH4l.woff2\") format(\"woff2\"), url(\"./inter-latin-400-normal-CyCys3Eg.woff\") format(\"woff\") || Inter 600 display=swap src=url(\"./inter-latin-600-normal-LgqL8muc.woff2\") format(\"woff2\"), url(\"./inter-latin-600-normal-CiBQ2DWP.woff\") format(\"woff\") || Newsreader 400 display=swap src=url(\"./newsreader-latin-400-normal-BFBkh4jY.woff2\") format(\"woff2\"), url(\"./newsreader-latin-400-normal-gRTjlS2D.woff\") format(\"woff\") || Newsreader 600 display=swap src=url(\"./newsreader-latin-600-normal-30OJ_TG_.woff2\") format(\"woff2\"), url(\"./newsreader-latin-600-normal-DUnT2r2g.woff\") format(\"woff\")"
+            }
+          ],
+          "longTasks": [
+            {
+              "label": "loaf",
+              "now": 1794113329495,
+              "perf": 774.9,
+              "origin": 1794113328720.6,
+              "startTime": 593.2,
+              "duration": 64,
+              "scripts": ""
+            }
+          ],
+          "shell": {
+            "label": "shell-visible",
+            "now": 1794113329419,
+            "perf": 698.7,
+            "origin": 1794113328720.6,
+            "text": "Sunday, November 8",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif",
+            "newsreaderReady": 0,
+            "left": 0,
+            "top": 104
+          },
+          "task": {
+            "label": "task-visible",
+            "now": 1794113329452,
+            "perf": 731.7,
+            "origin": 1794113328720.6,
+            "w": 492,
+            "h": 26,
+            "left": 389,
+            "top": 213,
+            "text": "Call the school about the Thursday pickup",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif"
+          },
+          "ready": {
+            "label": "task-ready-for-input",
+            "now": 1794113329452,
+            "perf": 732.1,
+            "origin": 1794113328720.6,
+            "contentEditable": "false",
+            "tabIndex": 0,
+            "pointerEvents": "all",
+            "visibility": "visible",
+            "display": "block",
+            "interReady": 1
+          },
+          "flow": {
+            "label": "react-flow-init",
+            "now": 1794113329435,
+            "perf": 714.4,
+            "origin": 1794113328720.6,
+            "x": 353,
+            "y": 28,
+            "zoom": 1,
+            "nodes": 1
+          },
+          "pragmas": {
+            "label": "db-pragma-values",
+            "now": 1794113328659,
+            "perf": 255.76,
+            "origin": 1794113328404.35,
+            "journal": "wal",
+            "synchronous": 1,
+            "foreignKeys": 1,
+            "busyTimeout": 2000
+          },
+          "devtools": {
+            "label": "devtools-opened",
+            "now": 1794113329512,
+            "perf": 1108.41,
+            "origin": 1794113328404.35,
+            "open": 0
+          },
+          "windows": {
+            "label": "window-count",
+            "now": 1794113329513,
+            "perf": 1109.3,
+            "origin": 1794113328404.35,
+            "count": 1
+          },
+          "csp": {
+            "label": "csp-header-checks",
+            "now": 1794113329513,
+            "perf": 1109.99,
+            "origin": 1794113328404.35,
+            "count": 5
+          },
+          "packaged": 0,
+          "navigation": {
+            "label": "navigation",
+            "now": 1794113329507,
+            "perf": 787.4,
+            "origin": 1794113328720.6,
+            "responseEnd": 22.4,
+            "domInteractive": 521,
+            "domContentLoaded": 592.1,
+            "loadEventEnd": 592.3,
+            "transferSize": 1231,
+            "decodedBodySize": 931,
+            "type": "navigate"
+          },
+          "reason": "ready",
+          "backupOverlapsIpc": false
+        },
+        "failures": 0
+      }
+    },
+    "packaged": {
+      "cold": {
+        "fromShown": {
+          "htmlParse": {
+            "median": null,
+            "slowest": null,
+            "values": [
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          },
+          "didStartLoading": {
+            "median": -1721,
+            "slowest": -999,
+            "values": [
+              -5213,
+              -1148,
+              -1721,
+              -999,
+              -2038
+            ]
+          },
+          "preloadStart": {
+            "median": -111,
+            "slowest": -99,
+            "values": [
+              -550,
+              -149,
+              -100,
+              -111,
+              -99
+            ]
+          },
+          "preloadEnd": {
+            "median": -110,
+            "slowest": -98,
+            "values": [
+              -549,
+              -149,
+              -100,
+              -110,
+              -98
+            ]
+          },
+          "domReady": {
+            "median": -25,
+            "slowest": -19,
+            "values": [
+              -52,
+              -53,
+              -20,
+              -25,
+              -19
+            ]
+          },
+          "didFinishLoad": {
+            "median": -24,
+            "slowest": -18,
+            "values": [
+              -49,
+              -52,
+              -19,
+              -24,
+              -18
+            ]
+          },
+          "jsEval": {
+            "median": -36,
+            "slowest": -28,
+            "values": [
+              -86,
+              -59,
+              -33,
+              -36,
+              -28
+            ]
+          },
+          "reactRenderStart": {
+            "median": -27,
+            "slowest": -20,
+            "values": [
+              -59,
+              -53,
+              -22,
+              -27,
+              -20
+            ]
+          },
+          "reactCommit": {
+            "median": 3,
+            "slowest": 25,
+            "values": [
+              25,
+              -34,
+              13,
+              -1,
+              3
+            ]
+          },
+          "reactCommits": {
+            "median": 1,
+            "slowest": 1,
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "shellVisible": {
+            "median": 79,
+            "slowest": 292,
+            "values": [
+              292,
+              32,
+              98,
+              79,
+              62
+            ]
+          },
+          "ipcSend": {
+            "median": 50,
+            "slowest": 206,
+            "values": [
+              206,
+              4,
+              71,
+              50,
+              40
+            ]
+          },
+          "ipcRecv": {
+            "median": 89,
+            "slowest": 347,
+            "values": [
+              347,
+              40,
+              115,
+              89,
+              74
+            ]
+          },
+          "storeCleared": {
+            "median": 50,
+            "slowest": 201,
+            "values": [
+              201,
+              4,
+              71,
+              50,
+              40
+            ]
+          },
+          "storeFilled": {
+            "median": 89,
+            "slowest": 348,
+            "values": [
+              348,
+              40,
+              115,
+              89,
+              75
+            ]
+          },
+          "flowInit": {
+            "median": 88,
+            "slowest": 346,
+            "values": [
+              346,
+              40,
+              114,
+              88,
+              74
+            ]
+          },
+          "flowInits": {
+            "median": 1,
+            "slowest": 1,
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "canvasRebuilds": {
+            "median": 2,
+            "slowest": 2,
+            "values": [
+              2,
+              2,
+              2,
+              2,
+              2
+            ]
+          },
+          "flowMeasureEvents": {
+            "median": 3,
+            "slowest": 3,
+            "values": [
+              3,
+              3,
+              3,
+              3,
+              3
+            ]
+          },
+          "taskVisible": {
+            "median": 101,
+            "slowest": 426,
+            "values": [
+              426,
+              52,
+              129,
+              101,
+              86
+            ]
+          },
+          "taskReady": {
+            "median": 101,
+            "slowest": 427,
+            "values": [
+              427,
+              53,
+              130,
+              101,
+              87
+            ]
+          },
+          "fcp": {
+            "median": 45,
+            "slowest": 238,
+            "values": [
+              238,
+              25,
+              75,
+              45,
+              34
+            ]
+          },
+          "lcp": {
+            "median": 113,
+            "slowest": 422,
+            "values": [
+              422,
+              57,
+              123,
+              113,
+              86
+            ]
+          },
+          "fontsReady": {
+            "median": 119,
+            "slowest": 556,
+            "values": [
+              556,
+              71,
+              159,
+              119,
+              116
+            ]
+          }
+        },
+        "durations": {
+          "processToMainMs": {
+            "median": 98,
+            "slowest": 246,
+            "values": [
+              246,
+              101,
+              98,
+              63,
+              46
+            ]
+          },
+          "processToShownMs": {
+            "median": 1971,
+            "slowest": 5855,
+            "values": [
+              5855,
+              1453,
+              1971,
+              1187,
+              2223
+            ]
+          },
+          "dbInitMs": {
+            "median": 23.47,
+            "slowest": 134.57,
+            "values": [
+              134.57,
+              32.51,
+              23.47,
+              15.48,
+              18.89
+            ]
+          },
+          "dbOpenMs": {
+            "median": 5.64,
+            "slowest": 118.72,
+            "values": [
+              118.72,
+              7.31,
+              5.64,
+              3.3,
+              4.38
+            ]
+          },
+          "dbSchemaMs": {
+            "median": 0.3,
+            "slowest": 0.47,
+            "values": [
+              0.23,
+              0.46,
+              0.47,
+              0.24,
+              0.3
+            ]
+          },
+          "dbMigrateMs": {
+            "median": 4.19,
+            "slowest": 6.58,
+            "values": [
+              2.69,
+              6.58,
+              5.15,
+              2.82,
+              4.19
+            ]
+          },
+          "migrateRebuild": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "migrateRebuildSkipped": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "orphanSkipped": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "orphanMs": {
+            "median": 0.44,
+            "slowest": 0.67,
+            "values": [
+              0.44,
+              0.67,
+              0.46,
+              0.42,
+              0.4
+            ]
+          },
+          "windowStateMs": {
+            "median": 0.79,
+            "slowest": 1.72,
+            "values": [
+              1.72,
+              1.27,
+              0.65,
+              0.52,
+              0.79
+            ]
+          },
+          "menuMs": {
+            "median": 0.68,
+            "slowest": 0.87,
+            "values": [
+              0.68,
+              0.87,
+              0.64,
+              0.45,
+              0.69
+            ]
+          },
+          "ipcRoundTripMs": {
+            "median": 38.9,
+            "slowest": 140.5,
+            "values": [
+              140.5,
+              36.3,
+              43.3,
+              38.9,
+              34.2
+            ]
+          },
+          "handlerMs": {
+            "median": 1.13,
+            "slowest": 12.65,
+            "values": [
+              12.65,
+              1.06,
+              1.3,
+              1.02,
+              1.13
+            ]
+          },
+          "queryMs": {
+            "median": 0.95,
+            "slowest": 12.33,
+            "values": [
+              12.33,
+              0.88,
+              1.09,
+              0.84,
+              0.95
+            ]
+          },
+          "validateMs": {
+            "median": 0.19,
+            "slowest": 0.34,
+            "values": [
+              0.34,
+              0.19,
+              0.22,
+              0.18,
+              0.18
+            ]
+          },
+          "rows": {
+            "median": 15,
+            "slowest": 15,
+            "values": [
+              15,
+              15,
+              15,
+              15,
+              15
+            ]
+          },
+          "gotoFlushMs": {
+            "median": 10.7,
+            "slowest": 54.2,
+            "values": [
+              54.2,
+              10.6,
+              15.1,
+              10.7,
+              10
+            ]
+          },
+          "backupMs": {
+            "median": 1.81,
+            "slowest": 2.33,
+            "values": [
+              2.33,
+              2.28,
+              1.62,
+              1.73,
+              1.81
+            ]
+          },
+          "backupCopied": [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "preloadMs": {
+            "median": 0.7,
+            "slowest": 1.6,
+            "values": [
+              1.6,
+              0.3,
+              0.3,
+              0.7,
+              0.9
+            ]
+          },
+          "jsEvalToRenderMs": {
+            "median": 8.5,
+            "slowest": 26.2,
+            "values": [
+              26.2,
+              5.8,
+              10.1,
+              8.5,
+              8.1
+            ]
+          },
+          "renderToCommitMs": {
+            "median": 26.5,
+            "slowest": 84.5,
+            "values": [
+              84.5,
+              19.8,
+              35.8,
+              26.5,
+              23.4
+            ]
+          }
+        },
+        "medianRun": {
+          "fromShown": {
+            "htmlParse": null,
+            "didStartLoading": -999,
+            "preloadStart": -111,
+            "preloadEnd": -110,
+            "domReady": -25,
+            "didFinishLoad": -24,
+            "jsEval": -36,
+            "reactRenderStart": -27,
+            "reactCommit": -1,
+            "reactCommits": 1,
+            "shellVisible": 79,
+            "ipcSend": 50,
+            "ipcRecv": 89,
+            "storeCleared": 50,
+            "storeFilled": 89,
+            "flowInit": 88,
+            "flowInits": 1,
+            "canvasRebuilds": 2,
+            "flowMeasureEvents": 3,
+            "taskVisible": 101,
+            "taskReady": 101,
+            "fcp": 45,
+            "lcp": 113,
+            "fontsReady": 119
+          },
+          "durations": {
+            "processToMainMs": 63,
+            "processToShownMs": 1187,
+            "dbInitMs": 15.48,
+            "dbOpenMs": 3.3,
+            "dbSchemaMs": 0.24,
+            "dbMigrateMs": 2.82,
+            "migrateRebuild": null,
+            "migrateRebuildSkipped": true,
+            "orphanSkipped": true,
+            "orphanMs": 0.42,
+            "windowStateMs": 0.52,
+            "menuMs": 0.45,
+            "ipcRoundTripMs": 38.9,
+            "handlerMs": 1.02,
+            "queryMs": 0.84,
+            "validateMs": 0.18,
+            "rows": 15,
+            "gotoFlushMs": 10.7,
+            "backupMs": 1.73,
+            "backupCopied": false,
+            "preloadMs": 0.7,
+            "jsEvalToRenderMs": 8.5,
+            "renderToCommitMs": 26.5
+          },
+          "ipcChannels": [
+            "tasks:listByDate"
+          ],
+          "renderCounts": {
+            "label": "render-counts",
+            "now": 1794113425658,
+            "perf": 1141.6,
+            "origin": 1794113424516.9,
+            "App": 1,
+            "Notebook": 1,
+            "TopBar": 1,
+            "DailyCanvas": 1,
+            "DailyFlow": 7,
+            "DeleteNotice": 1,
+            "MainListNode": 10,
+            "DateHeader": 10,
+            "TaskBullet": 66,
+            "BranchNode": 6,
+            "commits": 1,
+            "dimensionEvents": 3,
+            "dimensionNodes": 6
+          },
+          "resources": {
+            "label": "resources",
+            "now": 1794113425657,
+            "perf": 1140.4,
+            "origin": 1794113424516.9,
+            "count": 0,
+            "scripts": 0,
+            "styles": 0,
+            "fonts": 0,
+            "other": 0,
+            "encodedBytes": 0
+          },
+          "slowResources": [],
+          "fonts": [
+            {
+              "label": "font-loadingdone",
+              "now": 1794113425642,
+              "perf": 1125.9,
+              "origin": 1794113424516.9,
+              "family": "Inter",
+              "weight": "400",
+              "status": "loaded"
+            },
+            {
+              "label": "font-loadingdone",
+              "now": 1794113425643,
+              "perf": 1126.1,
+              "origin": 1794113424516.9,
+              "family": "Inter",
+              "weight": "600",
+              "status": "loaded"
+            },
+            {
+              "label": "fonts-ready",
+              "now": 1794113425643,
+              "perf": 1126.3,
+              "origin": 1794113424516.9,
+              "status": "loaded",
+              "faces": 4,
+              "inter": 1,
+              "newsreader": 0
+            },
+            {
+              "label": "font-faces",
+              "now": 1794113425658,
+              "perf": 1141.6,
+              "origin": 1794113424516.9,
+              "count": 4,
+              "rules": "Inter 400 display=swap src=url(\"./inter-latin-400-normal-C38fXH4l.woff2\") format(\"woff2\"), url(\"./inter-latin-400-normal-CyCys3Eg.woff\") format(\"woff\") || Inter 600 display=swap src=url(\"./inter-latin-600-normal-LgqL8muc.woff2\") format(\"woff2\"), url(\"./inter-latin-600-normal-CiBQ2DWP.woff\") format(\"woff\") || Newsreader 400 display=swap src=url(\"./newsreader-latin-400-normal-BFBkh4jY.woff2\") format(\"woff2\"), url(\"./newsreader-latin-400-normal-gRTjlS2D.woff\") format(\"woff\") || Newsreader 600 display=swap src=url(\"./newsreader-latin-600-normal-30OJ_TG_.woff2\") format(\"woff2\"), url(\"./newsreader-latin-600-normal-DUnT2r2g.woff\") format(\"woff\")"
+            }
+          ],
+          "longTasks": [
+            {
+              "label": "loaf",
+              "now": 1794113425656,
+              "perf": 1139.1,
+              "origin": 1794113424516.9,
+              "startTime": 899.2,
+              "duration": 54.6,
+              "scripts": ""
+            },
+            {
+              "label": "loaf",
+              "now": 1794113425656,
+              "perf": 1139.2,
+              "origin": 1794113424516.9,
+              "startTime": 983.4,
+              "duration": 55.7,
+              "scripts": ""
+            },
+            {
+              "label": "loaf",
+              "now": 1794113425659,
+              "perf": 1142.7,
+              "origin": 1794113424516.9,
+              "startTime": 1039.7,
+              "duration": 53.8,
+              "scripts": ""
+            }
+          ],
+          "shell": {
+            "label": "shell-visible",
+            "now": 1794113425603,
+            "perf": 1086.8,
+            "origin": 1794113424516.9,
+            "text": "Sunday, November 8",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif",
+            "newsreaderReady": 0,
+            "left": 0,
+            "top": 104
+          },
+          "task": {
+            "label": "task-visible",
+            "now": 1794113425625,
+            "perf": 1108.2,
+            "origin": 1794113424516.9,
+            "w": 492,
+            "h": 26,
+            "left": 389,
+            "top": 213,
+            "text": "Call the school about the Thursday pickup",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif"
+          },
+          "ready": {
+            "label": "task-ready-for-input",
+            "now": 1794113425625,
+            "perf": 1108.5,
+            "origin": 1794113424516.9,
+            "contentEditable": "false",
+            "tabIndex": 0,
+            "pointerEvents": "all",
+            "visibility": "visible",
+            "display": "block",
+            "interReady": 1
+          },
+          "flow": {
+            "label": "react-flow-init",
+            "now": 1794113425612,
+            "perf": 1095.7,
+            "origin": 1794113424516.9,
+            "x": 353,
+            "y": 28,
+            "zoom": 1,
+            "nodes": 1
+          },
+          "pragmas": {
+            "label": "db-pragma-values",
+            "now": 1794113424468,
+            "perf": 168.78,
+            "origin": 1794113424300.195,
+            "journal": "wal",
+            "synchronous": 1,
+            "foreignKeys": 1,
+            "busyTimeout": 2000
+          },
+          "devtools": {
+            "label": "devtools-opened",
+            "now": 1794113425661,
+            "perf": 1361.84,
+            "origin": 1794113424300.195,
+            "open": 0
+          },
+          "windows": {
+            "label": "window-count",
+            "now": 1794113425662,
+            "perf": 1362.55,
+            "origin": 1794113424300.195,
+            "count": 1
+          },
+          "csp": {
+            "label": "csp-header-checks",
+            "now": 1794113425662,
+            "perf": 1362.82,
+            "origin": 1794113424300.195,
+            "count": 5
+          },
+          "packaged": 1,
+          "navigation": {
+            "label": "navigation",
+            "now": 1794113425657,
+            "perf": 1140.3,
+            "origin": 1794113424516.9,
+            "responseEnd": 22.9,
+            "domInteractive": 936.7,
+            "domContentLoaded": 982.6,
+            "loadEventEnd": 982.8,
+            "transferSize": 1231,
+            "decodedBodySize": 931,
+            "type": "navigate"
+          },
+          "reason": "ready",
+          "backupOverlapsIpc": false
+        },
+        "failures": 0
+      },
+      "warm": {
+        "fromShown": {
+          "htmlParse": {
+            "median": null,
+            "slowest": null,
+            "values": [
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          },
+          "didStartLoading": {
+            "median": -1921,
+            "slowest": -1110,
+            "values": [
+              -1921,
+              -2813,
+              -1110,
+              -4062,
+              -1647
+            ]
+          },
+          "preloadStart": {
+            "median": -122,
+            "slowest": -117,
+            "values": [
+              -118,
+              -117,
+              -148,
+              -465,
+              -122
+            ]
+          },
+          "preloadEnd": {
+            "median": -121,
+            "slowest": -116,
+            "values": [
+              -118,
+              -116,
+              -147,
+              -464,
+              -121
+            ]
+          },
+          "domReady": {
+            "median": -35,
+            "slowest": -28,
+            "values": [
+              -35,
+              -30,
+              -28,
+              -57,
+              -46
+            ]
+          },
+          "didFinishLoad": {
+            "median": -34,
+            "slowest": -26,
+            "values": [
+              -34,
+              -29,
+              -26,
+              -54,
+              -45
+            ]
+          },
+          "jsEval": {
+            "median": -49,
+            "slowest": -44,
+            "values": [
+              -49,
+              -44,
+              -44,
+              -87,
+              -57
+            ]
+          },
+          "reactRenderStart": {
+            "median": -38,
+            "slowest": -31,
+            "values": [
+              -38,
+              -33,
+              -31,
+              -64,
+              -49
+            ]
+          },
+          "reactCommit": {
+            "median": -5,
+            "slowest": 21,
+            "values": [
+              -10,
+              -5,
+              6,
+              21,
+              -17
+            ]
+          },
+          "reactCommits": {
+            "median": 1,
+            "slowest": 1,
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "shellVisible": {
+            "median": 68,
+            "slowest": 223,
+            "values": [
+              58,
+              68,
+              68,
+              223,
+              74
+            ]
+          },
+          "ipcSend": {
+            "median": 47,
+            "slowest": 150,
+            "values": [
+              36,
+              47,
+              48,
+              150,
+              33
+            ]
+          },
+          "ipcRecv": {
+            "median": 86,
+            "slowest": 254,
+            "values": [
+              71,
+              80,
+              86,
+              254,
+              89
+            ]
+          },
+          "storeCleared": {
+            "median": 47,
+            "slowest": 149,
+            "values": [
+              36,
+              47,
+              48,
+              149,
+              33
+            ]
+          },
+          "storeFilled": {
+            "median": 86,
+            "slowest": 254,
+            "values": [
+              72,
+              80,
+              86,
+              254,
+              90
+            ]
+          },
+          "flowInit": {
+            "median": 85,
+            "slowest": 253,
+            "values": [
+              71,
+              79,
+              85,
+              253,
+              114
+            ]
+          },
+          "flowInits": {
+            "median": 1,
+            "slowest": 1,
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "canvasRebuilds": {
+            "median": 2,
+            "slowest": 2,
+            "values": [
+              2,
+              2,
+              2,
+              2,
+              2
+            ]
+          },
+          "flowMeasureEvents": {
+            "median": 3,
+            "slowest": 3,
+            "values": [
+              3,
+              3,
+              3,
+              3,
+              3
+            ]
+          },
+          "taskVisible": {
+            "median": 102,
+            "slowest": 286,
+            "values": [
+              85,
+              92,
+              102,
+              286,
+              120
+            ]
+          },
+          "taskReady": {
+            "median": 102,
+            "slowest": 288,
+            "values": [
+              85,
+              93,
+              102,
+              288,
+              121
+            ]
+          },
+          "fcp": {
+            "median": 54,
+            "slowest": 148,
+            "values": [
+              43,
+              55,
+              50,
+              148,
+              54
+            ]
+          },
+          "lcp": {
+            "median": 102,
+            "slowest": 268,
+            "values": [
+              79,
+              91,
+              102,
+              268,
+              118
+            ]
+          },
+          "fontsReady": {
+            "median": 135,
+            "slowest": 389,
+            "values": [
+              115,
+              122,
+              135,
+              389,
+              160
+            ]
+          }
+        },
+        "durations": {
+          "processToMainMs": {
+            "median": 87,
+            "slowest": 101,
+            "values": [
+              89,
+              101,
+              63,
+              87,
+              83
+            ]
+          },
+          "processToShownMs": {
+            "median": 2198,
+            "slowest": 4328,
+            "values": [
+              2198,
+              3059,
+              1306,
+              4328,
+              1867
+            ]
+          },
+          "dbInitMs": {
+            "median": 16.23,
+            "slowest": 20.83,
+            "values": [
+              20.75,
+              12.98,
+              16.23,
+              20.83,
+              13.64
+            ]
+          },
+          "dbOpenMs": {
+            "median": 3.56,
+            "slowest": 4.42,
+            "values": [
+              4.42,
+              3.05,
+              4.35,
+              3.56,
+              3.03
+            ]
+          },
+          "dbSchemaMs": {
+            "median": 0.25,
+            "slowest": 0.42,
+            "values": [
+              0.42,
+              0.21,
+              0.25,
+              0.2,
+              0.26
+            ]
+          },
+          "dbMigrateMs": {
+            "median": 3.12,
+            "slowest": 5.55,
+            "values": [
+              4.03,
+              2.63,
+              2.98,
+              5.55,
+              3.12
+            ]
+          },
+          "migrateRebuild": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "migrateRebuildSkipped": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "orphanSkipped": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "orphanMs": {
+            "median": 0.37,
+            "slowest": 0.58,
+            "values": [
+              0.37,
+              0.28,
+              0.41,
+              0.58,
+              0.35
+            ]
+          },
+          "windowStateMs": {
+            "median": 0.68,
+            "slowest": 0.87,
+            "values": [
+              0.75,
+              0.59,
+              0.87,
+              0.47,
+              0.68
+            ]
+          },
+          "menuMs": {
+            "median": 0.56,
+            "slowest": 0.59,
+            "values": [
+              0.56,
+              0.46,
+              0.57,
+              0.35,
+              0.59
+            ]
+          },
+          "ipcRoundTripMs": {
+            "median": 37.7,
+            "slowest": 103.8,
+            "values": [
+              34.7,
+              32.3,
+              37.7,
+              103.8,
+              56.1
+            ]
+          },
+          "handlerMs": {
+            "median": 1.08,
+            "slowest": 2.18,
+            "values": [
+              0.95,
+              1.08,
+              0.94,
+              2.18,
+              1.56
+            ]
+          },
+          "queryMs": {
+            "median": 0.92,
+            "slowest": 1.85,
+            "values": [
+              0.79,
+              0.92,
+              0.79,
+              1.85,
+              1.29
+            ]
+          },
+          "validateMs": {
+            "median": 0.18,
+            "slowest": 0.35,
+            "values": [
+              0.16,
+              0.18,
+              0.15,
+              0.35,
+              0.28
+            ]
+          },
+          "rows": {
+            "median": 15,
+            "slowest": 15,
+            "values": [
+              15,
+              15,
+              15,
+              15,
+              15
+            ]
+          },
+          "gotoFlushMs": {
+            "median": 12.6,
+            "slowest": 34.1,
+            "values": [
+              12.6,
+              11.2,
+              10.4,
+              34.1,
+              17.1
+            ]
+          },
+          "backupMs": {
+            "median": 1.58,
+            "slowest": 2.43,
+            "values": [
+              1.58,
+              1.47,
+              2.43,
+              1.38,
+              1.6
+            ]
+          },
+          "backupCopied": [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "preloadMs": {
+            "median": 0.7,
+            "slowest": 1.2,
+            "values": [
+              0.6,
+              0.7,
+              0.8,
+              1.2,
+              0.5
+            ]
+          },
+          "jsEvalToRenderMs": {
+            "median": 11,
+            "slowest": 22.7,
+            "values": [
+              10.4,
+              11,
+              13.1,
+              22.7,
+              8.2
+            ]
+          },
+          "renderToCommitMs": {
+            "median": 32,
+            "slowest": 85.2,
+            "values": [
+              27.7,
+              28.4,
+              36.1,
+              85.2,
+              32
+            ]
+          }
+        },
+        "medianRun": {
+          "fromShown": {
+            "htmlParse": null,
+            "didStartLoading": -1110,
+            "preloadStart": -148,
+            "preloadEnd": -147,
+            "domReady": -28,
+            "didFinishLoad": -26,
+            "jsEval": -44,
+            "reactRenderStart": -31,
+            "reactCommit": 6,
+            "reactCommits": 1,
+            "shellVisible": 68,
+            "ipcSend": 48,
+            "ipcRecv": 86,
+            "storeCleared": 48,
+            "storeFilled": 86,
+            "flowInit": 85,
+            "flowInits": 1,
+            "canvasRebuilds": 2,
+            "flowMeasureEvents": 3,
+            "taskVisible": 102,
+            "taskReady": 102,
+            "fcp": 50,
+            "lcp": 102,
+            "fontsReady": 135
+          },
+          "durations": {
+            "processToMainMs": 63,
+            "processToShownMs": 1306,
+            "dbInitMs": 16.23,
+            "dbOpenMs": 4.35,
+            "dbSchemaMs": 0.25,
+            "dbMigrateMs": 2.98,
+            "migrateRebuild": null,
+            "migrateRebuildSkipped": true,
+            "orphanSkipped": true,
+            "orphanMs": 0.41,
+            "windowStateMs": 0.87,
+            "menuMs": 0.57,
+            "ipcRoundTripMs": 37.7,
+            "handlerMs": 0.94,
+            "queryMs": 0.79,
+            "validateMs": 0.15,
+            "rows": 15,
+            "gotoFlushMs": 10.4,
+            "backupMs": 2.43,
+            "backupCopied": false,
+            "preloadMs": 0.8,
+            "jsEvalToRenderMs": 13.1,
+            "renderToCommitMs": 36.1
+          },
+          "ipcChannels": [
+            "tasks:listByDate"
+          ],
+          "renderCounts": {
+            "label": "render-counts",
+            "now": 1794113482534,
+            "perf": 1286.4,
+            "origin": 1794113481248,
+            "App": 1,
+            "Notebook": 1,
+            "TopBar": 1,
+            "DailyCanvas": 1,
+            "DailyFlow": 7,
+            "DeleteNotice": 1,
+            "MainListNode": 10,
+            "DateHeader": 10,
+            "TaskBullet": 66,
+            "BranchNode": 6,
+            "commits": 1,
+            "dimensionEvents": 3,
+            "dimensionNodes": 6
+          },
+          "resources": {
+            "label": "resources",
+            "now": 1794113482533,
+            "perf": 1285.8,
+            "origin": 1794113481248,
+            "count": 0,
+            "scripts": 0,
+            "styles": 0,
+            "fonts": 0,
+            "other": 0,
+            "encodedBytes": 0
+          },
+          "slowResources": [],
+          "fonts": [
+            {
+              "label": "font-loadingdone",
+              "now": 1794113482500,
+              "perf": 1252.7,
+              "origin": 1794113481248,
+              "family": "Inter",
+              "weight": "400",
+              "status": "loaded"
+            },
+            {
+              "label": "font-loadingdone",
+              "now": 1794113482500,
+              "perf": 1252.9,
+              "origin": 1794113481248,
+              "family": "Inter",
+              "weight": "600",
+              "status": "loaded"
+            },
+            {
+              "label": "fonts-ready",
+              "now": 1794113482501,
+              "perf": 1253,
+              "origin": 1794113481248,
+              "status": "loaded",
+              "faces": 4,
+              "inter": 1,
+              "newsreader": 0
+            },
+            {
+              "label": "font-faces",
+              "now": 1794113482534,
+              "perf": 1286.3,
+              "origin": 1794113481248,
+              "count": 4,
+              "rules": "Inter 400 display=swap src=url(\"./inter-latin-400-normal-C38fXH4l.woff2\") format(\"woff2\"), url(\"./inter-latin-400-normal-CyCys3Eg.woff\") format(\"woff\") || Inter 600 display=swap src=url(\"./inter-latin-600-normal-LgqL8muc.woff2\") format(\"woff2\"), url(\"./inter-latin-600-normal-CiBQ2DWP.woff\") format(\"woff\") || Newsreader 400 display=swap src=url(\"./newsreader-latin-400-normal-BFBkh4jY.woff2\") format(\"woff2\"), url(\"./newsreader-latin-400-normal-gRTjlS2D.woff\") format(\"woff\") || Newsreader 600 display=swap src=url(\"./newsreader-latin-600-normal-30OJ_TG_.woff2\") format(\"woff2\"), url(\"./newsreader-latin-600-normal-DUnT2r2g.woff\") format(\"woff\")"
+            }
+          ],
+          "longTasks": [
+            {
+              "label": "loaf",
+              "now": 1794113482501,
+              "perf": 1253.7,
+              "origin": 1794113481248,
+              "startTime": 1092,
+              "duration": 56,
+              "scripts": ""
+            }
+          ],
+          "shell": {
+            "label": "shell-visible",
+            "now": 1794113482434,
+            "perf": 1186.8,
+            "origin": 1794113481248,
+            "text": "Sunday, November 8",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif",
+            "newsreaderReady": 0,
+            "left": 0,
+            "top": 104
+          },
+          "task": {
+            "label": "task-visible",
+            "now": 1794113482468,
+            "perf": 1220.1,
+            "origin": 1794113481248,
+            "w": 492,
+            "h": 26,
+            "left": 389,
+            "top": 213,
+            "text": "Call the school about the Thursday pickup",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif"
+          },
+          "ready": {
+            "label": "task-ready-for-input",
+            "now": 1794113482468,
+            "perf": 1220.4,
+            "origin": 1794113481248,
+            "contentEditable": "false",
+            "tabIndex": 0,
+            "pointerEvents": "all",
+            "visibility": "visible",
+            "display": "block",
+            "interReady": 1
+          },
+          "flow": {
+            "label": "react-flow-init",
+            "now": 1794113482451,
+            "perf": 1203.9,
+            "origin": 1794113481248,
+            "x": 353,
+            "y": 28,
+            "zoom": 1,
+            "nodes": 1
+          },
+          "pragmas": {
+            "label": "db-pragma-values",
+            "now": 1794113481200,
+            "perf": 171.72,
+            "origin": 1794113481028.486,
+            "journal": "wal",
+            "synchronous": 1,
+            "foreignKeys": 1,
+            "busyTimeout": 2000
+          },
+          "devtools": {
+            "label": "devtools-opened",
+            "now": 1794113482536,
+            "perf": 1508.18,
+            "origin": 1794113481028.486,
+            "open": 0
+          },
+          "windows": {
+            "label": "window-count",
+            "now": 1794113482537,
+            "perf": 1508.87,
+            "origin": 1794113481028.486,
+            "count": 1
+          },
+          "csp": {
+            "label": "csp-header-checks",
+            "now": 1794113482538,
+            "perf": 1509.88,
+            "origin": 1794113481028.486,
+            "count": 5
+          },
+          "packaged": 1,
+          "navigation": {
+            "label": "navigation",
+            "now": 1794113482533,
+            "perf": 1285.7,
+            "origin": 1794113481248,
+            "responseEnd": 24.1,
+            "domInteractive": 1017.5,
+            "domContentLoaded": 1090.9,
+            "loadEventEnd": 1091.1,
+            "transferSize": 1231,
+            "decodedBodySize": 931,
+            "type": "navigate"
+          },
+          "reason": "ready",
+          "backupOverlapsIpc": false
+        },
+        "failures": 0
+      }
+    },
+    "dev": {
+      "cold": {
+        "fromShown": {
+          "htmlParse": {
+            "median": -598,
+            "slowest": -221,
+            "values": [
+              -5152,
+              -890,
+              -221,
+              -598,
+              -540
+            ]
+          },
+          "didStartLoading": {
+            "median": -1174,
+            "slowest": -785,
+            "values": [
+              -5537,
+              -1174,
+              -1060,
+              -785,
+              -3537
+            ]
+          },
+          "preloadStart": {
+            "median": -602,
+            "slowest": -225,
+            "values": [
+              -5206,
+              -894,
+              -225,
+              -602,
+              -544
+            ]
+          },
+          "preloadEnd": {
+            "median": -602,
+            "slowest": -224,
+            "values": [
+              -5202,
+              -893,
+              -224,
+              -602,
+              -544
+            ]
+          },
+          "domReady": {
+            "median": -31,
+            "slowest": -15,
+            "values": [
+              -54,
+              -15,
+              -34,
+              -31,
+              -28
+            ]
+          },
+          "didFinishLoad": {
+            "median": 1,
+            "slowest": 4,
+            "values": [
+              4,
+              1,
+              2,
+              1,
+              1
+            ]
+          },
+          "jsEval": {
+            "median": -82,
+            "slowest": -75,
+            "values": [
+              -358,
+              -101,
+              -75,
+              -82,
+              -75
+            ]
+          },
+          "reactRenderStart": {
+            "median": -36,
+            "slowest": -34,
+            "values": [
+              -113,
+              -35,
+              -39,
+              -36,
+              -34
+            ]
+          },
+          "reactCommit": {
+            "median": 45,
+            "slowest": 137,
+            "values": [
+              137,
+              45,
+              110,
+              12,
+              13
+            ]
+          },
+          "reactCommits": {
+            "median": 2,
+            "slowest": 2,
+            "values": [
+              2,
+              2,
+              2,
+              2,
+              2
+            ]
+          },
+          "shellVisible": {
+            "median": 176,
+            "slowest": 567,
+            "values": [
+              567,
+              176,
+              199,
+              90,
+              99
+            ]
+          },
+          "ipcSend": {
+            "median": 131,
+            "slowest": 471,
+            "values": [
+              471,
+              131,
+              173,
+              72,
+              72
+            ]
+          },
+          "ipcRecv": {
+            "median": 199,
+            "slowest": 621,
+            "values": [
+              621,
+              199,
+              209,
+              101,
+              110
+            ]
+          },
+          "storeCleared": {
+            "median": 131,
+            "slowest": 470,
+            "values": [
+              470,
+              131,
+              173,
+              72,
+              71
+            ]
+          },
+          "storeFilled": {
+            "median": 200,
+            "slowest": 630,
+            "values": [
+              630,
+              200,
+              209,
+              101,
+              111
+            ]
+          },
+          "flowInit": {
+            "median": 229,
+            "slowest": 937,
+            "values": [
+              937,
+              229,
+              232,
+              133,
+              139
+            ]
+          },
+          "flowInits": {
+            "median": 1,
+            "slowest": 1,
+            "values": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "canvasRebuilds": {
+            "median": 3,
+            "slowest": 3,
+            "values": [
+              3,
+              3,
+              3,
+              3,
+              3
+            ]
+          },
+          "flowMeasureEvents": {
+            "median": 2,
+            "slowest": 3,
+            "values": [
+              3,
+              2,
+              2,
+              2,
+              2
+            ]
+          },
+          "taskVisible": {
+            "median": 252,
+            "slowest": 720,
+            "values": [
+              720,
+              261,
+              252,
+              155,
+              165
+            ]
+          },
+          "taskReady": {
+            "median": 253,
+            "slowest": 722,
+            "values": [
+              722,
+              263,
+              253,
+              156,
+              166
+            ]
+          },
+          "fcp": {
+            "median": 100,
+            "slowest": 478,
+            "values": [
+              478,
+              100,
+              153,
+              57,
+              58
+            ]
+          },
+          "lcp": {
+            "median": 216,
+            "slowest": 726,
+            "values": [
+              726,
+              216,
+              null,
+              137,
+              126
+            ]
+          },
+          "fontsReady": {
+            "median": 273,
+            "slowest": 1071,
+            "values": [
+              1071,
+              292,
+              273,
+              184,
+              189
+            ]
+          }
+        },
+        "durations": {
+          "processToMainMs": {
+            "median": 84,
+            "slowest": 97,
+            "values": [
+              87,
+              97,
+              84,
+              69,
+              75
+            ]
+          },
+          "processToShownMs": {
+            "median": 1472,
+            "slowest": 5787,
+            "values": [
+              5787,
+              1472,
+              1327,
+              987,
+              3749
+            ]
+          },
+          "dbInitMs": {
+            "median": 16.62,
+            "slowest": 18.59,
+            "values": [
+              14.96,
+              16.67,
+              18.59,
+              16.55,
+              16.62
+            ]
+          },
+          "dbOpenMs": {
+            "median": 3.94,
+            "slowest": 4.48,
+            "values": [
+              3.93,
+              3.81,
+              4.48,
+              3.94,
+              4.31
+            ]
+          },
+          "dbSchemaMs": {
+            "median": 0.35,
+            "slowest": 0.41,
+            "values": [
+              0.23,
+              0.38,
+              0.35,
+              0.29,
+              0.41
+            ]
+          },
+          "dbMigrateMs": {
+            "median": 3.33,
+            "slowest": 3.82,
+            "values": [
+              3.33,
+              3.24,
+              3.82,
+              3.28,
+              3.61
+            ]
+          },
+          "migrateRebuild": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "migrateRebuildSkipped": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "orphanSkipped": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "orphanMs": {
+            "median": 0.28,
+            "slowest": 0.4,
+            "values": [
+              0.22,
+              0.26,
+              0.4,
+              0.32,
+              0.28
+            ]
+          },
+          "windowStateMs": {
+            "median": 0.79,
+            "slowest": 2.67,
+            "values": [
+              2.67,
+              0.54,
+              0.79,
+              0.83,
+              0.63
+            ]
+          },
+          "menuMs": {
+            "median": 0.65,
+            "slowest": 1.09,
+            "values": [
+              0.43,
+              0.51,
+              0.68,
+              0.65,
+              1.09
+            ]
+          },
+          "ipcRoundTripMs": {
+            "median": 38.5,
+            "slowest": 149.1,
+            "values": [
+              149.1,
+              67.7,
+              35.7,
+              28.8,
+              38.5
+            ]
+          },
+          "handlerMs": {
+            "median": 0.95,
+            "slowest": 3.46,
+            "values": [
+              3.46,
+              0.95,
+              0.91,
+              0.71,
+              1
+            ]
+          },
+          "queryMs": {
+            "median": 0.79,
+            "slowest": 3.19,
+            "values": [
+              3.19,
+              0.79,
+              0.76,
+              0.59,
+              0.82
+            ]
+          },
+          "validateMs": {
+            "median": 0.16,
+            "slowest": 0.29,
+            "values": [
+              0.29,
+              0.16,
+              0.16,
+              0.13,
+              0.19
+            ]
+          },
+          "rows": {
+            "median": 15,
+            "slowest": 15,
+            "values": [
+              15,
+              15,
+              15,
+              15,
+              15
+            ]
+          },
+          "gotoFlushMs": {
+            "median": 22.3,
+            "slowest": 124.3,
+            "values": [
+              124.3,
+              33.4,
+              20,
+              19.9,
+              22.3
+            ]
+          },
+          "backupMs": {
+            "median": 1.67,
+            "slowest": 2.34,
+            "values": [
+              1.47,
+              1.54,
+              1.88,
+              2.34,
+              1.67
+            ]
+          },
+          "backupCopied": [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "preloadMs": {
+            "median": 0.6,
+            "slowest": 6.4,
+            "values": [
+              6.4,
+              0.4,
+              0.6,
+              0.4,
+              0.7
+            ]
+          },
+          "jsEvalToRenderMs": {
+            "median": 46.3,
+            "slowest": 245.3,
+            "values": [
+              245.3,
+              66.6,
+              35.8,
+              46.3,
+              41
+            ]
+          },
+          "renderToCommitMs": {
+            "median": 79.8,
+            "slowest": 249.3,
+            "values": [
+              249.3,
+              79.8,
+              148.6,
+              48.2,
+              47.3
+            ]
+          }
+        },
+        "medianRun": {
+          "fromShown": {
+            "htmlParse": -221,
+            "didStartLoading": -1060,
+            "preloadStart": -225,
+            "preloadEnd": -224,
+            "domReady": -34,
+            "didFinishLoad": 2,
+            "jsEval": -75,
+            "reactRenderStart": -39,
+            "reactCommit": 110,
+            "reactCommits": 2,
+            "shellVisible": 199,
+            "ipcSend": 173,
+            "ipcRecv": 209,
+            "storeCleared": 173,
+            "storeFilled": 209,
+            "flowInit": 232,
+            "flowInits": 1,
+            "canvasRebuilds": 3,
+            "flowMeasureEvents": 2,
+            "taskVisible": 252,
+            "taskReady": 253,
+            "fcp": 153,
+            "lcp": null,
+            "fontsReady": 273
+          },
+          "durations": {
+            "processToMainMs": 84,
+            "processToShownMs": 1327,
+            "dbInitMs": 18.59,
+            "dbOpenMs": 4.48,
+            "dbSchemaMs": 0.35,
+            "dbMigrateMs": 3.82,
+            "migrateRebuild": null,
+            "migrateRebuildSkipped": true,
+            "orphanSkipped": true,
+            "orphanMs": 0.4,
+            "windowStateMs": 0.79,
+            "menuMs": 0.68,
+            "ipcRoundTripMs": 35.7,
+            "handlerMs": 0.91,
+            "queryMs": 0.76,
+            "validateMs": 0.16,
+            "rows": 15,
+            "gotoFlushMs": 20,
+            "backupMs": 1.88,
+            "backupCopied": false,
+            "preloadMs": 0.6,
+            "jsEvalToRenderMs": 35.8,
+            "renderToCommitMs": 148.6
+          },
+          "ipcChannels": [
+            "tasks:listByDate",
+            "tasks:listByDate"
+          ],
+          "renderCounts": {
+            "label": "render-counts",
+            "now": 1794113571748,
+            "perf": 1373.3,
+            "origin": 1794113570375,
+            "App": 2,
+            "Notebook": 2,
+            "TopBar": 2,
+            "DailyCanvas": 2,
+            "DailyFlow": 18,
+            "DeleteNotice": 2,
+            "MainListNode": 18,
+            "DateHeader": 18,
+            "TaskBullet": 108,
+            "BranchNode": 12,
+            "commits": 2,
+            "dimensionEvents": 2,
+            "dimensionNodes": 5
+          },
+          "resources": {
+            "label": "resources",
+            "now": 1794113571746,
+            "perf": 1371.1,
+            "origin": 1794113570375,
+            "count": 52,
+            "scripts": 50,
+            "styles": 0,
+            "fonts": 2,
+            "other": 0,
+            "encodedBytes": 12597286
+          },
+          "slowResources": [
+            {
+              "label": "resource-slow",
+              "now": 1794113571746,
+              "perf": 1371.9,
+              "origin": 1794113570375,
+              "rank": 1,
+              "name": "http://localhost:5173/@vite/client",
+              "initiatorType": "script",
+              "duration": 143.8,
+              "startTime": 837.4,
+              "encodedBodySize": 223023
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372,
+              "origin": 1794113570375,
+              "rank": 2,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/lucide-react.js?v=80eaf541",
+              "initiatorType": "script",
+              "duration": 46.2,
+              "startTime": 897.3,
+              "encodedBodySize": 5547558
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372,
+              "origin": 1794113570375,
+              "rank": 3,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541",
+              "initiatorType": "script",
+              "duration": 34.9,
+              "startTime": 868.2,
+              "encodedBodySize": 3132171
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372,
+              "origin": 1794113570375,
+              "rank": 4,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+              "initiatorType": "css",
+              "duration": 34.3,
+              "startTime": 1179.8,
+              "encodedBodySize": 23664
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372,
+              "origin": 1794113570375,
+              "rank": 5,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+              "initiatorType": "css",
+              "duration": 30.2,
+              "startTime": 1249.8,
+              "encodedBodySize": 24452
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372,
+              "origin": 1794113570375,
+              "rank": 6,
+              "name": "http://localhost:5173/src/lib/task-keys.ts",
+              "initiatorType": "script",
+              "duration": 30.1,
+              "startTime": 935.1,
+              "encodedBodySize": 15143
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372.1,
+              "origin": 1794113570375,
+              "rank": 7,
+              "name": "http://localhost:5173/src/store/task-size.ts",
+              "initiatorType": "script",
+              "duration": 29.5,
+              "startTime": 902.9,
+              "encodedBodySize": 6851
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372.1,
+              "origin": 1794113570375,
+              "rank": 8,
+              "name": "http://localhost:5173/src/main.tsx",
+              "initiatorType": "script",
+              "duration": 29.1,
+              "startTime": 837.7,
+              "encodedBodySize": 3109
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372.2,
+              "origin": 1794113570375,
+              "rank": 9,
+              "name": "http://localhost:5173/src/lib/direction.ts",
+              "initiatorType": "script",
+              "duration": 29,
+              "startTime": 935.1,
+              "encodedBodySize": 1254
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372.2,
+              "origin": 1794113570375,
+              "rank": 10,
+              "name": "http://localhost:5173/src/store/delete-task.ts",
+              "initiatorType": "script",
+              "duration": 28.7,
+              "startTime": 902.9,
+              "encodedBodySize": 6131
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372.2,
+              "origin": 1794113570375,
+              "rank": 11,
+              "name": "http://localhost:5173/src/lib/focus-field.ts",
+              "initiatorType": "script",
+              "duration": 27.7,
+              "startTime": 891.5,
+              "encodedBodySize": 12169
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372.2,
+              "origin": 1794113570375,
+              "rank": 12,
+              "name": "http://localhost:5173/src/store/paste-tree.ts",
+              "initiatorType": "script",
+              "duration": 27.1,
+              "startTime": 901.2,
+              "encodedBodySize": 10030
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372.2,
+              "origin": 1794113570375,
+              "rank": 13,
+              "name": "http://localhost:5173/src/lib/viewport.ts",
+              "initiatorType": "script",
+              "duration": 26.8,
+              "startTime": 891.5,
+              "encodedBodySize": 929
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372.2,
+              "origin": 1794113570375,
+              "rank": 14,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/src/shared/dates.ts",
+              "initiatorType": "script",
+              "duration": 26.6,
+              "startTime": 902.9,
+              "encodedBodySize": 2393
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113571747,
+              "perf": 1372.2,
+              "origin": 1794113570375,
+              "rank": 15,
+              "name": "http://localhost:5173/src/lib/caret.ts",
+              "initiatorType": "script",
+              "duration": 25.2,
+              "startTime": 900.8,
+              "encodedBodySize": 10948
+            }
+          ],
+          "fonts": [
+            {
+              "label": "font-file",
+              "now": 1794113571674,
+              "perf": 1299.4,
+              "origin": 1794113570375,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+              "startTime": 1179.8,
+              "duration": 34.3,
+              "transferSize": 300,
+              "encodedBodySize": 23664,
+              "initiatorType": "css"
+            },
+            {
+              "label": "font-file",
+              "now": 1794113571674,
+              "perf": 1299.4,
+              "origin": 1794113570375,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+              "startTime": 1249.8,
+              "duration": 30.2,
+              "transferSize": 300,
+              "encodedBodySize": 24452,
+              "initiatorType": "css"
+            },
+            {
+              "label": "font-loadingdone",
+              "now": 1794113571715,
+              "perf": 1340.3,
+              "origin": 1794113570375,
+              "family": "Inter",
+              "weight": "400",
+              "status": "loaded"
+            },
+            {
+              "label": "fonts-ready",
+              "now": 1794113571715,
+              "perf": 1340.5,
+              "origin": 1794113570375,
+              "status": "loaded",
+              "faces": 4,
+              "inter": 1,
+              "newsreader": 0
+            },
+            {
+              "label": "font-faces",
+              "now": 1794113571748,
+              "perf": 1373.3,
+              "origin": 1794113570375,
+              "count": 4,
+              "rules": "Inter 400 display=swap src=url(\"/@fs/C:/Users/LENOVO - PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2\") format(\"woff2\"), url(\"/@fs/C:/Users/LENOVO  || Inter 600 display=swap src=url(\"/@fs/C:/Users/LENOVO - PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2\") format(\"woff2\"), url(\"/@fs/C:/Users/LENOVO  || Newsreader 400 display=swap src=url(\"/@fs/C:/Users/LENOVO - PC/Desktop/branchlog/node_modules/@fontsource/newsreader/files/newsreader-latin-400-normal.woff2\") format(\"woff2\"), url(\"/@fs/C:/Use || Newsreader 600 display=swap src=url(\"/@fs/C:/Users/LENOVO - PC/Desktop/branchlog/node_modules/@fontsource/newsreader/files/newsreader-latin-600-normal.woff2\") format(\"woff2\"), url(\"/@fs/C:/Use"
+            }
+          ],
+          "longTasks": [
+            {
+              "label": "longtask",
+              "now": 1794113571584,
+              "perf": 1209.7,
+              "origin": 1794113570375,
+              "startTime": 1035.7,
+              "duration": 95,
+              "scripts": ""
+            },
+            {
+              "label": "loaf",
+              "now": 1794113571714,
+              "perf": 1339.9,
+              "origin": 1794113570375,
+              "startTime": 1034.7,
+              "duration": 171.6,
+              "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:46"
+            },
+            {
+              "label": "loaf",
+              "now": 1794113571715,
+              "perf": 1340.6,
+              "origin": 1794113570375,
+              "startTime": 1208.2,
+              "duration": 66.6,
+              "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:35 | DIV.onwheel@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:18 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:7"
+            },
+            {
+              "label": "loaf",
+              "now": 1794113571748,
+              "perf": 1373.7,
+              "origin": 1794113570375,
+              "startTime": 1275.7,
+              "duration": 62.6,
+              "scripts": "VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:18 | VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:18 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:17"
+            }
+          ],
+          "shell": {
+            "label": "shell-visible",
+            "now": 1794113571641,
+            "perf": 1266.7,
+            "origin": 1794113570375,
+            "text": "Sunday, November 8",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif",
+            "newsreaderReady": 0,
+            "left": -1,
+            "top": 104
+          },
+          "task": {
+            "label": "task-visible",
+            "now": 1794113571694,
+            "perf": 1319.9,
+            "origin": 1794113570375,
+            "w": 493,
+            "h": 26,
+            "left": 389,
+            "top": 213,
+            "text": "Call the school about the Thursday pickup",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif"
+          },
+          "ready": {
+            "label": "task-ready-for-input",
+            "now": 1794113571695,
+            "perf": 1320.2,
+            "origin": 1794113570375,
+            "contentEditable": "false",
+            "tabIndex": 0,
+            "pointerEvents": "all",
+            "visibility": "visible",
+            "display": "block",
+            "interReady": 1
+          },
+          "flow": {
+            "label": "react-flow-init",
+            "now": 1794113571674,
+            "perf": 1299.1,
+            "origin": 1794113570375,
+            "x": 353,
+            "y": 28,
+            "zoom": 1,
+            "nodes": 1
+          },
+          "pragmas": {
+            "label": "db-pragma-values",
+            "now": 1794113570315,
+            "perf": 222.56,
+            "origin": 1794113570093.69,
+            "journal": "wal",
+            "synchronous": 1,
+            "foreignKeys": 1,
+            "busyTimeout": 2000
+          },
+          "devtools": {
+            "label": "devtools-opened",
+            "now": 1794113571753,
+            "perf": 1660.42,
+            "origin": 1794113570093.69,
+            "open": 0
+          },
+          "windows": {
+            "label": "window-count",
+            "now": 1794113571753,
+            "perf": 1660.87,
+            "origin": 1794113570093.69,
+            "count": 1
+          },
+          "csp": {
+            "label": "csp-header-checks",
+            "now": 1794113571754,
+            "perf": 1661.29,
+            "origin": 1794113570093.69,
+            "count": 54
+          },
+          "packaged": 0,
+          "navigation": {
+            "label": "navigation",
+            "now": 1794113571745,
+            "perf": 1370.8,
+            "origin": 1794113570375,
+            "responseEnd": 224.8,
+            "domInteractive": 847.2,
+            "domContentLoaded": 1032,
+            "loadEventEnd": 1035.3,
+            "transferSize": 300,
+            "decodedBodySize": 1086,
+            "type": "navigate"
+          },
+          "reason": "ready",
+          "backupOverlapsIpc": false
+        },
+        "failures": 0
+      },
+      "warm": {
+        "fromShown": {
+          "htmlParse": {
+            "median": -726,
+            "slowest": -542,
+            "values": [
+              -542,
+              -7229,
+              -11606,
+              null,
+              -726
+            ]
+          },
+          "didStartLoading": {
+            "median": -975,
+            "slowest": -710,
+            "values": [
+              -710,
+              -11189,
+              -15259,
+              null,
+              -975
+            ]
+          },
+          "preloadStart": {
+            "median": -730,
+            "slowest": -546,
+            "values": [
+              -546,
+              -7371,
+              -11722,
+              null,
+              -730
+            ]
+          },
+          "preloadEnd": {
+            "median": -730,
+            "slowest": -546,
+            "values": [
+              -546,
+              -7355,
+              -11714,
+              null,
+              -730
+            ]
+          },
+          "domReady": {
+            "median": -48,
+            "slowest": -13,
+            "values": [
+              -53,
+              -48,
+              -71,
+              null,
+              -13
+            ]
+          },
+          "didFinishLoad": {
+            "median": 13,
+            "slowest": 26,
+            "values": [
+              2,
+              13,
+              26,
+              null,
+              1
+            ]
+          },
+          "jsEval": {
+            "median": -90,
+            "slowest": -56,
+            "values": [
+              -90,
+              -273,
+              -370,
+              null,
+              -56
+            ]
+          },
+          "reactRenderStart": {
+            "median": -56,
+            "slowest": -17,
+            "values": [
+              -56,
+              -102,
+              -138,
+              null,
+              -17
+            ]
+          },
+          "reactCommit": {
+            "median": 113,
+            "slowest": 135,
+            "values": [
+              -21,
+              135,
+              113,
+              null,
+              32
+            ]
+          },
+          "reactCommits": {
+            "median": 2,
+            "slowest": 2,
+            "values": [
+              2,
+              2,
+              2,
+              0,
+              2
+            ]
+          },
+          "shellVisible": {
+            "median": 611,
+            "slowest": 668,
+            "values": [
+              61,
+              611,
+              668,
+              null,
+              104
+            ]
+          },
+          "ipcSend": {
+            "median": 496,
+            "slowest": 545,
+            "values": [
+              33,
+              496,
+              545,
+              null,
+              82
+            ]
+          },
+          "ipcRecv": {
+            "median": 681,
+            "slowest": 726,
+            "values": [
+              74,
+              681,
+              726,
+              null,
+              113
+            ]
+          },
+          "storeCleared": {
+            "median": 495,
+            "slowest": 545,
+            "values": [
+              33,
+              495,
+              545,
+              null,
+              82
+            ]
+          },
+          "storeFilled": {
+            "median": 683,
+            "slowest": 727,
+            "values": [
+              74,
+              683,
+              727,
+              null,
+              114
+            ]
+          },
+          "flowInit": {
+            "median": 936,
+            "slowest": 1031,
+            "values": [
+              105,
+              936,
+              1031,
+              null,
+              140
+            ]
+          },
+          "flowInits": {
+            "median": 1,
+            "slowest": 1,
+            "values": [
+              1,
+              1,
+              1,
+              0,
+              1
+            ]
+          },
+          "canvasRebuilds": {
+            "median": 3,
+            "slowest": 3,
+            "values": [
+              3,
+              3,
+              3,
+              0,
+              3
+            ]
+          },
+          "flowMeasureEvents": {
+            "median": 2,
+            "slowest": 3,
+            "values": [
+              2,
+              3,
+              3,
+              0,
+              2
+            ]
+          },
+          "taskVisible": {
+            "median": 793,
+            "slowest": 837,
+            "values": [
+              140,
+              793,
+              837,
+              null,
+              160
+            ]
+          },
+          "taskReady": {
+            "median": 796,
+            "slowest": 840,
+            "values": [
+              141,
+              796,
+              840,
+              null,
+              161
+            ]
+          },
+          "fcp": {
+            "median": 405,
+            "slowest": 466,
+            "values": [
+              40,
+              405,
+              466,
+              null,
+              74
+            ]
+          },
+          "lcp": {
+            "median": 741,
+            "slowest": 802,
+            "values": [
+              88,
+              741,
+              802,
+              null,
+              122
+            ]
+          },
+          "fontsReady": {
+            "median": 1061,
+            "slowest": 1188,
+            "values": [
+              164,
+              1061,
+              1188,
+              null,
+              181
+            ]
+          }
+        },
+        "durations": {
+          "processToMainMs": {
+            "median": 69,
+            "slowest": 73,
+            "values": [
+              73,
+              73,
+              69,
+              57,
+              63
+            ]
+          },
+          "processToShownMs": {
+            "median": 11396,
+            "slowest": 15476,
+            "values": [
+              988,
+              11396,
+              15476,
+              1151
+            ]
+          },
+          "dbInitMs": {
+            "median": 15.09,
+            "slowest": 31.33,
+            "values": [
+              31.33,
+              13.21,
+              15.09,
+              14.38
+            ]
+          },
+          "dbOpenMs": {
+            "median": 3.65,
+            "slowest": 5.84,
+            "values": [
+              5.84,
+              3.3,
+              3.65,
+              3.32
+            ]
+          },
+          "dbSchemaMs": {
+            "median": 0.26,
+            "slowest": 0.33,
+            "values": [
+              0.33,
+              0.26,
+              0.23,
+              0.22
+            ]
+          },
+          "dbMigrateMs": {
+            "median": 3.45,
+            "slowest": 5.45,
+            "values": [
+              5.45,
+              2.92,
+              3.45,
+              3.21
+            ]
+          },
+          "migrateRebuild": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "migrateRebuildSkipped": [
+            true,
+            true,
+            true,
+            false,
+            true
+          ],
+          "orphanSkipped": [
+            true,
+            true,
+            true,
+            null,
+            true
+          ],
+          "orphanMs": {
+            "median": 0.34,
+            "slowest": 0.61,
+            "values": [
+              0.61,
+              0.33,
+              0.24,
+              0.34
+            ]
+          },
+          "windowStateMs": {
+            "median": 0.64,
+            "slowest": 0.83,
+            "values": [
+              0.83,
+              0.57,
+              0.64,
+              0.61
+            ]
+          },
+          "menuMs": {
+            "median": 0.53,
+            "slowest": 0.73,
+            "values": [
+              0.73,
+              0.53,
+              0.5,
+              0.48
+            ]
+          },
+          "ipcRoundTripMs": {
+            "median": 180.2,
+            "slowest": 185.3,
+            "values": [
+              41.1,
+              185.3,
+              180.2,
+              30.7
+            ]
+          },
+          "handlerMs": {
+            "median": 2.83,
+            "slowest": 4.25,
+            "values": [
+              0.8,
+              2.83,
+              4.25,
+              0.79
+            ]
+          },
+          "queryMs": {
+            "median": 2.18,
+            "slowest": 3.75,
+            "values": [
+              0.65,
+              2.18,
+              3.75,
+              0.67
+            ]
+          },
+          "validateMs": {
+            "median": 0.53,
+            "slowest": 0.65,
+            "values": [
+              0.16,
+              0.65,
+              0.53,
+              0.12
+            ]
+          },
+          "rows": {
+            "median": 15,
+            "slowest": 15,
+            "values": [
+              15,
+              15,
+              15,
+              15
+            ]
+          },
+          "gotoFlushMs": {
+            "median": 100.4,
+            "slowest": 131.7,
+            "values": [
+              23.8,
+              100.4,
+              131.7,
+              18.1
+            ]
+          },
+          "backupMs": {
+            "median": 1.66,
+            "slowest": 1.84,
+            "values": [
+              1.6,
+              1.49,
+              1.84,
+              1.66
+            ]
+          },
+          "backupCopied": [
+            false,
+            false,
+            false,
+            null,
+            false
+          ],
+          "preloadMs": {
+            "median": 8.8,
+            "slowest": 17.7,
+            "values": [
+              0.6,
+              17.7,
+              8.8,
+              0.5
+            ]
+          },
+          "jsEvalToRenderMs": {
+            "median": 171.3,
+            "slowest": 231.2,
+            "values": [
+              34.2,
+              171.3,
+              231.2,
+              38.2
+            ]
+          },
+          "renderToCommitMs": {
+            "median": 236.4,
+            "slowest": 251,
+            "values": [
+              34.8,
+              236.4,
+              251,
+              49.9
+            ]
+          }
+        },
+        "medianRun": {
+          "fromShown": {
+            "htmlParse": -7229,
+            "didStartLoading": -11189,
+            "preloadStart": -7371,
+            "preloadEnd": -7355,
+            "domReady": -48,
+            "didFinishLoad": 13,
+            "jsEval": -273,
+            "reactRenderStart": -102,
+            "reactCommit": 135,
+            "reactCommits": 2,
+            "shellVisible": 611,
+            "ipcSend": 496,
+            "ipcRecv": 681,
+            "storeCleared": 495,
+            "storeFilled": 683,
+            "flowInit": 936,
+            "flowInits": 1,
+            "canvasRebuilds": 3,
+            "flowMeasureEvents": 3,
+            "taskVisible": 793,
+            "taskReady": 796,
+            "fcp": 405,
+            "lcp": 741,
+            "fontsReady": 1061
+          },
+          "durations": {
+            "processToMainMs": 73,
+            "processToShownMs": 11396,
+            "dbInitMs": 13.21,
+            "dbOpenMs": 3.3,
+            "dbSchemaMs": 0.26,
+            "dbMigrateMs": 2.92,
+            "migrateRebuild": null,
+            "migrateRebuildSkipped": true,
+            "orphanSkipped": true,
+            "orphanMs": 0.33,
+            "windowStateMs": 0.57,
+            "menuMs": 0.53,
+            "ipcRoundTripMs": 185.3,
+            "handlerMs": 2.83,
+            "queryMs": 2.18,
+            "validateMs": 0.65,
+            "rows": 15,
+            "gotoFlushMs": 100.4,
+            "backupMs": 1.49,
+            "backupCopied": false,
+            "preloadMs": 17.7,
+            "jsEvalToRenderMs": 171.3,
+            "renderToCommitMs": 236.4
+          },
+          "ipcChannels": [
+            "tasks:listByDate",
+            "tasks:listByDate"
+          ],
+          "renderCounts": {
+            "label": "render-counts",
+            "now": 1794113653300,
+            "perf": 12313,
+            "origin": 1794113640987.8,
+            "App": 2,
+            "Notebook": 2,
+            "TopBar": 2,
+            "DailyCanvas": 2,
+            "DailyFlow": 18,
+            "DeleteNotice": 2,
+            "MainListNode": 22,
+            "DateHeader": 22,
+            "TaskBullet": 162,
+            "BranchNode": 18,
+            "commits": 2,
+            "dimensionEvents": 3,
+            "dimensionNodes": 6
+          },
+          "resources": {
+            "label": "resources",
+            "now": 1794113653278,
+            "perf": 12290.5,
+            "origin": 1794113640987.8,
+            "count": 52,
+            "scripts": 50,
+            "styles": 0,
+            "fonts": 2,
+            "other": 0,
+            "encodedBytes": 12597278
+          },
+          "slowResources": [
+            {
+              "label": "resource-slow",
+              "now": 1794113653282,
+              "perf": 12294.8,
+              "origin": 1794113640987.8,
+              "rank": 1,
+              "name": "http://localhost:5173/@vite/client",
+              "initiatorType": "script",
+              "duration": 4843.9,
+              "startTime": 3781.2,
+              "encodedBodySize": 223015
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653282,
+              "perf": 12295,
+              "origin": 1794113640987.8,
+              "rank": 2,
+              "name": "http://localhost:5173/src/temp-first-paint.ts",
+              "initiatorType": "script",
+              "duration": 3125.2,
+              "startTime": 4204.8,
+              "encodedBodySize": 28627
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653282,
+              "perf": 12295.1,
+              "origin": 1794113640987.8,
+              "rank": 3,
+              "name": "http://localhost:5173/src/styles/globals.css",
+              "initiatorType": "script",
+              "duration": 3077.9,
+              "startTime": 4206.9,
+              "encodedBodySize": 19240
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.1,
+              "origin": 1794113640987.8,
+              "rank": 4,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/src/shared/temp-timing.ts",
+              "initiatorType": "script",
+              "duration": 3058.6,
+              "startTime": 4205.3,
+              "encodedBodySize": 4562
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.3,
+              "origin": 1794113640987.8,
+              "rank": 5,
+              "name": "http://localhost:5173/src/App.tsx",
+              "initiatorType": "script",
+              "duration": 3018.3,
+              "startTime": 4206.9,
+              "encodedBodySize": 13151
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.3,
+              "origin": 1794113640987.8,
+              "rank": 6,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/newsreader/latin-600.css",
+              "initiatorType": "script",
+              "duration": 2994.7,
+              "startTime": 4206.6,
+              "encodedBodySize": 1028
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.4,
+              "origin": 1794113640987.8,
+              "rank": 7,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/latin-400.css",
+              "initiatorType": "script",
+              "duration": 2970.8,
+              "startTime": 4205.4,
+              "encodedBodySize": 988
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.4,
+              "origin": 1794113640987.8,
+              "rank": 8,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/latin-600.css",
+              "initiatorType": "script",
+              "duration": 2959.9,
+              "startTime": 4205.5,
+              "encodedBodySize": 988
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.5,
+              "origin": 1794113640987.8,
+              "rank": 9,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/newsreader/latin-400.css",
+              "initiatorType": "script",
+              "duration": 2887.1,
+              "startTime": 4205.6,
+              "encodedBodySize": 1028
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.6,
+              "origin": 1794113640987.8,
+              "rank": 10,
+              "name": "http://localhost:5173/@react-refresh",
+              "initiatorType": "script",
+              "duration": 2250.8,
+              "startTime": 4005.5,
+              "encodedBodySize": 118969
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.7,
+              "origin": 1794113640987.8,
+              "rank": 11,
+              "name": "http://localhost:5173/src/store/paste-tree.ts",
+              "initiatorType": "script",
+              "duration": 2054.2,
+              "startTime": 8179.1,
+              "encodedBodySize": 10030
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.7,
+              "origin": 1794113640987.8,
+              "rank": 12,
+              "name": "http://localhost:5173/src/store/delete-notice.ts",
+              "initiatorType": "script",
+              "duration": 1848.3,
+              "startTime": 8107.8,
+              "encodedBodySize": 2667
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.7,
+              "origin": 1794113640987.8,
+              "rank": 13,
+              "name": "http://localhost:5173/src/store/notebook.ts",
+              "initiatorType": "script",
+              "duration": 1725,
+              "startTime": 7236.5,
+              "encodedBodySize": 37021
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.7,
+              "origin": 1794113640987.8,
+              "rank": 14,
+              "name": "http://localhost:5173/src/components/DailyCanvas.tsx",
+              "initiatorType": "script",
+              "duration": 1625,
+              "startTime": 7234.6,
+              "encodedBodySize": 30634
+            },
+            {
+              "label": "resource-slow",
+              "now": 1794113653283,
+              "perf": 12295.8,
+              "origin": 1794113640987.8,
+              "rank": 15,
+              "name": "http://localhost:5173/src/store/removed.ts",
+              "initiatorType": "script",
+              "duration": 1448.1,
+              "startTime": 8317.3,
+              "encodedBodySize": 2698
+            }
+          ],
+          "fonts": [
+            {
+              "label": "font-file",
+              "now": 1794113652866,
+              "perf": 11879,
+              "origin": 1794113640987.8,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
+              "startTime": 11367.1,
+              "duration": 235.8,
+              "transferSize": 300,
+              "encodedBodySize": 23664,
+              "initiatorType": "css"
+            },
+            {
+              "label": "font-file",
+              "now": 1794113653234,
+              "perf": 12246.3,
+              "origin": 1794113640987.8,
+              "name": "http://localhost:5173/@fs/C:/Users/LENOVO%20-%20PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
+              "startTime": 11752.9,
+              "duration": 381.6,
+              "transferSize": 300,
+              "encodedBodySize": 24452,
+              "initiatorType": "css"
+            },
+            {
+              "label": "font-loadingdone",
+              "now": 1794113653246,
+              "perf": 12258.1,
+              "origin": 1794113640987.8,
+              "family": "Inter",
+              "weight": "400",
+              "status": "loaded"
+            },
+            {
+              "label": "font-loadingdone",
+              "now": 1794113653246,
+              "perf": 12258.3,
+              "origin": 1794113640987.8,
+              "family": "Inter",
+              "weight": "600",
+              "status": "loaded"
+            },
+            {
+              "label": "fonts-ready",
+              "now": 1794113653248,
+              "perf": 12260.2,
+              "origin": 1794113640987.8,
+              "status": "loaded",
+              "faces": 4,
+              "inter": 1,
+              "newsreader": 0
+            },
+            {
+              "label": "font-faces",
+              "now": 1794113653300,
+              "perf": 12312.7,
+              "origin": 1794113640987.8,
+              "count": 4,
+              "rules": "Inter 400 display=swap src=url(\"/@fs/C:/Users/LENOVO - PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2\") format(\"woff2\"), url(\"/@fs/C:/Users/LENOVO  || Inter 600 display=swap src=url(\"/@fs/C:/Users/LENOVO - PC/Desktop/branchlog/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2\") format(\"woff2\"), url(\"/@fs/C:/Users/LENOVO  || Newsreader 400 display=swap src=url(\"/@fs/C:/Users/LENOVO - PC/Desktop/branchlog/node_modules/@fontsource/newsreader/files/newsreader-latin-400-normal.woff2\") format(\"woff2\"), url(\"/@fs/C:/Use || Newsreader 600 display=swap src=url(\"/@fs/C:/Users/LENOVO - PC/Desktop/branchlog/node_modules/@fontsource/newsreader/files/newsreader-latin-600-normal.woff2\") format(\"woff2\"), url(\"/@fs/C:/Use"
+            }
+          ],
+          "longTasks": [
+            {
+              "label": "longtask",
+              "now": 1794113652154,
+              "perf": 11167.1,
+              "origin": 1794113640987.8,
+              "startTime": 10926.5,
+              "duration": 225,
+              "scripts": ""
+            },
+            {
+              "label": "longtask",
+              "now": 1794113652864,
+              "perf": 11876.3,
+              "origin": 1794113640987.8,
+              "startTime": 11174.2,
+              "duration": 161,
+              "scripts": ""
+            },
+            {
+              "label": "longtask",
+              "now": 1794113652864,
+              "perf": 11876.5,
+              "origin": 1794113640987.8,
+              "startTime": 11508.5,
+              "duration": 202,
+              "scripts": ""
+            },
+            {
+              "label": "longtask",
+              "now": 1794113653158,
+              "perf": 12170.8,
+              "origin": 1794113640987.8,
+              "startTime": 11880.3,
+              "duration": 111,
+              "scripts": ""
+            },
+            {
+              "label": "longtask",
+              "now": 1794113653158,
+              "perf": 12170.9,
+              "origin": 1794113640987.8,
+              "startTime": 11992.1,
+              "duration": 140,
+              "scripts": ""
+            },
+            {
+              "label": "loaf",
+              "now": 1794113653161,
+              "perf": 12174.1,
+              "origin": 1794113640987.8,
+              "startTime": 3855.3,
+              "duration": 139.7,
+              "scripts": "http://localhost:5173/?measure=1@http://localhost:5173/?measure=1:5"
+            },
+            {
+              "label": "loaf",
+              "now": 1794113653162,
+              "perf": 12174.3,
+              "origin": 1794113640987.8,
+              "startTime": 10926.5,
+              "duration": 231.2,
+              "scripts": "http://localhost:5173/src/main.tsx@http://localhost:5173/src/main.tsx:188"
+            },
+            {
+              "label": "loaf",
+              "now": 1794113653162,
+              "perf": 12174.5,
+              "origin": 1794113640987.8,
+              "startTime": 11162.3,
+              "duration": 332.5,
+              "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:160"
+            },
+            {
+              "label": "longtask",
+              "now": 1794113653233,
+              "perf": 12246.1,
+              "origin": 1794113640987.8,
+              "startTime": 12178.1,
+              "duration": 66,
+              "scripts": ""
+            },
+            {
+              "label": "loaf",
+              "now": 1794113653234,
+              "perf": 12246.6,
+              "origin": 1794113640987.8,
+              "startTime": 11507.5,
+              "duration": 356,
+              "scripts": "MessagePort.onmessage@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:202 | FrameRequestCallback@http://localhost:5173/src/temp-first-paint.ts:99 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:38 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:10"
+            },
+            {
+              "label": "loaf",
+              "now": 1794113653248,
+              "perf": 12260.6,
+              "origin": 1794113640987.8,
+              "startTime": 11873.8,
+              "duration": 253.9,
+              "scripts": "VoidFunction@0-%20PC/Desktop/branchlog/node_modules/.vite/deps/react-dom_client.js?v=80eaf541:108 | ResizeObserverCallback@O%20-%20PC/Desktop/branchlog/node_modules/.vite/deps/@xyflow_react.js?v=80eaf541:120"
+            }
+          ],
+          "shell": {
+            "label": "shell-visible",
+            "now": 1794113652798,
+            "perf": 11810.7,
+            "origin": 1794113640987.8,
+            "text": "Sunday, November 8",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif",
+            "newsreaderReady": 0,
+            "left": 0,
+            "top": 104
+          },
+          "task": {
+            "label": "task-visible",
+            "now": 1794113652980,
+            "perf": 11992.8,
+            "origin": 1794113640987.8,
+            "w": 492,
+            "h": 26,
+            "left": 36,
+            "top": 185,
+            "text": "Call the school about the Thursday pickup",
+            "fontFamily": "Inter, Geist, system-ui, sans-serif"
+          },
+          "ready": {
+            "label": "task-ready-for-input",
+            "now": 1794113652983,
+            "perf": 11995.8,
+            "origin": 1794113640987.8,
+            "contentEditable": "false",
+            "tabIndex": 0,
+            "pointerEvents": "all",
+            "visibility": "visible",
+            "display": "block",
+            "interReady": 1
+          },
+          "flow": {
+            "label": "react-flow-init",
+            "now": 1794113653123,
+            "perf": 12135.8,
+            "origin": 1794113640987.8,
+            "x": 353,
+            "y": 28,
+            "zoom": 1,
+            "nodes": 4
+          },
+          "pragmas": {
+            "label": "db-pragma-values",
+            "now": 1794113640945,
+            "perf": 180.72,
+            "origin": 1794113640765.223,
+            "journal": "wal",
+            "synchronous": 1,
+            "foreignKeys": 1,
+            "busyTimeout": 2000
+          },
+          "devtools": {
+            "label": "devtools-opened",
+            "now": 1794113653339,
+            "perf": 12574.34,
+            "origin": 1794113640765.223,
+            "open": 0
+          },
+          "windows": {
+            "label": "window-count",
+            "now": 1794113653345,
+            "perf": 12580.5,
+            "origin": 1794113640765.223,
+            "count": 1
+          },
+          "csp": {
+            "label": "csp-header-checks",
+            "now": 1794113653346,
+            "perf": 12581.79,
+            "origin": 1794113640765.223,
+            "count": 54
+          },
+          "packaged": 0,
+          "navigation": {
+            "label": "navigation",
+            "now": 1794113653277,
+            "perf": 12289.5,
+            "origin": 1794113640987.8,
+            "responseEnd": 3144.3,
+            "domInteractive": 4009.2,
+            "domContentLoaded": 11114.1,
+            "loadEventEnd": 11169,
+            "transferSize": 300,
+            "decodedBodySize": 1086,
+            "type": "navigate"
+          },
+          "reason": "ready",
+          "backupOverlapsIpc": false
+        },
+        "failures": 1
+      }
+    }
+  }
+}

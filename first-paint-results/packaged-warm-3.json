@@ -1,0 +1,229 @@
+{
+  "fromShown": {
+    "htmlParse": null,
+    "didStartLoading": -1110,
+    "preloadStart": -148,
+    "preloadEnd": -147,
+    "domReady": -28,
+    "didFinishLoad": -26,
+    "jsEval": -44,
+    "reactRenderStart": -31,
+    "reactCommit": 6,
+    "reactCommits": 1,
+    "shellVisible": 68,
+    "ipcSend": 48,
+    "ipcRecv": 86,
+    "storeCleared": 48,
+    "storeFilled": 86,
+    "flowInit": 85,
+    "flowInits": 1,
+    "canvasRebuilds": 2,
+    "flowMeasureEvents": 3,
+    "taskVisible": 102,
+    "taskReady": 102,
+    "fcp": 50,
+    "lcp": 102,
+    "fontsReady": 135
+  },
+  "durations": {
+    "processToMainMs": 63,
+    "processToShownMs": 1306,
+    "dbInitMs": 16.23,
+    "dbOpenMs": 4.35,
+    "dbSchemaMs": 0.25,
+    "dbMigrateMs": 2.98,
+    "migrateRebuild": null,
+    "migrateRebuildSkipped": true,
+    "orphanSkipped": true,
+    "orphanMs": 0.41,
+    "windowStateMs": 0.87,
+    "menuMs": 0.57,
+    "ipcRoundTripMs": 37.7,
+    "handlerMs": 0.94,
+    "queryMs": 0.79,
+    "validateMs": 0.15,
+    "rows": 15,
+    "gotoFlushMs": 10.4,
+    "backupMs": 2.43,
+    "backupCopied": false,
+    "preloadMs": 0.8,
+    "jsEvalToRenderMs": 13.1,
+    "renderToCommitMs": 36.1
+  },
+  "ipcChannels": [
+    "tasks:listByDate"
+  ],
+  "renderCounts": {
+    "label": "render-counts",
+    "now": 1794113482534,
+    "perf": 1286.4,
+    "origin": 1794113481248,
+    "App": 1,
+    "Notebook": 1,
+    "TopBar": 1,
+    "DailyCanvas": 1,
+    "DailyFlow": 7,
+    "DeleteNotice": 1,
+    "MainListNode": 10,
+    "DateHeader": 10,
+    "TaskBullet": 66,
+    "BranchNode": 6,
+    "commits": 1,
+    "dimensionEvents": 3,
+    "dimensionNodes": 6
+  },
+  "resources": {
+    "label": "resources",
+    "now": 1794113482533,
+    "perf": 1285.8,
+    "origin": 1794113481248,
+    "count": 0,
+    "scripts": 0,
+    "styles": 0,
+    "fonts": 0,
+    "other": 0,
+    "encodedBytes": 0
+  },
+  "slowResources": [],
+  "fonts": [
+    {
+      "label": "font-loadingdone",
+      "now": 1794113482500,
+      "perf": 1252.7,
+      "origin": 1794113481248,
+      "family": "Inter",
+      "weight": "400",
+      "status": "loaded"
+    },
+    {
+      "label": "font-loadingdone",
+      "now": 1794113482500,
+      "perf": 1252.9,
+      "origin": 1794113481248,
+      "family": "Inter",
+      "weight": "600",
+      "status": "loaded"
+    },
+    {
+      "label": "fonts-ready",
+      "now": 1794113482501,
+      "perf": 1253,
+      "origin": 1794113481248,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    {
+      "label": "font-faces",
+      "now": 1794113482534,
+      "perf": 1286.3,
+      "origin": 1794113481248,
+      "count": 4,
+      "rules": "Inter 400 display=swap src=url(\"./inter-latin-400-normal-C38fXH4l.woff2\") format(\"woff2\"), url(\"./inter-latin-400-normal-CyCys3Eg.woff\") format(\"woff\") || Inter 600 display=swap src=url(\"./inter-latin-600-normal-LgqL8muc.woff2\") format(\"woff2\"), url(\"./inter-latin-600-normal-CiBQ2DWP.woff\") format(\"woff\") || Newsreader 400 display=swap src=url(\"./newsreader-latin-400-normal-BFBkh4jY.woff2\") format(\"woff2\"), url(\"./newsreader-latin-400-normal-gRTjlS2D.woff\") format(\"woff\") || Newsreader 600 display=swap src=url(\"./newsreader-latin-600-normal-30OJ_TG_.woff2\") format(\"woff2\"), url(\"./newsreader-latin-600-normal-DUnT2r2g.woff\") format(\"woff\")"
+    }
+  ],
+  "longTasks": [
+    {
+      "label": "loaf",
+      "now": 1794113482501,
+      "perf": 1253.7,
+      "origin": 1794113481248,
+      "startTime": 1092,
+      "duration": 56,
+      "scripts": ""
+    }
+  ],
+  "shell": {
+    "label": "shell-visible",
+    "now": 1794113482434,
+    "perf": 1186.8,
+    "origin": 1794113481248,
+    "text": "Sunday, November 8",
+    "fontFamily": "Inter, Geist, system-ui, sans-serif",
+    "newsreaderReady": 0,
+    "left": 0,
+    "top": 104
+  },
+  "task": {
+    "label": "task-visible",
+    "now": 1794113482468,
+    "perf": 1220.1,
+    "origin": 1794113481248,
+    "w": 492,
+    "h": 26,
+    "left": 389,
+    "top": 213,
+    "text": "Call the school about the Thursday pickup",
+    "fontFamily": "Inter, Geist, system-ui, sans-serif"
+  },
+  "ready": {
+    "label": "task-ready-for-input",
+    "now": 1794113482468,
+    "perf": 1220.4,
+    "origin": 1794113481248,
+    "contentEditable": "false",
+    "tabIndex": 0,
+    "pointerEvents": "all",
+    "visibility": "visible",
+    "display": "block",
+    "interReady": 1
+  },
+  "flow": {
+    "label": "react-flow-init",
+    "now": 1794113482451,
+    "perf": 1203.9,
+    "origin": 1794113481248,
+    "x": 353,
+    "y": 28,
+    "zoom": 1,
+    "nodes": 1
+  },
+  "pragmas": {
+    "label": "db-pragma-values",
+    "now": 1794113481200,
+    "perf": 171.72,
+    "origin": 1794113481028.486,
+    "journal": "wal",
+    "synchronous": 1,
+    "foreignKeys": 1,
+    "busyTimeout": 2000
+  },
+  "devtools": {
+    "label": "devtools-opened",
+    "now": 1794113482536,
+    "perf": 1508.18,
+    "origin": 1794113481028.486,
+    "open": 0
+  },
+  "windows": {
+    "label": "window-count",
+    "now": 1794113482537,
+    "perf": 1508.87,
+    "origin": 1794113481028.486,
+    "count": 1
+  },
+  "csp": {
+    "label": "csp-header-checks",
+    "now": 1794113482538,
+    "perf": 1509.88,
+    "origin": 1794113481028.486,
+    "count": 5
+  },
+  "packaged": 1,
+  "navigation": {
+    "label": "navigation",
+    "now": 1794113482533,
+    "perf": 1285.7,
+    "origin": 1794113481248,
+    "responseEnd": 24.1,
+    "domInteractive": 1017.5,
+    "domContentLoaded": 1090.9,
+    "loadEventEnd": 1091.1,
+    "transferSize": 1231,
+    "decodedBodySize": 931,
+    "type": "navigate"
+  },
+  "reason": "ready",
+  "backupOverlapsIpc": false
+}

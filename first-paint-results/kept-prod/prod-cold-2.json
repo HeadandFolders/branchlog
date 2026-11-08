@@ -1,0 +1,247 @@
+{
+  "fromShown": {
+    "htmlParse": null,
+    "didStartLoading": -509,
+    "preloadStart": -143,
+    "preloadEnd": -142,
+    "domReady": -62,
+    "didFinishLoad": -61,
+    "jsEval": -72,
+    "reactRenderStart": -65,
+    "reactCommit": -18,
+    "reactCommits": 1,
+    "shellVisible": 111,
+    "ipcSend": 75,
+    "ipcRecv": 125,
+    "storeCleared": 75,
+    "storeFilled": 126,
+    "flowInit": 145,
+    "flowInits": 1,
+    "canvasRebuilds": 2,
+    "flowMeasureEvents": 3,
+    "taskVisible": 148,
+    "taskReady": 149,
+    "fcp": 80,
+    "lcp": 148,
+    "fontsReady": 182
+  },
+  "durations": {
+    "processToMainMs": 57,
+    "processToShownMs": 689,
+    "dbInitMs": 15.57,
+    "dbOpenMs": 3.93,
+    "dbSchemaMs": 0.34,
+    "dbMigrateMs": 3.1,
+    "migrateRebuild": null,
+    "migrateRebuildSkipped": true,
+    "orphanSkipped": true,
+    "orphanMs": 0.32,
+    "windowStateMs": 0.7,
+    "menuMs": 0.6,
+    "ipcRoundTripMs": 50.6,
+    "handlerMs": 1.83,
+    "queryMs": 1.55,
+    "validateMs": 0.3,
+    "rows": 15,
+    "gotoFlushMs": 21.7,
+    "backupMs": 1.74,
+    "backupCopied": false,
+    "preloadMs": 0.7,
+    "jsEvalToRenderMs": 7.8,
+    "renderToCommitMs": 46.6
+  },
+  "ipcChannels": [
+    "tasks:listByDate"
+  ],
+  "renderCounts": {
+    "label": "render-counts",
+    "now": 1794112380655,
+    "perf": 713.5,
+    "origin": 1794112379942.3,
+    "App": 1,
+    "Notebook": 1,
+    "TopBar": 1,
+    "DailyCanvas": 1,
+    "DailyFlow": 8,
+    "DeleteNotice": 1,
+    "MainListNode": 10,
+    "DateHeader": 10,
+    "TaskBullet": 66,
+    "BranchNode": 6,
+    "commits": 1,
+    "dimensionEvents": 3,
+    "dimensionNodes": 6
+  },
+  "resources": {
+    "label": "resources",
+    "now": 1794112380655,
+    "perf": 712.8,
+    "origin": 1794112379942.3,
+    "count": 0,
+    "scripts": 0,
+    "styles": 0,
+    "fonts": 0,
+    "other": 0,
+    "encodedBytes": 0
+  },
+  "slowResources": [],
+  "fonts": [
+    {
+      "label": "font-loadingdone",
+      "now": 1794112380640,
+      "perf": 698.2,
+      "origin": 1794112379942.3,
+      "family": "Inter",
+      "weight": "400",
+      "status": "loaded"
+    },
+    {
+      "label": "font-loadingdone",
+      "now": 1794112380640,
+      "perf": 698.4,
+      "origin": 1794112379942.3,
+      "family": "Inter",
+      "weight": "600",
+      "status": "loaded"
+    },
+    {
+      "label": "fonts-ready",
+      "now": 1794112380640,
+      "perf": 698.5,
+      "origin": 1794112379942.3,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    {
+      "label": "font-faces",
+      "now": 1794112380655,
+      "perf": 713.4,
+      "origin": 1794112379942.3,
+      "count": 4,
+      "rules": "Inter 400 display=swap src=url(\"./inter-latin-400-normal-C38fXH4l.woff2\") format(\"woff2\"), url(\"./inter-latin-400-normal-CyCys3Eg.woff\") format(\"woff\") || Inter 600 display=swap src=url(\"./inter-latin-600-normal-LgqL8muc.woff2\") format(\"woff2\"), url(\"./inter-latin-600-normal-CiBQ2DWP.woff\") format(\"woff\") || Newsreader 400 display=swap src=url(\"./newsreader-latin-400-normal-BFBkh4jY.woff2\") format(\"woff2\"), url(\"./newsreader-latin-400-normal-gRTjlS2D.woff\") format(\"woff\") || Newsreader 600 display=swap src=url(\"./newsreader-latin-600-normal-30OJ_TG_.woff2\") format(\"woff2\"), url(\"./newsreader-latin-600-normal-DUnT2r2g.woff\") format(\"woff\")"
+    }
+  ],
+  "longTasks": [
+    {
+      "label": "loaf",
+      "now": 1794112380641,
+      "perf": 699.2,
+      "origin": 1794112379942.3,
+      "startTime": 378,
+      "duration": 52.3,
+      "scripts": ""
+    },
+    {
+      "label": "loaf",
+      "now": 1794112380641,
+      "perf": 699.3,
+      "origin": 1794112379942.3,
+      "startTime": 455.1,
+      "duration": 100.1,
+      "scripts": ""
+    },
+    {
+      "label": "loaf",
+      "now": 1794112380642,
+      "perf": 700.3,
+      "origin": 1794112379942.3,
+      "startTime": 556.4,
+      "duration": 79.7,
+      "scripts": ""
+    }
+  ],
+  "shell": {
+    "label": "shell-visible",
+    "now": 1794112380569,
+    "perf": 627.4,
+    "origin": 1794112379942.3,
+    "text": "Sunday, November 8",
+    "fontFamily": "Inter, Geist, system-ui, sans-serif",
+    "newsreaderReady": 0,
+    "left": 0,
+    "top": 104
+  },
+  "task": {
+    "label": "task-visible",
+    "now": 1794112380606,
+    "perf": 664.6,
+    "origin": 1794112379942.3,
+    "w": 492,
+    "h": 26,
+    "left": 389,
+    "top": 213,
+    "text": "Call the school about the Thursday pickup",
+    "fontFamily": "Inter, Geist, system-ui, sans-serif"
+  },
+  "ready": {
+    "label": "task-ready-for-input",
+    "now": 1794112380607,
+    "perf": 665.1,
+    "origin": 1794112379942.3,
+    "contentEditable": "false",
+    "tabIndex": 0,
+    "pointerEvents": "all",
+    "visibility": "visible",
+    "display": "block",
+    "interReady": 1
+  },
+  "flow": {
+    "label": "react-flow-init",
+    "now": 1794112380603,
+    "perf": 661.7,
+    "origin": 1794112379942.3,
+    "x": 353,
+    "y": 28,
+    "zoom": 1,
+    "nodes": 1
+  },
+  "pragmas": {
+    "label": "db-pragma-values",
+    "now": 1794112379899,
+    "perf": 155.79,
+    "origin": 1794112379743.597,
+    "journal": "wal",
+    "synchronous": 1,
+    "foreignKeys": 1,
+    "busyTimeout": 2000
+  },
+  "devtools": {
+    "label": "devtools-opened",
+    "now": 1794112380657,
+    "perf": 913.68,
+    "origin": 1794112379743.597,
+    "open": 0
+  },
+  "windows": {
+    "label": "window-count",
+    "now": 1794112380657,
+    "perf": 914.32,
+    "origin": 1794112379743.597,
+    "count": 1
+  },
+  "csp": {
+    "label": "csp-header-checks",
+    "now": 1794112380658,
+    "perf": 914.95,
+    "origin": 1794112379743.597,
+    "count": 5
+  },
+  "packaged": 0,
+  "navigation": {
+    "label": "navigation",
+    "now": 1794112380654,
+    "perf": 712.7,
+    "origin": 1794112379942.3,
+    "responseEnd": 22.9,
+    "domInteractive": 416,
+    "domContentLoaded": 454.6,
+    "loadEventEnd": 454.8,
+    "transferSize": 1231,
+    "decodedBodySize": 931,
+    "type": "navigate"
+  },
+  "reason": "ready",
+  "backupOverlapsIpc": false
+}

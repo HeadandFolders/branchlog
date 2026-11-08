@@ -1,0 +1,38 @@
+
+TEMP_MARK {"label":"main-evaluated","now":1794113328521,"perf":116.88,"origin":1794113328404.35,"uptimeMs":86}
+TEMP_MARK {"label":"when-ready","now":1794113328626,"perf":222.21,"origin":1794113328404.35,"uptimeMs":193,"packaged":0}
+TEMP_MARK {"label":"db-mkdir","now":1794113328628,"perf":224.39,"origin":1794113328404.35,"ms":0.62}
+TEMP_MARK {"label":"db-open","now":1794113328635,"perf":231.26,"origin":1794113328404.35,"ms":5.84}
+TEMP_MARK {"label":"db-pragma-journal","now":1794113328640,"perf":236.05,"origin":1794113328404.35,"ms":3.83}
+TEMP_MARK {"label":"db-pragma-foreign-keys","now":1794113328641,"perf":237.14,"origin":1794113328404.35,"ms":0.13}
+TEMP_MARK {"label":"db-pragma-busy","now":1794113328649,"perf":245.3,"origin":1794113328404.35,"ms":0.29}
+TEMP_MARK {"label":"db-schema","now":1794113328650,"perf":246.61,"origin":1794113328404.35,"ms":0.44}
+TEMP_MARK {"label":"migrate-fk","now":1794113328651,"perf":247.89,"origin":1794113328404.35,"ms":0.39,"action":"CASCADE"}
+TEMP_MARK {"label":"migrate-rebuild-skipped","now":1794113328652,"perf":248.77,"origin":1794113328404.35}
+TEMP_MARK {"label":"migrate-size","now":1794113328654,"perf":250.45,"origin":1794113328404.35,"ms":0.7}
+TEMP_MARK {"label":"migrate-orphan","now":1794113328655,"perf":251.62,"origin":1794113328404.35,"ms":0.45,"skipped":true}
+TEMP_MARK {"label":"db-migrate","now":1794113328656,"perf":252.43,"origin":1794113328404.35,"ms":5.07}
+TEMP_MARK {"label":"db-pragma-values","now":1794113328659,"perf":255.76,"origin":1794113328404.35,"journal":"wal","synchronous":1,"foreignKeys":1,"busyTimeout":2000}
+TEMP_MARK {"label":"db-init-total","now":1794113328661,"perf":257.32,"origin":1794113328404.35,"ms":33.58}
+Branchlog database: C:\Users\LENOVO - PC\Desktop\branchlog\first-paint-results\userdata\branchlog.sqlite
+TEMP_MARK {"label":"init-database-returned","now":1794113328662,"perf":258.02,"origin":1794113328404.35,"ms":34.55}
+TEMP_MARK {"label":"install-ipc","now":1794113328662,"perf":259.01,"origin":1794113328404.35,"ms":0.36}
+TEMP_MARK {"label":"install-security","now":1794113328673,"perf":269.46,"origin":1794113328404.35,"ms":9.33}
+TEMP_MARK {"label":"install-menu","now":1794113328675,"perf":271.09,"origin":1794113328404.35,"ms":0.93}
+TEMP_MARK {"label":"window-state","now":1794113328677,"perf":273.03,"origin":1794113328404.35,"ms":0.91}
+TEMP_MARK {"label":"window-constructed","now":1794113328719,"perf":315.12,"origin":1794113328404.35,"ms":41.1}
+(electron) 'console-message' arguments are deprecated and will be removed. Please use Event<WebContentsConsoleMessageEventParams> object instead.
+TEMP_MARK {"label":"did-start-loading","now":1794113328727,"perf":324.01,"origin":1794113328404.35}
+TEMP_MARK {"label":"load-called","now":1794113328729,"perf":325.37,"origin":1794113328404.35}
+TEMP_MARK {"label":"backup-start","now":1794113328730,"perf":326.03,"origin":1794113328404.35}
+TEMP_MARK {"label":"backup-skipped-existing","now":1794113328730,"perf":326.81,"origin":1794113328404.35}
+TEMP_MARK {"label":"backup-end","now":1794113328731,"perf":327.38,"origin":1794113328404.35,"ms":1.34,"copied":false,"removed":0}
+TEMP_MARK {"label":"backup-scheduled","now":1794113328731,"perf":327.73,"origin":1794113328404.35}
+TEMP_MARK {"label":"dom-ready","now":1794113329312,"perf":908.76,"origin":1794113328404.35}
+TEMP_MARK {"label":"did-finish-load","now":1794113329314,"perf":910.1,"origin":1794113328404.35}
+TEMP_MARK {"label":"ready-to-show","now":1794113329315,"perf":911.48,"origin":1794113328404.35}
+TEMP_MARK {"label":"window-shown","now":1794113329336,"perf":932.82,"origin":1794113328404.35}
+TEMP_MARK {"label":"ipc-listByDate","now":1794113329401,"perf":997.89,"origin":1794113328404.35,"handlerMs":1.1,"validateMs":0.22,"queryMs":0.89,"rows":15}
+TEMP_MARK {"label":"devtools-opened","now":1794113329512,"perf":1108.41,"origin":1794113328404.35,"open":0}
+TEMP_MARK {"label":"window-count","now":1794113329513,"perf":1109.3,"origin":1794113328404.35,"count":1}
+TEMP_MARK {"label":"csp-header-checks","now":1794113329513,"perf":1109.99,"origin":1794113328404.35,"count":5}

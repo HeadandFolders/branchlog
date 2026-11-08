@@ -1,0 +1,337 @@
+{
+  "fromShown": {
+    "htmlParse": null,
+    "didStartLoading": -6146,
+    "preloadStart": -558,
+    "preloadEnd": -547,
+    "domReady": -77,
+    "didFinishLoad": -73,
+    "jsEval": -146,
+    "reactRenderStart": -91,
+    "reactCommit": 31,
+    "reactCommits": 1,
+    "shellVisible": 378,
+    "ipcSend": 296,
+    "ipcRecv": 422,
+    "storeCleared": 296,
+    "storeFilled": 423,
+    "flowInit": 476,
+    "flowInits": 1,
+    "canvasRebuilds": 2,
+    "flowMeasureEvents": 3,
+    "taskVisible": 481,
+    "taskReady": 486,
+    "fcp": 300,
+    "lcp": 484,
+    "fontsReady": 619
+  },
+  "durations": {
+    "processToMainMs": 125,
+    "processToShownMs": 6448,
+    "dbInitMs": 19.57,
+    "dbOpenMs": 3.45,
+    "dbSchemaMs": 3.4,
+    "dbMigrateMs": 4.1,
+    "migrateRebuild": null,
+    "migrateRebuildSkipped": true,
+    "orphanSkipped": true,
+    "orphanMs": 0.31,
+    "windowStateMs": 2.04,
+    "menuMs": 0.54,
+    "ipcRoundTripMs": 125.9,
+    "handlerMs": 3.14,
+    "queryMs": 2.33,
+    "validateMs": 0.82,
+    "rows": 15,
+    "gotoFlushMs": 50.5,
+    "backupMs": 2.19,
+    "backupCopied": false,
+    "preloadMs": 11.7,
+    "jsEvalToRenderMs": 55.1,
+    "renderToCommitMs": 121.9
+  },
+  "ipcChannels": [
+    "tasks:listByDate"
+  ],
+  "renderCounts": {
+    "label": "render-counts",
+    "now": 1794113203394,
+    "perf": 6852.6,
+    "origin": 1794113196541.9,
+    "App": 1,
+    "Notebook": 1,
+    "TopBar": 1,
+    "DailyCanvas": 1,
+    "DailyFlow": 8,
+    "DeleteNotice": 1,
+    "MainListNode": 10,
+    "DateHeader": 10,
+    "TaskBullet": 66,
+    "BranchNode": 6,
+    "commits": 1,
+    "dimensionEvents": 3,
+    "dimensionNodes": 6
+  },
+  "resources": {
+    "label": "resources",
+    "now": 1794113203383,
+    "perf": 6841.6,
+    "origin": 1794113196541.9,
+    "count": 0,
+    "scripts": 0,
+    "styles": 0,
+    "fonts": 0,
+    "other": 0,
+    "encodedBytes": 0
+  },
+  "slowResources": [],
+  "fonts": [
+    {
+      "label": "font-loadingdone",
+      "now": 1794113203314,
+      "perf": 6772.5,
+      "origin": 1794113196541.9,
+      "family": "Inter",
+      "weight": "400",
+      "status": "loaded"
+    },
+    {
+      "label": "font-loadingdone",
+      "now": 1794113203314,
+      "perf": 6772.7,
+      "origin": 1794113196541.9,
+      "family": "Inter",
+      "weight": "600",
+      "status": "loaded"
+    },
+    {
+      "label": "fonts-ready",
+      "now": 1794113203317,
+      "perf": 6775.7,
+      "origin": 1794113196541.9,
+      "status": "loaded",
+      "faces": 4,
+      "inter": 1,
+      "newsreader": 0
+    },
+    {
+      "label": "font-faces",
+      "now": 1794113203394,
+      "perf": 6852.4,
+      "origin": 1794113196541.9,
+      "count": 4,
+      "rules": "Inter 400 display=swap src=url(\"./inter-latin-400-normal-C38fXH4l.woff2\") format(\"woff2\"), url(\"./inter-latin-400-normal-CyCys3Eg.woff\") format(\"woff\") || Inter 600 display=swap src=url(\"./inter-latin-600-normal-LgqL8muc.woff2\") format(\"woff2\"), url(\"./inter-latin-600-normal-CiBQ2DWP.woff\") format(\"woff\") || Newsreader 400 display=swap src=url(\"./newsreader-latin-400-normal-BFBkh4jY.woff2\") format(\"woff2\"), url(\"./newsreader-latin-400-normal-gRTjlS2D.woff\") format(\"woff\") || Newsreader 600 display=swap src=url(\"./newsreader-latin-600-normal-30OJ_TG_.woff2\") format(\"woff2\"), url(\"./newsreader-latin-600-normal-DUnT2r2g.woff\") format(\"woff\")"
+    }
+  ],
+  "longTasks": [
+    {
+      "label": "longtask",
+      "now": 1794113202633,
+      "perf": 6091.4,
+      "origin": 1794113196541.9,
+      "startTime": 6008.1,
+      "duration": 77,
+      "scripts": ""
+    },
+    {
+      "label": "longtask",
+      "now": 1794113203008,
+      "perf": 6466.9,
+      "origin": 1794113196541.9,
+      "startTime": 6091.7,
+      "duration": 99,
+      "scripts": ""
+    },
+    {
+      "label": "longtask",
+      "now": 1794113203009,
+      "perf": 6467.2,
+      "origin": 1794113196541.9,
+      "startTime": 6370.2,
+      "duration": 96,
+      "scripts": ""
+    },
+    {
+      "label": "loaf",
+      "now": 1794113203176,
+      "perf": 6634.4,
+      "origin": 1794113196541.9,
+      "startTime": 6008.1,
+      "duration": 78.9,
+      "scripts": ""
+    },
+    {
+      "label": "longtask",
+      "now": 1794113203176,
+      "perf": 6634.7,
+      "origin": 1794113196541.9,
+      "startTime": 6470.1,
+      "duration": 100,
+      "scripts": ""
+    },
+    {
+      "label": "longtask",
+      "now": 1794113203176,
+      "perf": 6634.8,
+      "origin": 1794113196541.9,
+      "startTime": 6577.8,
+      "duration": 50,
+      "scripts": ""
+    },
+    {
+      "label": "longtask",
+      "now": 1794113203306,
+      "perf": 6764.3,
+      "origin": 1794113196541.9,
+      "startTime": 6635.8,
+      "duration": 74,
+      "scripts": ""
+    },
+    {
+      "label": "longtask",
+      "now": 1794113203306,
+      "perf": 6764.8,
+      "origin": 1794113196541.9,
+      "startTime": 6712.6,
+      "duration": 51,
+      "scripts": ""
+    },
+    {
+      "label": "loaf",
+      "now": 1794113203307,
+      "perf": 6765.3,
+      "origin": 1794113196541.9,
+      "startTime": 5628,
+      "duration": 187.6,
+      "scripts": ""
+    },
+    {
+      "label": "loaf",
+      "now": 1794113203319,
+      "perf": 6777.4,
+      "origin": 1794113196541.9,
+      "startTime": 6369.5,
+      "duration": 196.5,
+      "scripts": ""
+    },
+    {
+      "label": "loaf",
+      "now": 1794113203395,
+      "perf": 6853.4,
+      "origin": 1794113196541.9,
+      "startTime": 6571.1,
+      "duration": 131.3,
+      "scripts": ""
+    },
+    {
+      "label": "loaf",
+      "now": 1794113203399,
+      "perf": 6857.7,
+      "origin": 1794113196541.9,
+      "startTime": 6710.2,
+      "duration": 50.4,
+      "scripts": ""
+    },
+    {
+      "label": "loaf",
+      "now": 1794113203399,
+      "perf": 6857.8,
+      "origin": 1794113196541.9,
+      "startTime": 6776.7,
+      "duration": 76.4,
+      "scripts": ""
+    }
+  ],
+  "shell": {
+    "label": "shell-visible",
+    "now": 1794113203076,
+    "perf": 6534.6,
+    "origin": 1794113196541.9,
+    "text": "Sunday, November 8",
+    "fontFamily": "Inter, Geist, system-ui, sans-serif",
+    "newsreaderReady": 0,
+    "left": 0,
+    "top": 104
+  },
+  "task": {
+    "label": "task-visible",
+    "now": 1794113203179,
+    "perf": 6637.1,
+    "origin": 1794113196541.9,
+    "w": 492,
+    "h": 26,
+    "left": 389,
+    "top": 213,
+    "text": "Call the school about the Thursday pickup",
+    "fontFamily": "Inter, Geist, system-ui, sans-serif"
+  },
+  "ready": {
+    "label": "task-ready-for-input",
+    "now": 1794113203184,
+    "perf": 6642.7,
+    "origin": 1794113196541.9,
+    "contentEditable": "false",
+    "tabIndex": 0,
+    "pointerEvents": "all",
+    "visibility": "visible",
+    "display": "block",
+    "interReady": 1
+  },
+  "flow": {
+    "label": "react-flow-init",
+    "now": 1794113203174,
+    "perf": 6632.7,
+    "origin": 1794113196541.9,
+    "x": 353,
+    "y": 28,
+    "zoom": 1,
+    "nodes": 1
+  },
+  "pragmas": {
+    "label": "db-pragma-values",
+    "now": 1794113196472,
+    "perf": 303.42,
+    "origin": 1794113196168.635,
+    "journal": "wal",
+    "synchronous": 1,
+    "foreignKeys": 1,
+    "busyTimeout": 2000
+  },
+  "devtools": {
+    "label": "devtools-opened",
+    "now": 1794113203405,
+    "perf": 7236.48,
+    "origin": 1794113196168.635,
+    "open": 0
+  },
+  "windows": {
+    "label": "window-count",
+    "now": 1794113203406,
+    "perf": 7237.62,
+    "origin": 1794113196168.635,
+    "count": 1
+  },
+  "csp": {
+    "label": "csp-header-checks",
+    "now": 1794113203407,
+    "perf": 7238.67,
+    "origin": 1794113196168.635,
+    "count": 5
+  },
+  "packaged": 0,
+  "navigation": {
+    "label": "navigation",
+    "now": 1794113203383,
+    "perf": 6841.5,
+    "origin": 1794113196541.9,
+    "responseEnd": 31.3,
+    "domInteractive": 5863.2,
+    "domContentLoaded": 6079,
+    "loadEventEnd": 6082.2,
+    "transferSize": 1231,
+    "decodedBodySize": 931,
+    "type": "navigate"
+  },
+  "reason": "ready",
+  "backupOverlapsIpc": false
+}

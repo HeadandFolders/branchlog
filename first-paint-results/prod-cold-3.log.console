@@ -1,0 +1,38 @@
+
+TEMP_MARK {"label":"main-evaluated","now":1794113243706,"perf":93.56,"origin":1794113243612.053,"uptimeMs":61}
+TEMP_MARK {"label":"when-ready","now":1794113243764,"perf":152.19,"origin":1794113243612.053,"uptimeMs":121,"packaged":0}
+TEMP_MARK {"label":"db-mkdir","now":1794113243765,"perf":153.33,"origin":1794113243612.053,"ms":0.31}
+TEMP_MARK {"label":"db-open","now":1794113243768,"perf":156.3,"origin":1794113243612.053,"ms":2.5}
+TEMP_MARK {"label":"db-pragma-journal","now":1794113243773,"perf":160.87,"origin":1794113243612.053,"ms":4.05}
+TEMP_MARK {"label":"db-pragma-foreign-keys","now":1794113243773,"perf":161.5,"origin":1794113243612.053,"ms":0.07}
+TEMP_MARK {"label":"db-pragma-busy","now":1794113243775,"perf":162.96,"origin":1794113243612.053,"ms":0.37}
+TEMP_MARK {"label":"db-schema","now":1794113243776,"perf":163.81,"origin":1794113243612.053,"ms":0.25}
+TEMP_MARK {"label":"migrate-fk","now":1794113243777,"perf":164.61,"origin":1794113243612.053,"ms":0.23,"action":"CASCADE"}
+TEMP_MARK {"label":"migrate-rebuild-skipped","now":1794113243777,"perf":165.15,"origin":1794113243612.053}
+TEMP_MARK {"label":"migrate-size","now":1794113243778,"perf":166.02,"origin":1794113243612.053,"ms":0.35}
+TEMP_MARK {"label":"migrate-orphan","now":1794113243779,"perf":166.88,"origin":1794113243612.053,"ms":0.33,"skipped":true}
+TEMP_MARK {"label":"db-migrate","now":1794113243779,"perf":167.39,"origin":1794113243612.053,"ms":3.11}
+TEMP_MARK {"label":"db-pragma-values","now":1794113243780,"perf":167.91,"origin":1794113243612.053,"journal":"wal","synchronous":1,"foreignKeys":1,"busyTimeout":2000}
+TEMP_MARK {"label":"db-init-total","now":1794113243780,"perf":168.4,"origin":1794113243612.053,"ms":15.39}
+Branchlog database: C:\Users\LENOVO - PC\Desktop\branchlog\first-paint-results\userdata\branchlog.sqlite
+TEMP_MARK {"label":"init-database-returned","now":1794113243781,"perf":168.76,"origin":1794113243612.053,"ms":15.9}
+TEMP_MARK {"label":"install-ipc","now":1794113243781,"perf":169.28,"origin":1794113243612.053,"ms":0.25}
+TEMP_MARK {"label":"install-security","now":1794113243787,"perf":174.74,"origin":1794113243612.053,"ms":5.1}
+TEMP_MARK {"label":"install-menu","now":1794113243788,"perf":175.84,"origin":1794113243612.053,"ms":0.52}
+TEMP_MARK {"label":"window-state","now":1794113243789,"perf":177.15,"origin":1794113243612.053,"ms":0.56}
+TEMP_MARK {"label":"window-constructed","now":1794113243837,"perf":224.79,"origin":1794113243612.053,"ms":47.17}
+(electron) 'console-message' arguments are deprecated and will be removed. Please use Event<WebContentsConsoleMessageEventParams> object instead.
+TEMP_MARK {"label":"did-start-loading","now":1794113243845,"perf":232.57,"origin":1794113243612.053}
+TEMP_MARK {"label":"load-called","now":1794113243846,"perf":233.91,"origin":1794113243612.053}
+TEMP_MARK {"label":"backup-start","now":1794113243847,"perf":234.66,"origin":1794113243612.053}
+TEMP_MARK {"label":"backup-skipped-existing","now":1794113243848,"perf":235.62,"origin":1794113243612.053}
+TEMP_MARK {"label":"backup-end","now":1794113243848,"perf":236.35,"origin":1794113243612.053,"ms":1.68,"copied":false,"removed":0}
+TEMP_MARK {"label":"backup-scheduled","now":1794113243849,"perf":236.74,"origin":1794113243612.053}
+TEMP_MARK {"label":"dom-ready","now":1794113250265,"perf":6653.14,"origin":1794113243612.053}
+TEMP_MARK {"label":"did-finish-load","now":1794113250267,"perf":6655.26,"origin":1794113243612.053}
+TEMP_MARK {"label":"ready-to-show","now":1794113250270,"perf":6657.72,"origin":1794113243612.053}
+TEMP_MARK {"label":"window-shown","now":1794113250318,"perf":6706.32,"origin":1794113243612.053}
+TEMP_MARK {"label":"ipc-listByDate","now":1794113250487,"perf":6874.96,"origin":1794113243612.053,"handlerMs":2.79,"validateMs":0.45,"queryMs":2.36,"rows":15}
+TEMP_MARK {"label":"devtools-opened","now":1794113250939,"perf":7326.65,"origin":1794113243612.053,"open":0}
+TEMP_MARK {"label":"window-count","now":1794113250940,"perf":7328.18,"origin":1794113243612.053,"count":1}
+TEMP_MARK {"label":"csp-header-checks","now":1794113250942,"perf":7330.34,"origin":1794113243612.053,"count":5}

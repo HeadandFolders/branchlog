@@ -1,0 +1,76 @@
+---
+description: Architecture, state ownership, canvas performance, and quality rules for Branchlog
+alwaysApply: true
+---
+
+# Branchlog
+
+Read `DESIGN.md` before any UI change. Read `BRANCHLOG.md` before any feature change. When a change adds or moves a layer, a data owner, an IPC channel, or a table, update `ARCHITECTURE.md` in the same change.
+
+## Architecture
+
+**Main process.** `src/main` is the Electron main process. It creates the window, the system menu, the security policy, and the daily backup, and it is the only process that may open SQLite. `database.ts` holds the schema and every query. `validate.ts` parses every IPC payload before it reaches the database. `ipc.ts` registers channels and calls those two. `index.ts` boots the app. This layer never imports React or a renderer component.
+
+**Preload bridge.** `src/preload/index.ts` is the only file that may call `ipcRenderer` or `contextBridge`. It exposes `window.branchlog` and checks replies with the guards in `src/shared/types.ts`. It has no SQL and no UI. Leave `contextIsolation`, `sandbox`, and `webSecurity` on, and leave `nodeIntegration` off. The renderer never receives a raw `ipcRenderer`.
+
+**Renderer.** `src/renderer` is the React page. `main.tsx` mounts `App.tsx`. Components live in `src/renderer/src/components`, one component per file. The canvas lives in `DailyCanvas.tsx`. Helpers that are not components live in `src/renderer/src/lib`. Styles live in `src/renderer/src/styles`. The page talks to the notebook only through `window.branchlog`. It never imports `electron`, `better-sqlite3`, `node:fs`, or `src/main`, and it never opens the database file.
+
+**Store.** `src/renderer/src/store/notebook.ts` exports `useNotebook`, the in-memory owner of the open day. Components read and change tasks, the date, focus, and errors through this store. The `pendingText` and `pendingPosition` maps in that file are the write queue. They are not React state.
+
+**Database.** The durable notebook is `branchlog.sqlite` under `app.getPath('userData')`, opened by `initDatabase`. `database.ts` is the only module that may query it. The `tasks` table is in use. `aiComments`, `aiReplies`, `images`, `mapPositions`, and `settings` are reserved for later features. `tasks.x` and `tasks.y` are the daily canvas. Concept-map coordinates belong in `mapPositions`.
+
+Shared types, type guards, and date keys live in `src/shared`, which imports neither Electron nor React.
+
+The renderer never touches the database. The preload never runs a query. The main process never draws the page. Task fields never live in React Flow node `data`, in component state, or in a second store. Nodes keep `data` empty and read the task from `useNotebook`.
+
+A new IPC channel is added in all of these, together: `src/shared/types.ts`, `src/preload/index.ts`, `src/main/validate.ts`, and `src/main/ipc.ts`. The query stays in `database.ts`.
+
+## Source of truth
+
+Each fact has one owner. Do not keep a second copy.
+
+- A saved task lives in the `tasks` table. `useNotebook`'s `tasks` array is the open day's copy of those rows, replaced when the day loads.
+- The open date, `ready`, `error`, `focusedId`, and `focusRequest` live on `useNotebook` only.
+- Text or a position not yet written lives only in `pendingText` or `pendingPosition`. The store already shows the latest value. The maps are the queue.
+- A position while a node is dragging lives in React Flow state inside `DailyCanvas`. On drag stop it is passed to `updatePosition` once. After that the store, then SQLite, owns it.
+- Edges are derived from `parentId` in `DailyCanvas`. They are not saved. A branch is a task with `side: 'right'` and a `parentId`, stored on the parent's day.
+- The caret between a click and focus lives in `src/renderer/src/lib/caret.ts`. The frame callback lives in `viewport.ts`. Neither is persisted.
+- Window bounds live in `window-state.json`, written by `src/main/window-state.ts`. Whether the in-app menu is open lives in `TopBar` only.
+
+Creates go through `createSync` or `createBranchSync`. The store inserts the row the database returned. The renderer mints ids with `crypto.randomUUID()`. Text and position update the store immediately and are written after the debounce in the store. Checking a box or deleting a task updates the store, waits for IPC, and rolls the store back if the write fails.
+
+## Canvas performance
+
+The daily page is React Flow. Keep it fast.
+
+- Define `nodeTypes` and `edgeTypes` at module scope, the way `nodeTypes` is defined in `DailyCanvas.tsx`. Never create them inside a component.
+- Wrap node components in `memo`. Follow `BulletText`: skip a render when that task's own fields did not change.
+- Select a narrow slice. A node that draws one task selects that task, `state.tasks.find((task) => task.id === id)`, so one task changing does not re-render the others. A new array from `.filter()` or `.map()` inside a selector is a new value on every update and re-renders every subscriber.
+- Rebuild canvas nodes only when structure changes (id, side, parent, position, order). Keep task text out of node objects so typing does not rebuild the graph.
+- Debounce database writes in the store. Never call `window.branchlog` from `onNodeDrag`, `pointermove`, or `mousemove`. Save a position on drag stop.
+- Do no heavy work during a drag. While a drag is in progress, do not rebuild nodes or edges, measure the page, or write SQLite. `DailyCanvas` skips the rebuild while `draggingId` is set.
+- Do not pass fresh object or function props into nodes: no inline `style={{ ... }}`, no `data={{ task }}`, no inline handler on a memoized child. Use a module-level constant or CSS, and read fields from the store inside the node.
+
+```tsx
+// Bad: new types every render, and every node re-renders when any task changes
+const tasks = useNotebook((state) => state.tasks)
+const nodeTypes = { branch: BranchNode }
+
+// Good: stable types, and the node selects itself
+const nodeTypes = { branch: BranchNode }
+const task = useNotebook((state) => state.tasks.find((item) => item.id === id))
+```
+
+## Bug fixes
+
+State the root cause before changing code, then fix that cause.
+
+No workarounds. A `try/catch` must not hide an error and continue as if the operation worked. Catch only to surface the failure: store error, rollback, or a rethrown error with a clear message. Do not add `setTimeout`, `requestAnimationFrame`, or `queueMicrotask` to paper over a race. The debounce timers in `notebook.ts` batch writes. They are not a pattern for fixing bugs. If the only fix you can see is a hack, stop and ask.
+
+## Scope
+
+Change only what the task asks for. Do not reformat, rename, or restyle unrelated code. Keep files under about 300 lines, and split a file when your change would push it past that. One component per file. If a file is already over that line count, add the new behavior in a new file instead of growing it.
+
+## Quality gate
+
+Before you say a task is done, run `npm run typecheck`, `npm run lint`, and `npm test`, and report each result. `npm test` builds the app and runs the Playwright suite in `tests/`. Every bug fix adds or updates a test there.
