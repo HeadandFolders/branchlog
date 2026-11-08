@@ -1,5 +1,6 @@
 import type { KeyboardEvent, MutableRefObject, FormEvent } from 'react'
 import type { Task } from '@shared/types'
+import { branchShortcutHandling } from './branch-from'
 import { caretOffset } from './caret'
 import { useNotebook } from '../store/notebook'
 
@@ -76,6 +77,10 @@ export function handleTaskBeforeInput(
 ): void {
   const native = event.nativeEvent
   if (!(native instanceof InputEvent) || native.isComposing) return
+  if (branchShortcutHandling()) {
+    event.preventDefault()
+    return
+  }
   if (native.inputType !== 'insertParagraph' && native.inputType !== 'insertLineBreak') return
   if (!splitLock.current && native.inputType === 'insertLineBreak') return
   event.preventDefault()
@@ -108,7 +113,7 @@ export function handleTaskKey(
     event.preventDefault()
     return
   }
-  if (event.key === 'Enter' && !event.shiftKey) {
+  if (event.key === 'Enter' && !event.shiftKey && !event.altKey) {
     event.preventDefault()
     splitLock.current = true
     split(event.currentTarget)

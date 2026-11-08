@@ -239,10 +239,8 @@ export const useNotebook = create<NotebookState>((set, get) => ({
 
   createFromFocused: () => {
     const { focusedId, tasks } = get()
-    const focused = focusedId ? tasks.find((task) => task.id === focusedId) : undefined
-    const main = tasks.filter((task) => task.side === 'main')
-    const afterId = focused?.side === 'main' ? focused.id : null
-    get().createTask(main.length === 0 ? null : afterId, '')
+    const anchor = tasks.find((task) => task.id === focusedId && task.side === 'main')
+    get().createTask(anchor?.id ?? null, '')
   },
 
   updateText: (id, text) => {

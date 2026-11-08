@@ -14,7 +14,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import { BRANCH_LINE_HEIGHT, BRANCH_MIN_WIDTH, BRANCH_WIDTH } from '@shared/branch-size'
 import type { Task } from '@shared/types'
-import { registerFlowPoint } from '../lib/flow-point'
+import { registerFlowPoint } from '../lib/branch-from'
 import { registerFramePage } from '../lib/viewport'
 import { settleFocusRequest, focusSettlePending } from '../lib/focus-field'
 import { tempMark } from '@shared/temp-timing'
@@ -70,6 +70,7 @@ function buildNodes(tasks: Task[], previous: Node[] = []): Node[] {
         style: {
           pointerEvents: 'all',
           width,
+          visibility: 'visible',
           minHeight: task.height >= BRANCH_LINE_HEIGHT ? task.height : undefined,
         },
       }
@@ -125,13 +126,14 @@ function DailyFlow() {
   tasksRef.current = tasks
   const currentDate = useNotebook((state) => state.currentDate)
   const updatePosition = useNotebook((state) => state.updatePosition)
-  const { screenToFlowPosition } = useReactFlow()
   const [nodes, setNodes] = useState<Node[]>(() => buildNodes(tasks))
   const [edges, setEdges] = useState<Edge[]>(() => buildEdges(tasks))
   const nodesRef = useRef(nodes)
   nodesRef.current = nodes
   const structure = structureKey(tasks)
   const measuredUpdate = useRef(false)
+
+  const { screenToFlowPosition } = useReactFlow()
 
   const frame = useCallback(() => {
     const instance = instanceRef.current
@@ -141,13 +143,13 @@ function DailyFlow() {
   }, [])
 
   useEffect(() => registerFramePage(frame), [frame])
-  useEffect(() => registerFlowPoint((point) => screenToFlowPosition(point)), [screenToFlowPosition])
+  useEffect(() => registerFlowPoint(screenToFlowPosition), [screenToFlowPosition])
 
   useEffect(() => {
     frame()
   }, [currentDate, frame])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (draggingId.current || resizingId.current) return
     const current = tasksRef.current
     setNodes(buildNodes(current, nodesRef.current))

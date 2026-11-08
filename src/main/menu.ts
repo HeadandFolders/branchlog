@@ -11,7 +11,12 @@ export function installMenu(): void {
     {
       label: 'File',
       submenu: [
-        { label: 'New task', accelerator: 'CmdOrCtrl+N', click: () => send('new-task') },
+        {
+          label: 'New task',
+          accelerator: 'CmdOrCtrl+N',
+          registerAccelerator: false,
+          click: () => send('new-task'),
+        },
         { type: 'separator' },
         { label: 'Export data', enabled: false },
         { label: 'Import data', enabled: false },
@@ -32,6 +37,17 @@ export function installMenu(): void {
         { role: 'copy' },
         { role: 'paste' },
         { label: 'Select All', accelerator: 'CmdOrCtrl+A', click: () => send('select-all') },
+      ],
+    },
+    {
+      label: 'Task',
+      submenu: [
+        {
+          label: 'Branch from task',
+          accelerator: 'Alt+Enter',
+          registerAccelerator: false,
+          click: () => send('branch-task'),
+        },
       ],
     },
     {

@@ -2,6 +2,8 @@ import { Component, useEffect, useLayoutEffect, type ReactNode } from 'react'
 import { DailyCanvas } from './components/DailyCanvas'
 import { DeleteNotice } from './components/DeleteNotice'
 import { TopBar } from './components/TopBar'
+import { branchFromShortcut, installBranchShortcut } from './lib/branch-from'
+import { installNewTaskShortcut } from './lib/new-task'
 import { copyFromMenu, cutFromMenu, selectAllFromMenu } from './lib/list-edit'
 import { installHistoryKeys, redoEditing, undoEditing } from './store/history'
 import { useNotebook } from './store/notebook'
@@ -51,9 +53,12 @@ function Notebook() {
       else if (action === 'cut') cutFromMenu()
       else if (action === 'copy') copyFromMenu()
       else if (action === 'select-all') selectAllFromMenu()
+      else if (action === 'branch-task') branchFromShortcut()
       else useNotebook.getState().runMenuAction(action)
     })
     const removeHistoryKeys = installHistoryKeys()
+    const removeBranchShortcut = installBranchShortcut()
+    const removeNewTaskShortcut = installNewTaskShortcut()
     const onUnload = (): void => {
       useNotebook.getState().flushPendingSync()
     }
@@ -61,6 +66,8 @@ function Notebook() {
     return () => {
       unsubscribe()
       removeHistoryKeys()
+      removeBranchShortcut()
+      removeNewTaskShortcut()
       window.removeEventListener('beforeunload', onUnload)
     }
   }, [goToDate])

@@ -50,6 +50,7 @@ export type MenuAction =
   | 'cut'
   | 'copy'
   | 'select-all'
+  | 'branch-task'
 
 export interface MapPosition {
   taskId: string
@@ -146,6 +147,7 @@ export function isMenuAction(value: unknown): value is MenuAction {
     value === 'redo' ||
     value === 'cut' ||
     value === 'copy' ||
-    value === 'select-all'
+    value === 'select-all' ||
+    value === 'branch-task'
   )
 }

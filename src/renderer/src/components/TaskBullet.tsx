@@ -8,11 +8,12 @@ import {
   type MouseEvent,
   type RefObject,
 } from 'react'
-import { Handle, Position, useReactFlow } from '@xyflow/react'
+import { Handle, Position } from '@xyflow/react'
 import { Check } from 'lucide-react'
 import type { Task } from '@shared/types'
-import { caretOffsets, insertPlainText, placeCaret, takeCaret } from '../lib/caret'
-import { armFocusSettle, keyIsDown } from '../lib/focus-field'
+import { branchFromTask, branchShortcutLabel } from '../lib/branch-from'
+import { caretOffsets, insertPlainText } from '../lib/caret'
+import { useTaskFieldFocus } from '../lib/field-focus'
 import { textDirection } from '../lib/direction'
 import { handleTaskBeforeInput, handleTaskKey } from '../lib/task-keys'
 import { batchEdits, markInput } from '../store/history'
@@ -122,16 +123,10 @@ export function TaskBullet({ task }: TaskBulletProps) {
   const toggleDone = useNotebook((state) => state.toggleDone)
   const createTask = useNotebook((state) => state.createTask)
   const createBranch = useNotebook((state) => state.createBranch)
-  const { screenToFlowPosition } = useReactFlow()
   const setFocusedId = useNotebook((state) => state.setFocusedId)
   const editing = useNotebook((state) => state.focusedId === task.id)
-  const clearFocusRequest = useNotebook((state) => state.clearFocusRequest)
-  const focusPin = useNotebook((state) => {
-    const request = state.focusRequest
-    if (request?.id !== task.id) return null
-    return request.offset ?? -1
-  })
   const splitLock = useRef(false)
+  useTaskFieldFocus(ref, task.id, editing)
 
   const splitAtCaret = (element: HTMLDivElement): void => {
     batchEdits(() => {
@@ -157,77 +152,10 @@ export function TaskBullet({ task }: TaskBulletProps) {
     })
   }
 
-  const historyRev = useNotebook((state) => state.historyRev)
-  const seenRev = useRef(historyRev)
-
-  useLayoutEffect(() => {
-    if (!editing) {
-      if (useNotebook.getState().focusRequest?.id === task.id) clearFocusRequest()
-      return
-    }
-    const element = ref.current
-    if (!element) return
-    const state = useNotebook.getState()
-    const request = state.focusRequest
-    const pinned = request?.id === task.id && request.offset !== undefined
-    const force = state.historyRev !== seenRev.current
-    if (force) seenRev.current = state.historyRev
-    const stored = state.tasks.find((item) => item.id === task.id)?.text
-    const textChanged = stored !== undefined && element.textContent !== stored
-    if (document.activeElement === element && focusPin === null && !(force && textChanged)) return
-    if (keyIsDown() && document.activeElement === element && !force) return
-
-    const commit = (): void => {
-      const selection = window.getSelection()
-      const existing = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null
-      const keepSelection =
-        !pinned &&
-        existing !== null &&
-        !existing.collapsed &&
-        element.contains(existing.startContainer) &&
-        element.contains(existing.endContainer)
-      if (!keepSelection && stored !== undefined && element.textContent !== stored) {
-        const dom = element.textContent ?? ''
-        const typedAhead = !force && dom.length > stored.length
-        if (!typedAhead) element.textContent = stored
-      }
-      element.focus({ preventScroll: true })
-      const node = element.closest<HTMLElement>('.react-flow__node')
-      if (document.activeElement !== element && node && getComputedStyle(node).visibility === 'hidden') return
-      if (!selection) return
-      if (keepSelection && existing) {
-        takeCaret(task.id)
-        selection.removeAllRanges()
-        selection.addRange(existing)
-      } else if (pinned && request) {
-        placeCaret(element, request.offset ?? 0)
-        armFocusSettle(task.id, request.offset ?? 0)
-      } else {
-        const caret = takeCaret(task.id)
-        const point = caret ? document.caretRangeFromPoint(caret.x, caret.y) : null
-        if (point && element.contains(point.startContainer)) {
-          selection.removeAllRanges()
-          selection.addRange(point)
-        } else {
-          const range = document.createRange()
-          range.selectNodeContents(element)
-          range.collapse(false)
-          selection.removeAllRanges()
-          selection.addRange(range)
-        }
-      }
-      if (useNotebook.getState().focusRequest?.id === task.id) clearFocusRequest()
-    }
-
-    commit()
-  }, [clearFocusRequest, editing, focusPin, historyRev, task.id])
-
   const branchFrom = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault()
     event.stopPropagation()
-    const rect = event.currentTarget.getBoundingClientRect()
-    const point = screenToFlowPosition({ x: rect.right + 36, y: rect.top })
-    createBranch(task.id, point.x, point.y)
+    branchFromTask(task.id)
   }
 
   return (
@@ -288,6 +216,7 @@ export function TaskBullet({ task }: TaskBulletProps) {
         type="button"
         className="branch-dot nopan nodrag"
         aria-label="Branch from this task"
+        title={branchShortcutLabel()}
         onMouseDown={(event) => event.preventDefault()}
         onClick={branchFrom}
       />
