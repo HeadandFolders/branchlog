@@ -8,6 +8,7 @@ import '@fontsource/newsreader/latin-400.css'
 import '@fontsource/newsreader/latin-600.css'
 import { App } from './App'
 import './styles/globals.css'
+import './styles/theme-lab.css'
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Root element missing')

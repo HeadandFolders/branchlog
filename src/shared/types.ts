@@ -1,3 +1,5 @@
+import type { ThemeDocument } from './theme'
+
 export type TaskSide = 'main' | 'right'
 
 export interface Task {
@@ -51,6 +53,7 @@ export type MenuAction =
   | 'copy'
   | 'select-all'
   | 'branch-task'
+  | 'theme-lab'
 
 export interface MapPosition {
   taskId: string
@@ -63,13 +66,56 @@ export interface RemovedTasks {
   mapPositions: MapPosition[]
 }
 
+export interface LayoutPoint {
+  id: string
+  x: number
+  y: number
+}
+
+export interface LayoutCommit {
+  tasks: LayoutPoint[]
+  images: LayoutPoint[]
+}
+
+export interface CanvasImage {
+  id: string
+  dateKey: string
+  fileName: string
+  x: number
+  y: number
+  width: number
+  height: number
+  src: string
+}
+
+export interface ImagePasteInput {
+  id: string
+  dateKey: string
+  x: number
+  y: number
+}
+
+export interface ImageRecord {
+  id: string
+  dateKey: string
+  fileName: string
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export type Ack = { ok: true } | { ok: false }
+
+export type ThemeWriteResult = { ok: true } | { ok: false; message: string }
 
 export type WriteResult =
   | { ok: true; task: Task }
   | { ok: false }
 
 export type DeleteResult = { ok: true; removed: RemovedTasks } | { ok: false }
+
+export type ImageResult = { ok: true; image: CanvasImage } | { ok: false }
 
 export interface BranchlogApi {
   tasks: {
@@ -82,11 +128,24 @@ export interface BranchlogApi {
     deleteSync: (id: string) => DeleteResult
     restoreSync: (removed: RemovedTasks) => Ack
   }
+  images: {
+    listByDate: (date: string) => Promise<CanvasImage[]>
+    paste: (input: ImagePasteInput) => Promise<ImageResult>
+    replaceSync: (date: string, images: ImageRecord[]) => Ack
+  }
   settings: {
+    autoSeparate: () => boolean
+    setAutoSeparate: (on: boolean) => Ack
     swipeToPan: () => boolean
     setSwipeToPan: (on: boolean) => Ack
+    theme: () => ThemeDocument
+    setTheme: (theme: ThemeDocument) => ThemeWriteResult
+  }
+  layout: {
+    commitSync: (input: LayoutCommit) => Ack
   }
   onMenuAction: (callback: (action: MenuAction) => void) => () => void
+  onResume: (callback: () => void) => () => void
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -141,6 +200,30 @@ export function isAck(value: unknown): value is Ack {
   return isRecord(value) && (value.ok === true || value.ok === false)
 }
 
+export function isCanvasImage(value: unknown): value is CanvasImage {
+  if (!isRecord(value)) return false
+  return (
+    typeof value.id === 'string' &&
+    typeof value.dateKey === 'string' &&
+    typeof value.fileName === 'string' &&
+    typeof value.x === 'number' &&
+    typeof value.y === 'number' &&
+    typeof value.width === 'number' &&
+    typeof value.height === 'number' &&
+    typeof value.src === 'string'
+  )
+}
+
+export function isCanvasImageList(value: unknown): value is CanvasImage[] {
+  return Array.isArray(value) && value.every(isCanvasImage)
+}
+
+export function isImageResult(value: unknown): value is ImageResult {
+  if (!isRecord(value) || typeof value.ok !== 'boolean') return false
+  if (value.ok === false) return true
+  return isCanvasImage(value.image)
+}
+
 export function isMenuAction(value: unknown): value is MenuAction {
   return (
     value === 'new-task' ||
@@ -152,6 +235,7 @@ export function isMenuAction(value: unknown): value is MenuAction {
     value === 'cut' ||
     value === 'copy' ||
     value === 'select-all' ||
-    value === 'branch-task'
+    value === 'branch-task' ||
+    value === 'theme-lab'
   )
 }

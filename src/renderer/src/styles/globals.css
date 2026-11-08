@@ -3,6 +3,21 @@
 @theme {
   --font-sans: "Inter", "Geist", system-ui, sans-serif;
   --font-serif: "Newsreader", "Source Serif 4", Georgia, serif;
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-line: var(--line);
+  --color-edge: var(--edge);
+  --color-edge-hover: var(--edge-hover);
+  --color-edge-ai: var(--edge-ai);
+  --color-ai: var(--ai);
+  --color-ai-soft: var(--ai-soft);
+  --color-ai-line: var(--ai-line);
+  --color-accent-dot: var(--accent-dot);
+  --color-selection: var(--selection);
+  --color-focus-ring: var(--focus-ring);
 }
 
 :root {
@@ -12,10 +27,18 @@
   --text-muted: #8a8a85;
   --text-faint: #b8b8b2;
   --line: #d9d9d3;
+  --edge: #d9d9d3;
+  --edge-hover: #838380;
+  --edge-ai: #9cc2be;
+  --check-border: #757573;
+  --selection: #3178e0;
+  --selection-fill: #e0e7ed;
+  --focus-ring: #1a1a1a;
   --ai: #2f6f6a;
   --ai-soft: #e4efee;
   --ai-line: #9cc2be;
   --accent-dot: #1a1a1a;
+  --accent-dot-rest: #71716f;
   --active-0: #e6e6e0;
   --active-1: #2f6f6a;
   --font-sans: "Inter", "Geist", system-ui, sans-serif;
@@ -33,10 +56,18 @@
     --text-muted: #9c9c96;
     --text-faint: #6a6a64;
     --line: #3a3a36;
+    --edge: #3a3a36;
+    --edge-hover: #8b8b86;
+    --edge-ai: #4e7f7a;
+    --check-border: #93938f;
+    --selection: #a4a4b4;
+    --selection-fill: #242424;
+    --focus-ring: #edede8;
     --ai: #7fbfb8;
     --ai-soft: #1c3330;
     --ai-line: #4e7f7a;
     --accent-dot: #edede8;
+    --accent-dot-rest: #979793;
     --active-0: #2a2a26;
     --active-1: #7fbfb8;
     color-scheme: dark;
@@ -132,14 +163,14 @@ button:focus-visible,
 }
 
 .bullet-text:focus-visible {
-  outline: 1px solid var(--text);
+  outline: 1px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
 .task-check:focus-visible,
 button.task-check:focus-visible {
   color: var(--bg);
-  outline: 1px solid var(--text);
+  outline: 1px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -158,7 +189,7 @@ button.task-check:focus-visible {
   height: 16px;
   margin-top: 5px;
   flex-shrink: 0;
-  border: 1.5px solid color-mix(in srgb, var(--text) 58%, var(--bg));
+  border: 1.5px solid var(--check-border);
   background: var(--bg);
   border-radius: 3px;
   color: var(--bg);
@@ -188,17 +219,16 @@ button.task-check:focus-visible {
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: var(--accent-dot);
-  opacity: 0.6;
+  background: var(--accent-dot-rest);
 }
 
 .branch-dot:hover::after,
 .branch-dot:focus-visible::after {
-  opacity: 1;
+  background: var(--accent-dot);
 }
 
 button.branch-dot:focus-visible {
-  outline: 1px solid var(--text);
+  outline: 1px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: 3px;
 }
@@ -231,6 +261,31 @@ button.branch-dot:focus-visible {
   box-sizing: border-box;
   width: 100%;
   padding: 8px 12px;
+}
+
+.canvas-image,
+.canvas-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+}
+
+.canvas-image img {
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.react-flow__node-image {
+  border-radius: 2px;
+  background: transparent;
+  box-shadow: none;
+  cursor: move;
+}
+
+.react-flow__node-image.selected {
+  outline: 1px solid var(--ai);
+  outline-offset: 0;
 }
 
 .react-flow__node-branch {
@@ -315,18 +370,33 @@ button.branch-dot:focus-visible {
 }
 
 button.branch-delete:focus-visible {
-  outline: 1px solid var(--text);
+  outline: 1px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
 .react-flow__edge.branch-edge .react-flow__edge-path {
-  stroke: var(--line);
+  stroke: var(--edge);
   stroke-width: 1;
 }
 
+.react-flow__edge.branch-edge marker path,
+.react-flow__edge.branch-edge marker polyline,
+.react-flow svg defs marker path,
+.react-flow svg defs marker polyline {
+  fill: var(--edge);
+  stroke: var(--edge);
+}
+
 .react-flow__edge.branch-edge:hover .react-flow__edge-path,
-.react-flow__edge.branch-edge.selected .react-flow__edge-path {
-  stroke: color-mix(in srgb, var(--text) 45%, var(--line));
+.react-flow__edge.branch-edge.selected .react-flow__edge-path,
+.react-flow__edge.updating .react-flow__edge-path {
+  stroke: var(--edge-hover);
+}
+
+.react-flow__nodesselection-rect,
+.react-flow__selection {
+  background: var(--selection-fill);
+  border: 1px dotted var(--selection);
 }
 
 .react-flow,

@@ -95,6 +95,8 @@ test.describe('canvas pan', () => {
     await page.keyboard.insertText(LONG)
     await expect(text).toHaveText(LONG)
     await page.keyboard.press('Escape')
+    await page.evaluate(() => window.__branchlogLayout?.finish())
+    await expect.poll(() => page.evaluate(() => window.__branchlogLayout?.idle() ?? true)).toBe(true)
     await text.evaluate((element) => {
       const node = element as HTMLElement
       node.style.maxHeight = '36px'
@@ -116,6 +118,37 @@ test.describe('canvas pan', () => {
     expect(after.x).toBeCloseTo(before.x, 0)
     expect(after.y).toBeCloseTo(before.y, 0)
     expect(after.zoom).toBeCloseTo(before.zoom, 2)
+
+    await page.getByRole('button', { name: 'Menu' }).click()
+    await page.getByRole('menuitem', { name: 'Theme Lab' }).click()
+    const lab = page.locator('.theme-lab')
+    await expect(lab).toBeVisible()
+    await lab.evaluate((element) => {
+      element.style.top = '40px'
+      element.style.bottom = 'auto'
+      element.style.height = '160px'
+      element.style.overflowY = 'auto'
+    })
+    const body = await lab.locator('.theme-lab-body').boundingBox()
+    const shell = await lab.boundingBox()
+    if (!body || !shell) throw new Error('Theme Lab body is missing')
+    const labPoint = {
+      x: shell.x + 24,
+      y: Math.min(body.y + 24, shell.y + shell.height - 16),
+    }
+    await frames(page)
+    const parked = await viewport(page)
+    await wheel(page, labPoint, 0, 100)
+    let labTop = await lab.evaluate((element) => element.scrollTop)
+    if (labTop <= 8) {
+      await wheel(page, labPoint, 0, 100)
+      labTop = await lab.evaluate((element) => element.scrollTop)
+    }
+    const still = await viewport(page)
+    expect(labTop).toBeGreaterThan(8)
+    expect(still.x).toBeCloseTo(parked.x, 0)
+    expect(still.y).toBeCloseTo(parked.y, 0)
+    expect(still.zoom).toBeCloseTo(parked.zoom, 2)
   })
 
   test('turning the setting off makes a plain wheel zoom', async () => {
@@ -236,7 +269,7 @@ async function emptyPoint(page: Page): Promise<{ x: number; y: number }> {
       for (let x = rect.left + 20; x < rect.right - 20; x += 36) {
         const el = document.elementFromPoint(x, y)
         if (!el) continue
-        if (el.closest('.react-flow__node, .react-flow__attribution, [role="menu"], .react-flow__minimap')) {
+        if (el.closest('.react-flow__node, .react-flow__attribution, .theme-lab, [role="menu"], .react-flow__minimap')) {
           continue
         }
         if (el.closest('.react-flow__pane, .react-flow__renderer')) return { x, y }

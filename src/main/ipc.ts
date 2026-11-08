@@ -1,20 +1,33 @@
-import { ipcMain } from 'electron'
+import { BrowserWindow, ipcMain, nativeTheme } from 'electron'
 import { tempMark, tempMs } from '@shared/temp-timing'
+import { themeBackground, type ThemeDocument } from '@shared/theme'
 import type { WriteResult } from '@shared/types'
 import { createBranch, createTask, listTasksByDate, updateTask } from './database'
 import { replaceDay } from './day-sync'
-import { readSwipeToPan, writeSwipeToPan } from './settings'
+import { listImages, pasteImage, replaceImages } from './images'
+import { commitLayout } from './layout-save'
+import { readAutoSeparate, readSwipeToPan, writeAutoSeparate, writeSwipeToPan } from './settings'
+import { readTheme, writeTheme } from './theme-store'
 import { deleteTask, restoreRemoved } from './task-tree'
 import {
   parseCreateBranch,
   parseCreateTask,
+  parseImagePaste,
+  parseImageReplace,
+  parseLayoutCommit,
   parseFlag,
   parseRemovedTasks,
+  parseTheme,
   parseReplaceDay,
   parseUpdateTask,
   requireDateKey,
   requireId,
 } from './validate'
+
+function paintWindow(theme: ThemeDocument): void {
+  const color = themeBackground(theme, nativeTheme.shouldUseDarkColors)
+  for (const win of BrowserWindow.getAllWindows()) win.setBackgroundColor(color)
+}
 
 function failure(error: unknown): WriteResult {
   console.error(error)
@@ -131,10 +144,68 @@ export function installIpc(): void {
     }
   })
 
-  ipcMain.on('tasks:restore', (event, payload: unknown) => {
-    tempMark('ipc-call', { channel: 'tasks:restore' })
+  ipcMain.handle('images:listByDate', (_event, payload: unknown) => {
     try {
-      restoreRemoved(parseRemovedTasks(payload))
+      return listImages(requireDateKey(payload))
+    } catch (error) {
+      console.error('images:listByDate', error)
+      throw new Error('Could not complete that request')
+    }
+  })
+
+  ipcMain.handle('images:paste', async (_event, payload: unknown) => {
+    try {
+      return { ok: true, image: await pasteImage(parseImagePaste(payload)) }
+    } catch (error) {
+      return failure(error)
+    }
+  })
+
+  ipcMain.on('images:replace', (event, payload: unknown) => {
+    try {
+      const input = parseImageReplace(payload)
+      replaceImages(input.date, input.images)
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('settings:autoSeparate', (event) => {
+    try {
+      event.returnValue = readAutoSeparate()
+    } catch (error) {
+      console.error(error)
+      event.returnValue = true
+    }
+  })
+
+  ipcMain.on('settings:theme', (event) => {
+    try {
+      event.returnValue = readTheme()
+    } catch (error) {
+      console.error(error)
+      event.returnValue = null
+    }
+  })
+
+  ipcMain.on('settings:setTheme', (event, payload: unknown) => {
+    try {
+      const theme = parseTheme(payload)
+      writeTheme(theme)
+      paintWindow(theme)
+      event.returnValue = { ok: true }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not save the theme.'
+      console.error(error)
+      event.returnValue = { ok: false, message }
+    }
+  })
+
+  ipcMain.on('settings:setAutoSeparate', (event, payload: unknown) => {
+    try {
+      if (typeof payload !== 'boolean') throw new Error('Invalid request')
+      writeAutoSeparate(payload)
       event.returnValue = { ok: true }
     } catch (error) {
       event.returnValue = failure(error)
@@ -153,6 +224,25 @@ export function installIpc(): void {
   ipcMain.on('settings:setSwipeToPan', (event, payload: unknown) => {
     try {
       writeSwipeToPan(parseFlag(payload))
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('layout:commit', (event, payload: unknown) => {
+    try {
+      commitLayout(parseLayoutCommit(payload))
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('tasks:restore', (event, payload: unknown) => {
+    tempMark('ipc-call', { channel: 'tasks:restore' })
+    try {
+      restoreRemoved(parseRemovedTasks(payload))
       event.returnValue = { ok: true }
     } catch (error) {
       event.returnValue = failure(error)

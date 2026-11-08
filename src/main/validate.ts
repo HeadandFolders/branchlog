@@ -1,5 +1,17 @@
 import { BRANCH_MIN_WIDTH } from '@shared/branch-size'
-import type { CreateBranchInput, CreateTaskInput, MapPosition, RemovedTasks, Task, UpdateTaskInput } from '@shared/types'
+import { parseThemeDocument, type ThemeDocument } from '@shared/theme'
+import type {
+  CreateBranchInput,
+  CreateTaskInput,
+  ImagePasteInput,
+  ImageRecord,
+  LayoutCommit,
+  LayoutPoint,
+  MapPosition,
+  RemovedTasks,
+  Task,
+  UpdateTaskInput,
+} from '@shared/types'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -200,6 +212,69 @@ export function parseRemovedTasks(value: unknown): RemovedTasks {
   return { tasks, mapPositions }
 }
 
+function parseLayoutPoint(value: unknown): LayoutPoint {
+  const input = requireRecord(value)
+  return { id: requireId(input.id), x: requireCoordinate(input.x), y: requireCoordinate(input.y) }
+}
+
+export function parseLayoutCommit(value: unknown): LayoutCommit {
+  const input = requireRecord(value)
+  if (!Array.isArray(input.tasks) || !Array.isArray(input.images)) throw new Error('Invalid position')
+  if (input.tasks.length + input.images.length === 0 || input.tasks.length > 500 || input.images.length > 500) {
+    throw new Error('Invalid position')
+  }
+  const tasks = input.tasks.map(parseLayoutPoint)
+  const images = input.images.map(parseLayoutPoint)
+  if (new Set(tasks.map((point) => point.id)).size !== tasks.length) throw new Error('Invalid task')
+  if (new Set(images.map((point) => point.id)).size !== images.length) throw new Error('Invalid image')
+  return { tasks, images }
+}
+
+export function parseImagePaste(value: unknown): ImagePasteInput {
+  const input = requireRecord(value)
+  return {
+    id: requireId(input.id),
+    dateKey: requireDateKey(input.dateKey),
+    x: requireCoordinate(input.x),
+    y: requireCoordinate(input.y),
+  }
+}
+
+function parseImageRecord(value: unknown, date: string): ImageRecord {
+  const input = requireRecord(value)
+  const dateKey = requireDateKey(input.dateKey)
+  if (dateKey !== date) throw new Error('Invalid date')
+  const fileName = input.fileName
+  if (typeof fileName !== 'string' || !/^[0-9a-f-]{36}\.png$/i.test(fileName)) throw new Error('Invalid image')
+  return {
+    id: requireId(input.id),
+    dateKey,
+    fileName,
+    x: requireCoordinate(input.x),
+    y: requireCoordinate(input.y),
+    width: requireSize(input.width, 1),
+    height: requireSize(input.height, 1),
+  }
+}
+
+export function parseImageReplace(value: unknown): { date: string; images: ImageRecord[] } {
+  const input = requireRecord(value)
+  const date = requireDateKey(input.date)
+  if (!Array.isArray(input.images) || input.images.length > 500) throw new Error('Invalid image')
+  const images = input.images.map((item) => parseImageRecord(item, date))
+  if (new Set(images.map((image) => image.id)).size !== images.length) throw new Error('Invalid image')
+  return { date, images }
+}
+
+export function parseTheme(value: unknown): ThemeDocument {
+  return parseThemeDocument(value)
+}
+
+export function parseFlag(value: unknown): boolean {
+  if (typeof value !== 'boolean') throw new Error('Invalid request')
+  return value
+}
+
 export function parseReplaceDay(value: unknown): { date: string; tasks: Task[] } {
   const input = requireRecord(value)
   const date = requireDateKey(input.date)
@@ -207,9 +282,4 @@ export function parseReplaceDay(value: unknown): { date: string; tasks: Task[] }
   const tasks = input.tasks.map((item) => parseSnapshot(item, date))
   if (new Set(tasks.map((task) => task.id)).size !== tasks.length) throw new Error('Invalid task')
   return { date, tasks }
-}
-
-export function parseFlag(value: unknown): boolean {
-  if (typeof value !== 'boolean') throw new Error('Invalid request')
-  return value
 }

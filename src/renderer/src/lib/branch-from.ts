@@ -13,6 +13,10 @@ export function registerFlowPoint(fn: FlowPoint): void {
   toFlow = fn
 }
 
+export function flowPoint(point: { x: number; y: number }): { x: number; y: number } | null {
+  return toFlow ? toFlow(point) : null
+}
+
 export function branchShortcutLabel(): string {
   return /Mac/i.test(navigator.userAgent) ? 'Branch (Option+Enter)' : 'Branch (Alt+Enter)'
 }

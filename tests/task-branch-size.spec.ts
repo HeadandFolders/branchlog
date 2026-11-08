@@ -1,42 +1,28 @@
-import { spawnSync } from 'node:child_process'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import Database from 'better-sqlite3'
-import { _electron as electron, expect, test, type ElectronApplication, type Page } from '@playwright/test'
-import { closeApp, launchApp, modifier, writeTask } from './launch'
+import { expect, test, type Page } from '@playwright/test'
+import { closeApp, killProfile, launchApp, modifier, releaseUserData, writeTask } from './launch'
 
 const LONG =
   'This branch should wrap onto several lines instead of being squeezed into a tiny box. '.repeat(4)
 
-async function relaunch(userData: string): Promise<{ app: ElectronApplication; page: Page }> {
-  await rm(path.join(userData, 'lockfile'), { force: true }).catch(() => undefined)
-  const started = await electron.launch({
-    executablePath: path.join(process.cwd(), 'node_modules', 'electron', 'dist', 'electron.exe'),
-    cwd: process.cwd(),
-    args: [process.cwd()],
-    env: { ...process.env, BRANCHLOG_USER_DATA: userData, ELECTRON_RENDERER_URL: '' },
-    timeout: 15_000,
-  })
-  const child = started.process()
-  let logs = ''
-  child.stdout?.on('data', (chunk: Buffer) => {
-    logs += chunk.toString()
-  })
-  child.stderr?.on('data', (chunk: Buffer) => {
-    logs += chunk.toString()
-  })
+async function relaunch(userData: string): Promise<Awaited<ReturnType<typeof launchApp>>> {
+  killProfile(userData)
+  await new Promise((resolve) => setTimeout(resolve, 600))
+  await releaseUserData(userData)
   try {
-    const next = await Promise.race([
-      started.firstWindow({ timeout: 10_000 }),
-      new Promise<Page>((_, reject) => {
-        child.once('exit', (code) => reject(new Error(`App exited on restart (${code})`)))
-      }),
-    ])
-    return { app: started, page: next }
+    return await launchApp(userData)
   } catch (error) {
-    if (child.pid) spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' })
-    throw new Error(`${error instanceof Error ? error.message : 'Restart failed'}\n${logs}`)
+    killProfile(userData)
+    await new Promise((resolve) => setTimeout(resolve, 600))
+    await releaseUserData(userData)
+    try {
+      return await launchApp(userData)
+    } catch {
+      throw error
+    }
   }
 }
 

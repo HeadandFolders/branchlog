@@ -1,12 +1,17 @@
 import { Component, useEffect, useLayoutEffect, type ReactNode } from 'react'
 import { DailyCanvas } from './components/DailyCanvas'
+import { ThemeLab } from './components/ThemeLab'
 import { DeleteNotice } from './components/DeleteNotice'
 import { TopBar } from './components/TopBar'
 import { branchFromShortcut, installBranchShortcut } from './lib/branch-from'
 import { installNewTaskShortcut } from './lib/new-task'
 import { copyFromMenu, cutFromMenu, selectAllFromMenu } from './lib/list-edit'
+import { installImagePaste } from './lib/paste-image'
+import { flushTheme, installThemeShortcut, toggleThemeLab } from './lib/theme-engine'
 import { installHistoryKeys, redoEditing, undoEditing } from './store/history'
+import { installImageLoader } from './store/images'
 import { useNotebook } from './store/notebook'
+import { usePreferences } from './store/preferences'
 import { tempCountRender, tempNoteCommit } from './temp-first-paint'
 
 interface BoundaryProps {
@@ -46,6 +51,7 @@ function Notebook() {
   const goToDate = useNotebook((state) => state.goToDate)
 
   useEffect(() => {
+    usePreferences.getState().load()
     void goToDate(useNotebook.getState().currentDate)
     const unsubscribe = window.branchlog.onMenuAction((action) => {
       if (action === 'undo') undoEditing()
@@ -54,13 +60,18 @@ function Notebook() {
       else if (action === 'copy') copyFromMenu()
       else if (action === 'select-all') selectAllFromMenu()
       else if (action === 'branch-task') branchFromShortcut()
+      else if (action === 'theme-lab') toggleThemeLab()
       else useNotebook.getState().runMenuAction(action)
     })
     const removeHistoryKeys = installHistoryKeys()
     const removeBranchShortcut = installBranchShortcut()
     const removeNewTaskShortcut = installNewTaskShortcut()
+    const removeThemeShortcut = installThemeShortcut()
+    const removeImages = installImageLoader()
+    const removePaste = installImagePaste()
     const onUnload = (): void => {
       useNotebook.getState().flushPendingSync()
+      flushTheme()
     }
     window.addEventListener('beforeunload', onUnload)
     return () => {
@@ -68,6 +79,9 @@ function Notebook() {
       removeHistoryKeys()
       removeBranchShortcut()
       removeNewTaskShortcut()
+      removeThemeShortcut()
+      removeImages()
+      removePaste()
       window.removeEventListener('beforeunload', onUnload)
     }
   }, [goToDate])
@@ -78,6 +92,7 @@ function Notebook() {
       <main className="min-h-0 flex-1">
         <DailyCanvas />
       </main>
+      <ThemeLab />
       <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex flex-col items-center gap-2">
         <DeleteNotice />
         {error ? (

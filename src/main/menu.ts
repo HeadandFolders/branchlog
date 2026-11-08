@@ -21,7 +21,17 @@ export function installMenu(): void {
         { label: 'Export data', enabled: false },
         { label: 'Import data', enabled: false },
         { type: 'separator' },
-        { label: 'Settings', accelerator: 'CmdOrCtrl+,', enabled: false },
+        {
+          label: 'Settings',
+          submenu: [
+            {
+              label: 'Theme Lab',
+              accelerator: 'CmdOrCtrl+Shift+T',
+              registerAccelerator: false,
+              click: () => send('theme-lab'),
+            },
+          ],
+        },
         { type: 'separator' },
         process.platform === 'darwin' ? { role: 'close' } : { role: 'quit', label: 'Exit' },
       ],

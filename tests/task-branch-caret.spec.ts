@@ -3,7 +3,7 @@ import Database from 'better-sqlite3'
 import { rm } from 'node:fs/promises'
 import path from 'node:path'
 import { _electron as electron, expect, test, type ElectronApplication, type Page } from '@playwright/test'
-import { closeApp, launchApp, writeTask } from './launch'
+import { closeApp, launchApp, releaseUserData, writeTask } from './launch'
 
 function savedText(userData: string, id: string): string {
   const db = new Database(path.join(userData, 'branchlog.sqlite'))
@@ -14,6 +14,7 @@ function savedText(userData: string, id: string): string {
 }
 
 async function openAgain(userData: string): Promise<{ app: ElectronApplication; page: Page }> {
+  await releaseUserData(userData)
   const started = await electron.launch({
     executablePath: path.join(process.cwd(), 'node_modules', 'electron', 'dist', 'electron.exe'),
     cwd: process.cwd(),
@@ -24,7 +25,7 @@ async function openAgain(userData: string): Promise<{ app: ElectronApplication; 
   const child = started.process()
   try {
     const next = await Promise.race([
-      started.firstWindow({ timeout: 10_000 }),
+      started.firstWindow({ timeout: 20_000 }),
       new Promise<Page>((_, reject) => {
         child.once('exit', (code) => reject(new Error(`App exited on restart (${code})`)))
       }),

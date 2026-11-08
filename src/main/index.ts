@@ -1,6 +1,8 @@
-import { app, BrowserWindow, nativeTheme } from 'electron'
-import { appendFileSync } from 'node:fs'
+import { app, BrowserWindow, nativeTheme, powerMonitor } from 'electron'
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { testNowSetting } from '@shared/dates'
+import { defaultTheme, themeBackground } from '@shared/theme'
 import { setTempLog, tempMark, tempMs } from '@shared/temp-timing'
 import { finishBackup, startDailyBackup } from './backup'
 import { closeDatabase, initDatabase } from './database'
@@ -8,6 +10,7 @@ import { installIpc } from './ipc'
 import { installMenu } from './menu'
 import { installEditContextMenu } from './context-menu'
 import { contentSecurityHeaderChecks, hardenContents, installSecurityPolicy } from './security'
+import { readTheme } from './theme-store'
 import { loadWindowState, trackWindowState } from './window-state'
 
 const measureLog = process.env['BRANCHLOG_MEASURE_LOG']
@@ -54,13 +57,26 @@ async function collectAndQuit(win: BrowserWindow): Promise<void> {
 
 const appRoot = import.meta.dirname
 const userDataOverride = process.env.BRANCHLOG_USER_DATA
-if (userDataOverride) app.setPath('userData', userDataOverride)
+if (userDataOverride) {
+  app.setPath('userData', userDataOverride)
+  try {
+    mkdirSync(userDataOverride, { recursive: true })
+    writeFileSync(path.join(userDataOverride, 'instance.pid'), String(process.pid))
+  } catch (error) {
+    console.error(error)
+  }
+}
 
 let mainWindow: BrowserWindow | null = null
 let allowQuit = false
 
 function paperColor(): string {
-  return nativeTheme.shouldUseDarkColors ? '#161614' : '#F3F3EF'
+  try {
+    return themeBackground(readTheme(), nativeTheme.shouldUseDarkColors)
+  } catch (error) {
+    console.error(error)
+    return themeBackground(defaultTheme(), nativeTheme.shouldUseDarkColors)
+  }
 }
 
 function createWindow(): BrowserWindow {
@@ -96,7 +112,6 @@ function createWindow(): BrowserWindow {
     console.error(error)
   })
 
-
   win.webContents.on('preload-error', (_event, preloadPath, error) => {
     console.error('Preload failed', preloadPath, error)
   })
@@ -116,9 +131,17 @@ function createWindow(): BrowserWindow {
   win.webContents.on('dom-ready', () => tempMark('dom-ready'))
   win.webContents.on('did-finish-load', () => {
     tempMark('did-finish-load')
-  void win.webContents.setVisualZoomLevelLimits(1, 1).catch((error: unknown) => {
-    console.error(error)
+    void win.webContents.setVisualZoomLevelLimits(1, 1).catch((error: unknown) => {
+      console.error(error)
+    })
   })
+  win.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown' || input.isAutoRepeat) return
+    if (!(input.control || input.meta) || !input.shift || input.alt) return
+    const key = typeof input.key === 'string' ? input.key.toLowerCase() : ''
+    if (key !== 't' && input.code !== 'KeyT') return
+    event.preventDefault()
+    win.webContents.send('menu:action', 'theme-lab')
   })
   if (state.isMaximized) win.maximize()
   trackWindowState(win)
@@ -131,13 +154,18 @@ function createWindow(): BrowserWindow {
     if (mainWindow === win) mainWindow = null
   })
 
+  const fakeNow = testNowSetting()
   if (process.env.ELECTRON_RENDERER_URL) {
     const url = new URL(process.env.ELECTRON_RENDERER_URL)
     if (measuring) url.searchParams.set('measure', '1')
+    if (fakeNow) url.searchParams.set('branchlogNow', fakeNow)
     void win.loadURL(url.toString())
   } else {
+    const query: Record<string, string> = {}
+    if (measuring) query.measure = '1'
+    if (fakeNow) query.branchlogNow = fakeNow
     void win.loadFile(path.join(appRoot, '../renderer/index.html'), {
-      query: measuring ? { measure: '1' } : undefined,
+      query: Object.keys(query).length > 0 ? query : undefined,
     })
   }
   tempMark('load-called')

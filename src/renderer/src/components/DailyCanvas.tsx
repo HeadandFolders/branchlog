@@ -1,28 +1,43 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
-  MarkerType,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
   applyNodeChanges,
-  type Edge,
   type Node,
   type NodeChange,
   type NodeTypes,
   type ReactFlowInstance,
+  type Edge,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { BRANCH_LINE_HEIGHT, BRANCH_MIN_WIDTH, BRANCH_WIDTH } from '@shared/branch-size'
-import type { Task } from '@shared/types'
+import { BRANCH_LINE_HEIGHT } from '@shared/branch-size'
+import { settleFocusRequest, focusSettlePending } from '../lib/focus-field'
 import { registerFlowPoint } from '../lib/branch-from'
+import { buildCanvasEdges, buildCanvasNodes, imageStructureKey, overlayPositions, taskStructureKey } from '../lib/canvas-graph'
+import { collectBodies, measureAnchors } from '../lib/layout-bodies'
+import {
+  engageLayout,
+  heldPositions,
+  installLayout,
+  layoutRestoreEpoch,
+  liveLayout,
+  noteNodeSize,
+  rememberNodeSize,
+  resetLayoutBaseline,
+} from '../lib/layout-motion'
 import { canvasNavigation, keepOwnScroll } from '../lib/canvas-navigation'
 import { registerFramePage } from '../lib/viewport'
-import { settleFocusRequest, focusSettlePending } from '../lib/focus-field'
 import { tempMark } from '@shared/temp-timing'
+import { pushImageHistory } from '../store/history'
+import { useImages } from '../store/images'
+import { commitLayoutMoves } from '../store/layout-commit'
+import { layoutAfterWrite, layoutBeforeWrite } from '../store/layout-bridge'
 import { useNotebook } from '../store/notebook'
-import { usePreferences } from '../store/preferences'
+import { autoSeparateEnabled, usePreferences } from '../store/preferences'
 import { tempCountRender, tempNoteFlowDimensions } from '../temp-first-paint'
 import { BranchNode } from './BranchNode'
+import { ImageNode } from './ImageNode'
 import { MainListNode } from './MainListNode'
 
 const LIST_WIDTH = 560
@@ -30,90 +45,7 @@ const LIST_WIDTH = 560
 const nodeTypes: NodeTypes = {
   mainList: MainListNode,
   branch: BranchNode,
-}
-
-function mainListNode(): Node {
-  return {
-    id: 'main-list',
-    type: 'mainList',
-    position: { x: 0, y: 0 },
-    data: {},
-    draggable: false,
-    selectable: false,
-    connectable: false,
-    focusable: false,
-    style: { pointerEvents: 'all', width: LIST_WIDTH },
-  }
-}
-
-function buildNodes(tasks: Task[], previous: Node[] = []): Node[] {
-  const measured = previous.find((node) => node.id === 'main-list')
-  const list = mainListNode()
-  if (measured?.measured?.width && measured.measured.height) {
-    list.width = measured.measured.width
-    list.height = measured.measured.height
-  }
-  const prior = new Map(previous.map((node) => [node.id, node]))
-  const branches = tasks
-    .filter((task) => task.side === 'right')
-    .map((task): Node => {
-      const width = task.width >= BRANCH_MIN_WIDTH ? task.width : BRANCH_WIDTH
-      const earlier = prior.get(task.id)
-      const node: Node = {
-        id: task.id,
-        type: 'branch',
-        position: { x: task.x, y: task.y },
-        data: {},
-        draggable: true,
-        selectable: true,
-        connectable: false,
-        focusable: false,
-        width,
-        style: {
-          pointerEvents: 'all',
-          width,
-          visibility: 'visible',
-          minHeight: task.height >= BRANCH_LINE_HEIGHT ? task.height : undefined,
-        },
-      }
-      if (earlier?.selected) node.selected = true
-      if (earlier?.measured?.width && earlier.measured.height) node.measured = earlier.measured
-      return node
-    })
-  return [list, ...branches]
-}
-
-function buildEdges(tasks: Task[]): Edge[] {
-  const byId = new Map(tasks.map((task) => [task.id, task]))
-  const edges: Edge[] = []
-  for (const task of tasks) {
-    if (task.side !== 'right' || !task.parentId) continue
-    const parent = byId.get(task.parentId)
-    if (!parent) continue
-    const fromList = parent.side === 'main'
-    edges.push({
-      id: `edge-${task.id}`,
-      source: fromList ? 'main-list' : parent.id,
-      sourceHandle: fromList ? `out-${parent.id}` : 'out',
-      target: task.id,
-      targetHandle: 'in',
-      type: 'default',
-      className: 'branch-edge',
-      interactionWidth: 12,
-      markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12, color: 'var(--line)' },
-      style: { stroke: 'var(--line)', strokeWidth: 1 },
-    })
-  }
-  return edges
-}
-
-function structureKey(tasks: Task[]): string {
-  return tasks
-    .map(
-      (task) =>
-        `${task.id}|${task.side}|${task.parentId ?? ''}|${task.x}|${task.y}|${task.width}|${task.height}|${task.orderIndex}`,
-    )
-    .join(';')
+  image: ImageNode,
 }
 
 function DailyFlow() {
@@ -123,20 +55,29 @@ function DailyFlow() {
   const draggingId = useRef<string | null>(null)
   const resizingId = useRef<string | null>(null)
   const resizeBaseline = useRef<number | null>(null)
-  const swipeToPan = usePreferences((state) => state.swipeToPan)
+  const seenIds = useRef(new Set<string>())
+  const bootedDate = useRef('')
+  const imageBoot = useRef('')
+  const restoreSeen = useRef(0)
   const tasks = useNotebook((state) => state.tasks)
   const tasksRef = useRef(tasks)
   tasksRef.current = tasks
+  const images = useImages((state) => state.images)
+  const imagesReady = useImages((state) => state.ready)
+  const imagesRef = useRef(images)
+  imagesRef.current = images
+  const ready = useNotebook((state) => state.ready)
   const currentDate = useNotebook((state) => state.currentDate)
   const updatePosition = useNotebook((state) => state.updatePosition)
-  const [nodes, setNodes] = useState<Node[]>(() => buildNodes(tasks))
-  const [edges, setEdges] = useState<Edge[]>(() => buildEdges(tasks))
+  const [nodes, setNodes] = useState<Node[]>(() => buildCanvasNodes(tasks, images))
+  const [edges, setEdges] = useState<Edge[]>(() => buildCanvasEdges(tasks))
   const nodesRef = useRef(nodes)
   nodesRef.current = nodes
-  const structure = structureKey(tasks)
+  const structure = taskStructureKey(tasks)
+  const pictures = imageStructureKey(images)
   const measuredUpdate = useRef(false)
-
   const { screenToFlowPosition } = useReactFlow()
+  const swipeToPan = usePreferences((state) => state.swipeToPan)
 
   const frame = useCallback(() => {
     const instance = instanceRef.current
@@ -145,23 +86,89 @@ function DailyFlow() {
     instance.setViewport({ x: Math.round((width - LIST_WIDTH) / 2), y: 28, zoom: 1 }, { duration: 0 })
   }, [])
 
-  useEffect(() => {
-    usePreferences.getState().load()
-  }, [])
   useEffect(() => registerFramePage(frame), [frame])
   useEffect(() => registerFlowPoint(screenToFlowPosition), [screenToFlowPosition])
-
   useEffect(() => {
     frame()
   }, [currentDate, frame])
 
+  const apply = useCallback((positions: ReadonlyMap<string, { x: number; y: number }>) => {
+    setNodes((current) => {
+      let changed = false
+      const next = current.map((node) => {
+        const position = positions.get(node.id)
+        if (!position || (position.x === node.position.x && position.y === node.position.y)) return node
+        changed = true
+        return { ...node, position: { x: position.x, y: position.y } }
+      })
+      if (!changed) return current
+      nodesRef.current = next
+      return next
+    })
+  }, [])
+
+  const reset = useCallback(() => {
+    const next = buildCanvasNodes(tasksRef.current, imagesRef.current, nodesRef.current)
+    nodesRef.current = next
+    setNodes(next)
+  }, [])
+
+  useEffect(() => {
+    return installLayout({
+      bodies: () => collectBodies(nodesRef.current, tasksRef.current, imagesRef.current, measureAnchors(screenToFlowPosition)),
+      positions: () => new Map(nodesRef.current.map((node) => [node.id, { x: node.position.x, y: node.position.y }])),
+      apply,
+      reset,
+      commit: commitLayoutMoves,
+      enabled: autoSeparateEnabled,
+    })
+  }, [apply, reset, screenToFlowPosition])
+
   useLayoutEffect(() => {
     if (draggingId.current || resizingId.current) return
     const current = tasksRef.current
-    setNodes(buildNodes(current, nodesRef.current))
-    setEdges(buildEdges(current))
+    const picturesNow = imagesRef.current
+    const built = overlayPositions(buildCanvasNodes(current, picturesNow, nodesRef.current), heldPositions())
+    nodesRef.current = built
+    setNodes(built)
+    setEdges(buildCanvasEdges(current))
     tempMark('canvas-rebuild', { tasks: current.length })
-  }, [structure])
+    if (!ready) return
+    const epoch = layoutRestoreEpoch()
+    if (epoch !== restoreSeen.current) {
+      restoreSeen.current = epoch
+      seenIds.current = new Set([
+        ...current.filter((task) => task.side === 'right').map((task) => task.id),
+        ...picturesNow.map((image) => image.id),
+      ])
+      resetLayoutBaseline()
+      return
+    }
+    if (bootedDate.current !== currentDate) {
+      bootedDate.current = currentDate
+      imageBoot.current = ''
+      seenIds.current = new Set(current.filter((task) => task.side === 'right').map((task) => task.id))
+      resetLayoutBaseline()
+      return
+    }
+    if (imagesReady && imageBoot.current !== currentDate) {
+      imageBoot.current = currentDate
+      for (const image of picturesNow) seenIds.current.add(image.id)
+    }
+    const fresh = [
+      ...current.filter((task) => task.side === 'right' && !seenIds.current.has(task.id)).map((task) => task.id),
+      ...picturesNow.filter((image) => !seenIds.current.has(image.id)).map((image) => image.id),
+    ]
+    for (const id of fresh) seenIds.current.add(id)
+    const newest = fresh.at(-1)
+    if (!newest || !autoSeparateEnabled()) return
+    const element = document.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(newest)}"]`)
+    const zoom = instanceRef.current?.getZoom() || 1
+    if (element && zoom > 0 && element.offsetWidth > 0 && element.offsetHeight > 0) {
+      rememberNodeSize(newest, element.offsetWidth / zoom, element.offsetHeight / zoom)
+    }
+    engageLayout(newest, false)
+  }, [currentDate, imagesReady, pictures, ready, structure])
 
   useLayoutEffect(() => {
     if (!focusSettlePending()) {
@@ -196,7 +203,7 @@ function DailyFlow() {
     })
     setNodes((current) => {
       const next = applyNodeChanges<Node>(adjusted, current)
-      return next.map((node) => {
+      const sized = next.map((node) => {
         const change = changes.find(
           (item) => item.type === 'dimensions' && item.id === node.id && item.setAttributes === true && item.dimensions,
         )
@@ -207,13 +214,17 @@ function DailyFlow() {
           style: {
             ...node.style,
             width: change.dimensions.width,
-            minHeight: heightChanged
-              ? Math.max(change.dimensions.height, BRANCH_LINE_HEIGHT)
-              : node.style?.minHeight,
+            minHeight: heightChanged ? Math.max(change.dimensions.height, BRANCH_LINE_HEIGHT) : node.style?.minHeight,
           },
         }
       })
+      nodesRef.current = sized
+      return sized
     })
+    for (const change of changes) {
+      if (change.type !== 'dimensions' || change.id === 'main-list' || !change.dimensions) continue
+      noteNodeSize(change.id, change.dimensions.width, change.dimensions.height, change.resizing === true)
+    }
     if (changes.some((change) => change.type === 'dimensions' && change.resizing === false)) {
       resizingId.current = null
       resizeBaseline.current = null
@@ -235,9 +246,27 @@ function DailyFlow() {
         onNodeDragStart={(_event, node) => {
           draggingId.current = node.id
         }}
+        onNodeDrag={(_event, node) => {
+          if (node.id === 'main-list' || !autoSeparateEnabled()) return
+          liveLayout(node.id)
+        }}
         onNodeDragStop={(_event, node) => {
           draggingId.current = null
           if (node.id === 'main-list') return
+          const image = imagesRef.current.find((item) => item.id === node.id)
+          if (image) {
+            const phase = layoutBeforeWrite(node.id)
+            if (image.x !== node.position.x || image.y !== node.position.y) {
+              const before = imagesRef.current.map((item) => ({ ...item }))
+              useImages.getState().move(node.id, node.position.x, node.position.y)
+              pushImageHistory(before, useImages.getState().images)
+            }
+            if (phase === 'defer') layoutAfterWrite()
+            else if (image.x !== node.position.x || image.y !== node.position.y) {
+              commitLayoutMoves([{ id: node.id, x: node.position.x, y: node.position.y }], node.id)
+            }
+            return
+          }
           updatePosition(node.id, node.position.x, node.position.y)
         }}
         onInit={(instance) => {

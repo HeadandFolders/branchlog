@@ -4,6 +4,7 @@ import { tempMark, tempMs } from '@shared/temp-timing'
 import type { MenuAction, Task } from '@shared/types'
 import { removeDeletedTasks } from './delete-task'
 import { attachHistory, clearHistory } from './history'
+import { layoutAfterWrite, layoutBeforeWrite, prepareHistoryStep } from './layout-bridge'
 import { cancelPendingSizes, clearPendingSize, flushSizesSync, scheduleSize, shiftPendingSize } from './task-size'
 
 interface FocusRequest {
@@ -129,6 +130,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
 
   goToDate: async (date) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
+    layoutBeforeWrite('')
     const started = performance.now()
     clearHistory()
     const pendingIds = [...pendingText.keys()]
@@ -166,6 +168,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
   },
 
   createTask: (afterId, text, caretAtStart = false) => {
+    layoutBeforeWrite('')
     const { currentDate, tasks } = get()
     const after = afterId ? tasks.find((task) => task.id === afterId) : undefined
     let result
@@ -203,6 +206,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
   },
 
   createBranch: (parentId, x, y, text = '', caretAtStart = false) => {
+    layoutBeforeWrite('')
     const parent = get().tasks.find((task) => task.id === parentId)
     if (!parent) {
       set({ error: 'Could not branch from that task.' })
@@ -244,6 +248,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
   },
 
   updateText: (id, text) => {
+    layoutBeforeWrite('')
     set((state) => ({
       tasks: state.tasks.map((task) => (task.id === id ? { ...task, text } : task)),
     }))
@@ -263,6 +268,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
   },
 
   flushPendingSync: () => {
+    prepareHistoryStep()
     for (const [id, pending] of pendingText) {
       clearTimeout(pending.timer)
       try {
@@ -277,10 +283,18 @@ export const useNotebook = create<NotebookState>((set, get) => ({
   },
 
   updatePosition: (id, x, y) => {
+    const phase = layoutBeforeWrite(id)
     set((state) => ({
       tasks: state.tasks.map((task) => (task.id === id ? { ...task, x, y } : task)),
     }))
-    if (shiftPendingSize(id, x, y)) return
+    if (shiftPendingSize(id, x, y)) {
+      if (phase === 'defer') layoutAfterWrite()
+      return
+    }
+    if (phase === 'defer') {
+      layoutAfterWrite()
+      return
+    }
     const existing = pendingPosition.get(id)
     if (existing) clearTimeout(existing.timer)
     pendingPosition.set(id, {
@@ -310,6 +324,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
   },
 
   updateSize: (id, x, y, width, height) => {
+    const phase = layoutBeforeWrite(id)
     const placed = pendingPosition.get(id)
     if (placed) {
       clearTimeout(placed.timer)
@@ -330,9 +345,11 @@ export const useNotebook = create<NotebookState>((set, get) => ({
       },
       (message) => useNotebook.setState({ error: message }),
     )
+    if (phase === 'defer') layoutAfterWrite()
   },
 
   toggleDone: async (id) => {
+    layoutBeforeWrite('')
     const current = get().tasks.find((task) => task.id === id)
     if (!current) return
     const done = !current.done
@@ -364,6 +381,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
   },
 
   deleteTask: (id) => {
+    layoutBeforeWrite('')
     removeDeletedTasks(id, {
       get,
       set,
@@ -406,3 +424,12 @@ attachHistory({
   subscribe: (listener) => useNotebook.subscribe(listener),
   commit: commitDay,
 })
+
+export function cancelPositionSaves(ids: readonly string[]): void {
+  for (const id of ids) {
+    const pending = pendingPosition.get(id)
+    if (!pending) continue
+    clearTimeout(pending.timer)
+    pendingPosition.delete(id)
+  }
+}

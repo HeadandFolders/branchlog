@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Menu } from 'lucide-react'
+import { toggleThemeLab } from '../lib/theme-engine'
 import { framePageNow } from '../lib/viewport'
 import { useNotebook } from '../store/notebook'
 import { usePreferences } from '../store/preferences'
@@ -13,6 +14,8 @@ export function TopBar() {
   const rootRef = useRef<HTMLDivElement>(null)
   const menuId = useId()
   const runMenuAction = useNotebook((state) => state.runMenuAction)
+  const autoSeparate = usePreferences((state) => state.autoSeparate)
+  const setAutoSeparate = usePreferences((state) => state.setAutoSeparate)
   const swipeToPan = usePreferences((state) => state.swipeToPan)
   const setSwipeToPan = usePreferences((state) => state.setSwipeToPan)
 
@@ -57,8 +60,40 @@ export function TopBar() {
           <div
             id={menuId}
             role="menu"
-            className="nowheel absolute left-0 top-8 z-20 max-h-[calc(100vh-4rem)] min-w-56 overflow-y-auto rounded-[6px] border border-[var(--line)] bg-[var(--bg)] py-1"
+            className="nowheel absolute left-0 top-8 z-20 max-h-[70vh] min-w-56 overflow-y-auto rounded-[6px] border border-[var(--line)] bg-[var(--bg)] py-1"
           >
+            <button
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked={autoSeparate}
+              className="flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
+              onClick={() => setAutoSeparate(!autoSeparate)}
+            >
+              <span>Auto-separate nodes</span>
+              {autoSeparate ? <span className="text-[12px] text-[var(--text-faint)]">On</span> : null}
+            </button>
+            <button
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked={swipeToPan}
+              className="flex w-full items-center justify-between gap-4 px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
+              onClick={() => setSwipeToPan(!swipeToPan)}
+            >
+              <span>Trackpad: swipe to pan (off = scroll to zoom)</span>
+              {swipeToPan ? <span className="text-[12px] text-[var(--text-faint)]">On</span> : null}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
+              onClick={() => {
+                setOpen(false)
+                toggleThemeLab()
+              }}
+            >
+              <span>Theme Lab</span>
+              <span className="text-[12px] text-[var(--text-faint)]">{shortcutMod}+Shift+T</span>
+            </button>
             {items.map((item) => (
               <button
                 key={item.action}
@@ -74,16 +109,6 @@ export function TopBar() {
                 {item.shortcut ? <span className="text-[12px] text-[var(--text-faint)]">{item.shortcut}</span> : null}
               </button>
             ))}
-            <button
-              type="button"
-              role="menuitemcheckbox"
-              aria-checked={swipeToPan}
-              className="flex w-full items-center justify-between gap-4 px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
-              onClick={() => setSwipeToPan(!swipeToPan)}
-            >
-              <span>Trackpad: swipe to pan (off = scroll to zoom)</span>
-              <span className="text-[12px] text-[var(--text-faint)]">{swipeToPan ? 'On' : 'Off'}</span>
-            </button>
           </div>
         ) : null}
       </div>

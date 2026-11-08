@@ -1,5 +1,6 @@
-import type { RemovedTasks, Task } from '@shared/types'
+import type { CanvasImage, RemovedTasks, Task } from '@shared/types'
 import { hideDeleteNotice, showDeleteNotice } from './delete-notice'
+import { markLayoutRestore, prepareHistoryStep } from './layout-bridge'
 import { applyRemoval, takeRemoval } from './removed'
 
 interface FocusRequest {
@@ -32,6 +33,7 @@ interface Entry {
   textId: string | null
   open: boolean
   removed: RemovedTasks | null
+  images: { before: CanvasImage[]; after: CanvasImage[] } | null
 }
 
 const BURST = new Set([
@@ -52,6 +54,8 @@ const undoStack: Entry[] = []
 const redoStack: Entry[] = []
 let api: HistoryApi | null = null
 let applying = false
+let causeStamp = 0
+let restoreImages: ((images: CanvasImage[]) => void) | null = null
 let depth = 0
 let batchBefore: { tasks: Task[]; focus: string | null } | null = null
 let pendingInput = ''
@@ -180,6 +184,7 @@ function pushChange(
     textId,
     open: textId !== null && BURST.has(inputType),
     removed,
+    images: null,
   })
   if (undoStack.length > 200) undoStack.shift()
   redoStack.length = 0
@@ -192,9 +197,11 @@ function restore(
   focus: string | null,
   from: Task[],
   removed: RemovedTasks | null,
+  images: { before: CanvasImage[]; after: CanvasImage[] } | null,
   direction: 'undo' | 'redo',
 ): boolean {
   if (!api) return false
+  markLayoutRestore()
   if (removed && !applyRemoval(direction, removed)) {
     api.set({ error: 'Could not undo that edit.' })
     return false
@@ -210,7 +217,10 @@ function restore(
     error: null,
   })
   applying = false
-  if (api.commit(cloneTasks(tasks))) return true
+  if (api.commit(cloneTasks(tasks))) {
+    if (images) restoreImages?.(direction === 'undo' ? images.before : images.after)
+    return true
+  }
   if (removed) applyRemoval(direction === 'undo' ? 'redo' : 'undo', removed)
   applying = true
   api.set({
@@ -225,8 +235,9 @@ function restore(
 }
 
 export function undoEditing(): void {
+  prepareHistoryStep()
   const entry = undoStack.at(-1)
-  if (!entry || !restore(entry.before, entry.beforeFocus, entry.after, entry.removed, 'undo')) return
+  if (!entry || !restore(entry.before, entry.beforeFocus, entry.after, entry.removed, entry.images, 'undo')) return
   entry.open = false
   undoStack.pop()
   redoStack.push(entry)
@@ -234,8 +245,9 @@ export function undoEditing(): void {
 }
 
 export function redoEditing(): void {
+  prepareHistoryStep()
   const entry = redoStack.at(-1)
-  if (!entry || !restore(entry.after, entry.afterFocus, entry.before, entry.removed, 'redo')) return
+  if (!entry || !restore(entry.after, entry.afterFocus, entry.before, entry.removed, entry.images, 'redo')) return
   entry.open = false
   redoStack.pop()
   undoStack.push(entry)
@@ -274,6 +286,7 @@ export function installHistoryKeys(): () => void {
   const onKeyDown = (event: KeyboardEvent): void => {
     if (event.isComposing || event.key === 'Process') return
     if (!(event.ctrlKey || event.metaKey) || event.altKey) return
+    if (event.target instanceof Element && event.target.closest('[data-theme-lab]')) return
     if (event.target instanceof HTMLInputElement) return
     const key = event.key.toLowerCase()
     const undo = key === 'z' && !event.shiftKey
@@ -286,6 +299,87 @@ export function installHistoryKeys(): () => void {
   }
   window.addEventListener('keydown', onKeyDown, true)
   return () => window.removeEventListener('keydown', onKeyDown, true)
+}
+
+function cloneImages(images: CanvasImage[]): CanvasImage[] {
+  return images.map((image) => ({ ...image }))
+}
+
+export function setImageRestorer(fn: (images: CanvasImage[]) => void): void {
+  restoreImages = fn
+}
+
+export function armLayoutHistory(): number {
+  causeStamp = undoStack.length
+  return causeStamp
+}
+
+export function pushImageHistory(before: CanvasImage[], after: CanvasImage[]): void {
+  if (!api) return
+  const state = api.get()
+  undoStack.push({
+    before: cloneTasks(state.tasks),
+    after: cloneTasks(state.tasks),
+    beforeFocus: state.focusedId,
+    afterFocus: state.focusedId,
+    textId: null,
+    open: false,
+    removed: null,
+    images: { before: cloneImages(before), after: cloneImages(after) },
+  })
+  if (undoStack.length > 200) undoStack.shift()
+  redoStack.length = 0
+  causeStamp = undoStack.length
+}
+
+export function foldMovedTasks(moves: readonly { id: string; x: number; y: number }[]): void {
+  if (!api || moves.length === 0) return
+  const moved = new Map(moves.map((move) => [move.id, move]))
+  const state = api.get()
+  let changed = false
+  const tasks = state.tasks.map((task) => {
+    const next = moved.get(task.id)
+    if (!next || (task.x === next.x && task.y === next.y)) return task
+    changed = true
+    return { ...task, x: next.x, y: next.y }
+  })
+  if (!changed) return
+  const before = cloneTasks(state.tasks)
+  applying = true
+  api.set({ tasks })
+  applying = false
+  if (causeStamp > 0 && undoStack.length === causeStamp) {
+    const last = undoStack[causeStamp - 1]
+    if (last) last.after = cloneTasks(tasks)
+    return
+  }
+  undoStack.push({
+    before,
+    after: cloneTasks(tasks),
+    beforeFocus: state.focusedId,
+    afterFocus: state.focusedId,
+    textId: null,
+    open: false,
+    removed: null,
+    images: null,
+  })
+  if (undoStack.length > 200) undoStack.shift()
+  redoStack.length = 0
+  causeStamp = undoStack.length
+}
+
+export function foldMovedImages(moves: readonly { id: string; x: number; y: number }[]): void {
+  if (causeStamp <= 0 || undoStack.length !== causeStamp) return
+  const last = undoStack[causeStamp - 1]
+  if (!last?.images) return
+  const moved = new Map(moves.map((move) => [move.id, move]))
+  last.images = {
+    before: last.images.before,
+    after: last.images.after.map((image) => {
+      const next = moved.get(image.id)
+      return next ? { ...image, x: next.x, y: next.y } : image
+    }),
+  }
 }
 
 export function attachHistory(next: HistoryApi): void {
