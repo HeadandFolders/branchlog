@@ -48,5 +48,5 @@ The database owns saved tasks. A task's `dateCreated` and `dateCompleted` are lo
 - `src/shared/separate.ts` — the rectangle separation used by the daily canvas. It does not touch React or the database.
 - `src/preload` — the bridge, and nothing else
 - `src/renderer` — the React page, the store, and small helpers
-- `src/shared` — types and date helpers used by the other three. `dates.ts` owns today's key. A development build, and the build `npm test` produces, honor `BRANCHLOG_NOW`. A production build does not.
+- `src/shared` — types and date helpers used by the other three. `dates.ts` owns today's key, and `clock.ts` is the only `now()`. A development build, and the build `npm test` produces, read `BRANCHLOG_NOW` there. A production build replaces that file with `clock-off.ts`, which always uses the real time.
 - `tests` — Playwright tests that launch the real app against a temporary data folder

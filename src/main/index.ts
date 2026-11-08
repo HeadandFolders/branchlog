@@ -213,6 +213,11 @@ if (!app.requestSingleInstanceLock()) {
       mainWindow?.setBackgroundColor(paperColor())
     })
     mainWindow = createWindow()
+    powerMonitor.on('resume', () => {
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed()) win.webContents.send('clock:resume')
+      }
+    })
     startDailyBackup()
     tempMark('backup-scheduled')
   })

@@ -1,4 +1,8 @@
-export function localDateKey(date = new Date()): string {
+import { now, testNowSetting } from './clock.ts'
+
+export { now, testNowSetting }
+
+export function localDateKey(date = now()): string {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -16,4 +20,10 @@ export function addDays(dateKey: string, days: number): string {
   const date = parseDateKey(dateKey)
   date.setDate(date.getDate() + days)
   return localDateKey(date)
+}
+
+export function msUntilNextLocalMidnight(from = now()): number {
+  const next = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 1, 0, 0, 0, 0)
+  const delay = next.getTime() - from.getTime()
+  return delay > 0 ? delay : 1
 }

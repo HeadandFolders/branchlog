@@ -1,12 +1,15 @@
 import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { localDateKey, parseDateKey } from '@shared/dates'
+import { parseDateKey } from '@shared/dates'
 import { useNotebook } from '../store/notebook'
+import { useTodayKey } from '../lib/today'
 import { tempCountRender } from '../temp-first-paint'
 
-function pageTitle(dateKey: string): string {
+function dayLabel(dateKey: string, todayKey: string): string {
+  if (dateKey === todayKey) return 'Today'
   const date = parseDateKey(dateKey)
-  const pattern = date.getFullYear() === new Date().getFullYear() ? 'EEEE, MMMM d' : 'EEEE, MMMM d, yyyy'
+  const pattern =
+    date.getFullYear() === parseDateKey(todayKey).getFullYear() ? 'EEEE, MMMM d' : 'EEEE, MMMM d, yyyy'
   return format(date, pattern)
 }
 
@@ -15,8 +18,7 @@ export function DateHeader() {
   const currentDate = useNotebook((state) => state.currentDate)
   const shiftDate = useNotebook((state) => state.shiftDate)
   const goToDate = useNotebook((state) => state.goToDate)
-  const goToToday = useNotebook((state) => state.goToToday)
-  const isToday = currentDate === localDateKey()
+  const todayKey = useTodayKey()
 
   return (
     <div>
@@ -48,18 +50,9 @@ export function DateHeader() {
         >
           <ChevronRight size={16} strokeWidth={1.5} />
         </button>
-        {isToday ? null : (
-          <button
-            type="button"
-            className="nopan text-[13px] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:text-[var(--text)]"
-            onClick={() => void goToToday()}
-          >
-            Today
-          </button>
-        )}
       </div>
       <h1 className="mt-8 text-[32px] font-semibold tracking-[-0.02em] text-[var(--text)]" aria-live="polite">
-        {pageTitle(currentDate)}
+        {dayLabel(currentDate, todayKey)}
       </h1>
     </div>
   )

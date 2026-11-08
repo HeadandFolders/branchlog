@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
@@ -26,19 +27,29 @@ const testClock =
   process.env.npm_lifecycle_event === 'test' ||
   process.env.npm_lifecycle_event === 'test:e2e'
 
-export default defineConfig(({ command }) => {
-  const define = {
-    __BRANCHLOG_TEST_CLOCK__: command === 'serve' || testClock ? 'true' : 'false',
+const clockOff = readFileSync(resolve('src/shared/clock-off.ts'), 'utf8')
+
+function testClockGate(allow: boolean) {
+  return {
+    name: 'branchlog-test-clock',
+    enforce: 'pre' as const,
+    load(id: string) {
+      const file = id.split('?')[0]?.replace(/\\/g, '/')
+      if (allow || !file?.endsWith('/src/shared/clock.ts')) return null
+      return clockOff
+    },
   }
+}
+
+export default defineConfig(({ command }) => {
+  const allow = command === 'serve' || testClock
   return {
     main: {
-      define,
-      plugins: [externalizeDepsPlugin()],
+      plugins: [testClockGate(allow), externalizeDepsPlugin()],
       resolve: { alias: { '@shared': shared } },
     },
     preload: {
-      define,
-      plugins: [externalizeDepsPlugin()],
+      plugins: [testClockGate(allow), externalizeDepsPlugin()],
       resolve: { alias: { '@shared': shared } },
       build: {
         lib: {
@@ -49,8 +60,7 @@ export default defineConfig(({ command }) => {
       },
     },
     renderer: {
-      define,
-      plugins: [flowTokens(), react(), tailwindcss()],
+      plugins: [testClockGate(allow), flowTokens(), react(), tailwindcss()],
       resolve: { alias: { '@shared': shared } },
       build: {
         sourcemap: process.env.BRANCHLOG_SOURCEMAP === '1',
