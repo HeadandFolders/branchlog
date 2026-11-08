@@ -2,6 +2,7 @@ import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { localDateKey, parseDateKey } from '@shared/dates'
 import { useNotebook } from '../store/notebook'
+import { tempCountRender } from '../temp-first-paint'
 
 function pageTitle(dateKey: string): string {
   const date = parseDateKey(dateKey)
@@ -10,6 +11,7 @@ function pageTitle(dateKey: string): string {
 }
 
 export function DateHeader() {
+  tempCountRender('DateHeader')
   const currentDate = useNotebook((state) => state.currentDate)
   const shiftDate = useNotebook((state) => state.shiftDate)
   const goToDate = useNotebook((state) => state.goToDate)

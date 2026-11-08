@@ -3,6 +3,7 @@ import {
   MarkerType,
   ReactFlow,
   ReactFlowProvider,
+  useReactFlow,
   applyNodeChanges,
   type Edge,
   type Node,
@@ -13,9 +14,12 @@ import {
 import '@xyflow/react/dist/style.css'
 import { BRANCH_LINE_HEIGHT, BRANCH_MIN_WIDTH, BRANCH_WIDTH } from '@shared/branch-size'
 import type { Task } from '@shared/types'
+import { registerFlowPoint } from '../lib/flow-point'
 import { registerFramePage } from '../lib/viewport'
 import { settleFocusRequest, focusSettlePending } from '../lib/focus-field'
+import { tempMark } from '@shared/temp-timing'
 import { useNotebook } from '../store/notebook'
+import { tempCountRender, tempNoteFlowDimensions } from '../temp-first-paint'
 import { BranchNode } from './BranchNode'
 import { MainListNode } from './MainListNode'
 
@@ -110,6 +114,7 @@ function structureKey(tasks: Task[]): string {
 }
 
 function DailyFlow() {
+  tempCountRender('DailyFlow')
   const wrapperRef = useRef<HTMLDivElement>(null)
   const instanceRef = useRef<ReactFlowInstance<Node, Edge> | null>(null)
   const draggingId = useRef<string | null>(null)
@@ -120,6 +125,7 @@ function DailyFlow() {
   tasksRef.current = tasks
   const currentDate = useNotebook((state) => state.currentDate)
   const updatePosition = useNotebook((state) => state.updatePosition)
+  const { screenToFlowPosition } = useReactFlow()
   const [nodes, setNodes] = useState<Node[]>(() => buildNodes(tasks))
   const [edges, setEdges] = useState<Edge[]>(() => buildEdges(tasks))
   const nodesRef = useRef(nodes)
@@ -135,6 +141,7 @@ function DailyFlow() {
   }, [])
 
   useEffect(() => registerFramePage(frame), [frame])
+  useEffect(() => registerFlowPoint((point) => screenToFlowPosition(point)), [screenToFlowPosition])
 
   useEffect(() => {
     frame()
@@ -145,6 +152,7 @@ function DailyFlow() {
     const current = tasksRef.current
     setNodes(buildNodes(current, nodesRef.current))
     setEdges(buildEdges(current))
+    tempMark('canvas-rebuild', { tasks: current.length })
   }, [structure])
 
   useLayoutEffect(() => {
@@ -156,7 +164,12 @@ function DailyFlow() {
   }, [nodes])
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
-    if (changes.some((change) => change.type === 'dimensions')) measuredUpdate.current = true
+    if (changes.some((change) => change.type === 'dimensions')) {
+      measuredUpdate.current = true
+      let measured = 0
+      for (const change of changes) if (change.type === 'dimensions') measured += 1
+      tempNoteFlowDimensions(measured)
+    }
     let origin = resizeBaseline.current
     for (const change of changes) {
       if (change.type !== 'dimensions' || change.id === 'main-list') continue
@@ -217,6 +230,13 @@ function DailyFlow() {
         onInit={(instance) => {
           instanceRef.current = instance
           frame()
+          const viewport = instance.getViewport()
+          tempMark('react-flow-init', {
+            x: Math.round(viewport.x),
+            y: Math.round(viewport.y),
+            zoom: viewport.zoom,
+            nodes: instance.getNodes().length,
+          })
         }}
         fitView={false}
         minZoom={0.5}
@@ -238,6 +258,7 @@ function DailyFlow() {
 }
 
 export function DailyCanvas() {
+  tempCountRender('DailyCanvas')
   return (
     <ReactFlowProvider>
       <DailyFlow />

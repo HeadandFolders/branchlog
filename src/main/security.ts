@@ -26,9 +26,16 @@ function contentSecurityPolicy(): string {
   ].join('; ')
 }
 
+let headerChecks = 0
+
+export function contentSecurityHeaderChecks(): number {
+  return headerChecks
+}
+
 export function installSecurityPolicy(): void {
   const policy = contentSecurityPolicy()
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    headerChecks += 1
     callback({
       responseHeaders: {
         ...details.responseHeaders,

@@ -5,6 +5,7 @@ import { rememberCaret, rangeOffsets } from '../lib/caret'
 import { handleNewTaskKey } from '../lib/new-task'
 import { deleteSelectedTaskText, installCrossTaskCut, selectedTaskPlainText } from '../lib/list-edit'
 import { useNotebook } from '../store/notebook'
+import { tempCountRender } from '../temp-first-paint'
 
 interface DragState {
   x: number
@@ -157,6 +158,7 @@ function selectionInsideEditor(): boolean {
 }
 
 export function MainListNode() {
+  tempCountRender('MainListNode')
   const allTasks = useNotebook((state) => state.tasks)
   const tasks = allTasks.filter((task) => task.side === 'main')
   const ready = useNotebook((state) => state.ready)

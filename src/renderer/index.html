@@ -2,6 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- TEMP first-paint measurement -->
+    <script>
+      if (location.search.indexOf('measure=1') !== -1) {
+        performance.mark('TEMP html-parse')
+        var line =
+          'TEMP_MARK ' +
+          JSON.stringify({
+            label: 'html-parse',
+            now: Date.now(),
+            perf: performance.now(),
+            origin: performance.timeOrigin,
+          })
+        globalThis.__tempLines = globalThis.__tempLines || []
+        globalThis.__tempLines.push(line)
+        console.log(line)
+      }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Branchlog</title>
   </head>

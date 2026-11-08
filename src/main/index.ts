@@ -1,12 +1,56 @@
 import { app, BrowserWindow, nativeTheme } from 'electron'
+import { appendFileSync } from 'node:fs'
 import path from 'node:path'
+import { setTempLog, tempMark, tempMs } from '@shared/temp-timing'
 import { finishBackup, startDailyBackup } from './backup'
 import { closeDatabase, initDatabase } from './database'
 import { installIpc } from './ipc'
 import { installMenu } from './menu'
 import { installEditContextMenu } from './context-menu'
-import { hardenContents, installSecurityPolicy } from './security'
+import { contentSecurityHeaderChecks, hardenContents, installSecurityPolicy } from './security'
 import { loadWindowState, trackWindowState } from './window-state'
+
+const measureLog = process.env['BRANCHLOG_MEASURE_LOG']
+const seenMarks = new Set<string>()
+
+function recordMark(line: string): void {
+  const trimmed = line.trim()
+  if (!trimmed.startsWith('TEMP_MARK ')) return
+  if (seenMarks.has(trimmed)) return
+  seenMarks.add(trimmed)
+  if (!measureLog) return
+  try {
+    appendFileSync(measureLog, `${trimmed}\n`)
+  } catch {
+    // The harness still reads the console stream.
+  }
+}
+
+if (process.env['BRANCHLOG_MEASURE'] === '1') setTempLog(recordMark)
+tempMark('main-evaluated', { uptimeMs: Math.round(process.uptime() * 1000) })
+
+let collecting = false
+
+async function collectAndQuit(win: BrowserWindow): Promise<void> {
+  if (collecting) return
+  collecting = true
+  try {
+    const dumped: unknown = await win.webContents.executeJavaScript(
+      'Array.isArray(globalThis.__tempLines) ? globalThis.__tempLines.join("\\n") : ""',
+    )
+    if (typeof dumped === 'string') {
+      for (const line of dumped.split('\n')) recordMark(line)
+    }
+  } catch (error) {
+    tempMark('collect-failed', { message: error instanceof Error ? error.message : 'failed' })
+  }
+  tempMark('devtools-opened', {
+    open: win.isDestroyed() || !win.webContents.isDevToolsOpened() ? 0 : 1,
+  })
+  tempMark('window-count', { count: BrowserWindow.getAllWindows().length })
+  tempMark('csp-header-checks', { count: contentSecurityHeaderChecks() })
+  app.quit()
+}
 
 const appRoot = import.meta.dirname
 const userDataOverride = process.env.BRANCHLOG_USER_DATA
@@ -20,7 +64,11 @@ function paperColor(): string {
 }
 
 function createWindow(): BrowserWindow {
+  const measuring = process.env['BRANCHLOG_MEASURE'] === '1'
+  const stateStart = performance.now()
   const state = loadWindowState()
+  tempMark('window-state', { ms: tempMs(stateStart) })
+  const constructStart = performance.now()
   const win = new BrowserWindow({
     width: state.width,
     height: state.height,
@@ -40,24 +88,50 @@ function createWindow(): BrowserWindow {
       allowRunningInsecureContent: false,
       nodeIntegrationInWorker: false,
       nodeIntegrationInSubFrames: false,
+      ...(measuring ? { additionalArguments: ['--branchlog-measure'] } : {}),
     },
   })
+  tempMark('window-constructed', { ms: tempMs(constructStart) })
 
   win.webContents.on('preload-error', (_event, preloadPath, error) => {
     console.error('Preload failed', preloadPath, error)
   })
+  win.webContents.on('console-message', (event, _level, message) => {
+    const fromEvent = (event as { message?: string }).message
+    const text =
+      typeof message === 'string' && message.includes('TEMP_MARK')
+        ? message
+        : typeof fromEvent === 'string'
+          ? fromEvent
+          : ''
+    if (!text.includes('TEMP_MARK')) return
+    recordMark(text)
+    if (text.includes('"label":"measure-done"')) void collectAndQuit(win)
+  })
+  win.webContents.on('did-start-loading', () => tempMark('did-start-loading'))
+  win.webContents.on('dom-ready', () => tempMark('dom-ready'))
+  win.webContents.on('did-finish-load', () => tempMark('did-finish-load'))
   if (state.isMaximized) win.maximize()
   trackWindowState(win)
-  win.on('ready-to-show', () => win.show())
+  win.on('ready-to-show', () => {
+    tempMark('ready-to-show')
+    win.show()
+    tempMark('window-shown')
+  })
   win.on('closed', () => {
     if (mainWindow === win) mainWindow = null
   })
 
   if (process.env.ELECTRON_RENDERER_URL) {
-    void win.loadURL(process.env.ELECTRON_RENDERER_URL)
+    const url = new URL(process.env.ELECTRON_RENDERER_URL)
+    if (measuring) url.searchParams.set('measure', '1')
+    void win.loadURL(url.toString())
   } else {
-    void win.loadFile(path.join(appRoot, '../renderer/index.html'))
+    void win.loadFile(path.join(appRoot, '../renderer/index.html'), {
+      query: measuring ? { measure: '1' } : undefined,
+    })
   }
+  tempMark('load-called')
 
   return win
 }
@@ -79,18 +153,31 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   void app.whenReady().then(() => {
+    tempMark('when-ready', {
+      uptimeMs: Math.round(process.uptime() * 1000),
+      packaged: app.isPackaged ? 1 : 0,
+    })
     if (process.platform === 'win32') {
       app.setAppUserModelId('com.branchlog.app')
     }
+    const databaseStart = performance.now()
     initDatabase()
+    tempMark('init-database-returned', { ms: tempMs(databaseStart) })
+    const ipcStart = performance.now()
     installIpc()
+    tempMark('install-ipc', { ms: tempMs(ipcStart) })
+    const securityStart = performance.now()
     installSecurityPolicy()
+    tempMark('install-security', { ms: tempMs(securityStart) })
+    const menuStart = performance.now()
     installMenu()
+    tempMark('install-menu', { ms: tempMs(menuStart) })
     nativeTheme.on('updated', () => {
       mainWindow?.setBackgroundColor(paperColor())
     })
     mainWindow = createWindow()
     startDailyBackup()
+    tempMark('backup-scheduled')
   })
 
   app.on('activate', () => {

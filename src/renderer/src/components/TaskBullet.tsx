@@ -17,6 +17,7 @@ import { textDirection } from '../lib/direction'
 import { handleTaskBeforeInput, handleTaskKey } from '../lib/task-keys'
 import { batchEdits, markInput } from '../store/history'
 import { useNotebook } from '../store/notebook'
+import { tempCountRender } from '../temp-first-paint'
 
 interface BulletTextProps {
   textRef: RefObject<HTMLDivElement | null>
@@ -114,6 +115,7 @@ interface TaskBulletProps {
 }
 
 export function TaskBullet({ task }: TaskBulletProps) {
+  tempCountRender('TaskBullet')
   const ref = useRef<HTMLDivElement>(null)
   const updateText = useNotebook((state) => state.updateText)
   const flushText = useNotebook((state) => state.flushText)

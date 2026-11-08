@@ -1,4 +1,5 @@
 import { BRANCH_WIDTH } from '@shared/branch-size'
+import { tempMark, tempMs } from '@shared/temp-timing'
 import type Database from 'better-sqlite3'
 
 interface ForeignKeyRow {
@@ -75,11 +76,11 @@ function rebuildTasks(db: Database.Database): void {
   }
 }
 
-function cleanupOrphans(db: Database.Database): void {
+function cleanupOrphans(db: Database.Database): boolean {
   const done = db.prepare(`SELECT value FROM settings WHERE key = 'orphanCleanup'`).get() as
     | { value: string }
     | undefined
-  if (done) return
+  if (done) return true
   const cleanup = db.transaction(() => {
     const orphans = db
       .prepare(
@@ -96,10 +97,24 @@ function cleanupOrphans(db: Database.Database): void {
     db.prepare(`INSERT INTO settings (key, value) VALUES ('orphanCleanup', '1')`).run()
   })
   cleanup()
+  return false
 }
 
 export function migrateTasks(db: Database.Database): void {
-  if (parentDeleteAction(db) !== 'CASCADE') rebuildTasks(db)
+  const foreignStart = performance.now()
+  const action = parentDeleteAction(db)
+  tempMark('migrate-fk', { ms: tempMs(foreignStart), action: action ?? 'none' })
+  if (action !== 'CASCADE') {
+    const rebuildStart = performance.now()
+    rebuildTasks(db)
+    tempMark('migrate-rebuild', { ms: tempMs(rebuildStart) })
+  } else {
+    tempMark('migrate-rebuild-skipped')
+  }
+  const sizeStart = performance.now()
   ensureTaskSize(db)
-  cleanupOrphans(db)
+  tempMark('migrate-size', { ms: tempMs(sizeStart) })
+  const orphanStart = performance.now()
+  const skipped = cleanupOrphans(db)
+  tempMark('migrate-orphan', { ms: tempMs(orphanStart), skipped })
 }

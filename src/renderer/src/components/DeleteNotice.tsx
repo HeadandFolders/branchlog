@@ -1,7 +1,9 @@
 import { useDeleteNotice } from '../store/delete-notice'
 import { undoEditing } from '../store/history'
+import { tempCountRender } from '../temp-first-paint'
 
 export function DeleteNotice() {
+  tempCountRender('DeleteNotice')
   const count = useDeleteNotice()
   if (count === null) return null
   const label = count === 1 ? '1 task' : `${count} tasks`

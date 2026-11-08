@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import Database from 'better-sqlite3'
 import { app } from 'electron'
+import { tempMark, tempMeasuring, tempMs } from '@shared/temp-timing'
 import { BRANCH_WIDTH } from '@shared/branch-size'
 import { localDateKey } from '@shared/dates'
 import type { CreateBranchInput, CreateTaskInput, Task, TaskSide, UpdateTaskInput } from '@shared/types'
@@ -94,16 +95,40 @@ let database: Database.Database | null = null
 
 export function initDatabase(): Database.Database {
   if (database) return database
+  const started = performance.now()
   const userData = app.getPath('userData')
+  const mkdirStart = performance.now()
   mkdirSync(userData, { recursive: true })
+  tempMark('db-mkdir', { ms: tempMs(mkdirStart) })
   const dbPath = path.join(userData, 'branchlog.sqlite')
+  const openStart = performance.now()
   const next = new Database(dbPath)
+  tempMark('db-open', { ms: tempMs(openStart) })
+  const journalStart = performance.now()
   next.pragma('journal_mode = WAL')
+  tempMark('db-pragma-journal', { ms: tempMs(journalStart) })
+  const foreignStart = performance.now()
   next.pragma('foreign_keys = ON')
+  tempMark('db-pragma-foreign-keys', { ms: tempMs(foreignStart) })
+  const busyStart = performance.now()
   next.pragma('busy_timeout = 2000')
+  tempMark('db-pragma-busy', { ms: tempMs(busyStart) })
+  const schemaStart = performance.now()
   next.exec(SCHEMA)
+  tempMark('db-schema', { ms: tempMs(schemaStart) })
+  const migrateStart = performance.now()
   migrateTasks(next)
+  tempMark('db-migrate', { ms: tempMs(migrateStart) })
+  if (tempMeasuring()) {
+    tempMark('db-pragma-values', {
+      journal: String(next.pragma('journal_mode', { simple: true })),
+      synchronous: Number(next.pragma('synchronous', { simple: true })),
+      foreignKeys: Number(next.pragma('foreign_keys', { simple: true })),
+      busyTimeout: Number(next.pragma('busy_timeout', { simple: true })),
+    })
+  }
   database = next
+  tempMark('db-init-total', { ms: tempMs(started) })
   console.log(`Branchlog database: ${dbPath}`)
   return next
 }

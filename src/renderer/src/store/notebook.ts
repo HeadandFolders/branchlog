@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { addDays, localDateKey } from '@shared/dates'
+import { tempMark, tempMs } from '@shared/temp-timing'
 import type { MenuAction, Task } from '@shared/types'
 import { removeDeletedTasks } from './delete-task'
 import { attachHistory, clearHistory } from './history'
@@ -128,11 +129,13 @@ export const useNotebook = create<NotebookState>((set, get) => ({
 
   goToDate: async (date) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
+    const started = performance.now()
     clearHistory()
     const pendingIds = [...pendingText.keys()]
     await Promise.all(pendingIds.map((id) => persistText(id)))
     flushPositionsSync()
     flushSizesSync()
+    tempMark('goto-flushed', { pendingText: pendingIds.length, ms: tempMs(started) })
     set({
       currentDate: date,
       tasks: [],
@@ -141,10 +144,12 @@ export const useNotebook = create<NotebookState>((set, get) => ({
       focusedId: null,
       focusRequest: null,
     })
+    tempMark('store-cleared', { date })
     try {
       const tasks = await window.branchlog.tasks.listByDate(date)
       if (get().currentDate !== date) return
       set({ tasks, ready: true })
+      tempMark('store-filled', { date, rows: tasks.length, ms: tempMs(started) })
     } catch (error) {
       console.error(error)
       if (get().currentDate !== date) return

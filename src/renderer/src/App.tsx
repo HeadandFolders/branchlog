@@ -1,10 +1,11 @@
-import { Component, useEffect, type ReactNode } from 'react'
+import { Component, useEffect, useLayoutEffect, type ReactNode } from 'react'
 import { DailyCanvas } from './components/DailyCanvas'
 import { DeleteNotice } from './components/DeleteNotice'
 import { TopBar } from './components/TopBar'
 import { copyFromMenu, cutFromMenu, selectAllFromMenu } from './lib/list-edit'
 import { installHistoryKeys, redoEditing, undoEditing } from './store/history'
 import { useNotebook } from './store/notebook'
+import { tempCountRender, tempNoteCommit } from './temp-first-paint'
 
 interface BoundaryProps {
   children: ReactNode
@@ -38,6 +39,7 @@ class AppErrorBoundary extends Component<BoundaryProps, BoundaryState> {
 }
 
 function Notebook() {
+  tempCountRender('Notebook')
   const error = useNotebook((state) => state.error)
   const goToDate = useNotebook((state) => state.goToDate)
 
@@ -82,6 +84,11 @@ function Notebook() {
 }
 
 export function App() {
+  tempCountRender('App')
+  useLayoutEffect(() => {
+    tempNoteCommit()
+  }, [])
+
   if (!('branchlog' in window)) {
     return (
       <div className="flex h-full items-center justify-center px-8 text-center text-[13px] text-[var(--text-muted)]">

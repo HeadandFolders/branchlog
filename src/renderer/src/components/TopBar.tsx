@@ -2,10 +2,12 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { Menu } from 'lucide-react'
 import { framePageNow } from '../lib/viewport'
 import { useNotebook } from '../store/notebook'
+import { tempCountRender } from '../temp-first-paint'
 
 const shortcutMod = /Mac/i.test(navigator.userAgent) ? '⌘' : 'Ctrl'
 
 export function TopBar() {
+  tempCountRender('TopBar')
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const menuId = useId()

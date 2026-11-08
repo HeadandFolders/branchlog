@@ -24,5 +24,8 @@ export default defineConfig({
   renderer: {
     plugins: [react(), tailwindcss()],
     resolve: { alias: { '@shared': shared } },
+    build: {
+      sourcemap: process.env.BRANCHLOG_SOURCEMAP === '1',
+    },
   },
 })

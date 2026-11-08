@@ -1,4 +1,7 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import { tempMark, tempMs } from '@shared/temp-timing'
+
+tempMark('preload-start')
 import {
   isAck,
   isDeleteResult,
@@ -27,7 +30,10 @@ function readWriteResult(value: unknown): WriteResult {
 const api: BranchlogApi = {
   tasks: {
     listByDate: async (date) => {
+      tempMark('ipc-send', { channel: 'tasks:listByDate' })
+      const started = performance.now()
       const value: unknown = await ipcRenderer.invoke('tasks:listByDate', date)
+      tempMark('ipc-recv', { channel: 'tasks:listByDate', roundTripMs: tempMs(started) })
       if (!isTaskList(value)) throw new Error('Could not complete that request')
       return value
     },
@@ -70,3 +76,4 @@ const api: BranchlogApi = {
 }
 
 contextBridge.exposeInMainWorld('branchlog', api)
+tempMark('preload-end')

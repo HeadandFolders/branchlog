@@ -3,6 +3,7 @@ import { Handle, NodeResizer, Position, type NodeProps } from '@xyflow/react'
 import { BRANCH_LINE_HEIGHT, BRANCH_MIN_WIDTH } from '@shared/branch-size'
 import { rememberCaret } from '../lib/caret'
 import { useNotebook } from '../store/notebook'
+import { tempCountRender } from '../temp-first-paint'
 import { TaskBullet } from './TaskBullet'
 
 const BRANCH_HANDLE = {
@@ -17,6 +18,7 @@ const BRANCH_HANDLE = {
 }
 
 export const BranchNode = memo(function BranchNode({ id, selected }: NodeProps) {
+  tempCountRender('BranchNode')
   const rootRef = useRef<HTMLDivElement>(null)
   const heightDrag = useRef(false)
   const task = useNotebook((state) => state.tasks.find((item) => item.id === id))
