@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import { format } from 'date-fns'
 import { parseDateKey } from '@shared/dates'
 import { buildCalendarColumns, WEEKDAY_LABELS } from '../lib/calendar-grid'
@@ -29,7 +29,17 @@ export function CalendarView() {
   const [counts, setCounts] = useState<Record<string, number> | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [hovered, setHovered] = useState<HoveredCell | null>(null)
+  const [tipLeft, setTipLeft] = useState(0)
   const gridRef = useRef<HTMLDivElement>(null)
+  const tipRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const tip = tipRef.current
+    const grid = gridRef.current
+    if (!hovered || !tip || !grid) return
+    const half = tip.offsetWidth / 2
+    setTipLeft(Math.min(Math.max(hovered.x, half), Math.max(half, grid.offsetWidth - half)))
+  }, [hovered])
 
   useEffect(() => {
     let cancelled = false
@@ -99,8 +109,9 @@ export function CalendarView() {
       <div ref={gridRef} className="relative mt-6 w-fit" data-testid="activity-grid">
         {hovered ? (
           <div
+            ref={tipRef}
             className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-[3px] border border-[var(--line)] bg-[var(--bg)] px-2 py-1 text-[11px] text-[var(--text)]"
-            style={{ left: hovered.x, top: hovered.y - 6 }}
+            style={{ left: tipLeft, top: hovered.y - 6 }}
             role="status"
           >
             {tooltipText(hovered.date, hovered.count)}
@@ -128,9 +139,7 @@ export function CalendarView() {
                     data-date={date}
                     data-active={count > 0}
                     aria-label={tooltipText(date, count)}
-                    className={`size-3 rounded-[2px] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] ${
-                      count > 0 ? 'bg-[var(--active-1)]' : 'bg-[var(--active-0)]'
-                    }`}
+                    className="calendar-cell size-3 rounded-[2px] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)]"
                     onClick={() => openDay(date)}
                     onMouseEnter={(event) => onCellEnter(event, date)}
                     onMouseLeave={() => setHovered(null)}

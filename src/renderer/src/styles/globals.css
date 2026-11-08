@@ -233,6 +233,14 @@ button.branch-dot:focus-visible {
   border-radius: 3px;
 }
 
+.calendar-cell {
+  background: var(--active-0);
+}
+
+.calendar-cell[data-active='true'] {
+  background: var(--active-1);
+}
+
 .branch-handle {
   width: 1px;
   height: 1px;

@@ -73,6 +73,9 @@ test('the calendar lights the days a task was completed, and a click opens that 
 
     await cell(page, '2026-01-15').hover()
     await expect(grid.getByRole('status')).toHaveText('Jan 15, 2026 · 1 task completed')
+    await grid.locator('button[data-date]').first().hover()
+    const tipBox = await grid.getByRole('status').boundingBox()
+    expect(tipBox?.x ?? -1).toBeGreaterThanOrEqual(0)
     await cell(page, '2026-01-18').hover()
     await expect(grid.getByRole('status')).toHaveText('Jan 18, 2026 · 1 task completed')
     await cell(page, '2026-01-16').hover()
