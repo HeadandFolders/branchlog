@@ -1,3 +1,5 @@
+import path from 'node:path'
+import Database from 'better-sqlite3'
 import { expect, test, type ElectronApplication, type Page } from '@playwright/test'
 import { closeApp, launchApp, writeTask } from './launch'
 
@@ -6,6 +8,29 @@ const day2 = '2026-11-02T12:00:00'
 const day3 = '2026-11-03T12:00:00'
 const day4 = '2026-11-04T12:00:00'
 const day5 = '2026-11-05T12:00:00'
+
+function savedTexts(userData: string): string[] {
+  const db = new Database(path.join(userData, 'branchlog.sqlite'))
+  db.pragma('busy_timeout = 3000')
+  const rows = db.prepare('SELECT text FROM tasks').all() as { text: string }[]
+  db.close()
+  return rows.map((row) => row.text)
+}
+
+// Typing is written 200ms later, and a carry run reads the saved rows, so a jump
+// before that flush copies empty text. Escape is the field's own way out: it blurs
+// and clears the editing state, which tints the row and reveals its actions.
+async function settle(page: Page, userData: string, ...texts: string[]): Promise<void> {
+  await page.keyboard.press('Escape')
+  await expect
+    .poll(() => {
+      const rows = savedTexts(userData)
+      return texts.every((text) => rows.includes(text))
+    })
+    .toBe(true)
+  await expect(taskRow(page, texts[0] ?? '')).toHaveAttribute('data-editing', 'false')
+  await page.mouse.move(8, 400)
+}
 
 function heading(page: Page) {
   return page.getByRole('heading', { level: 1 })
@@ -60,9 +85,11 @@ test('a finished-later copy is checked in its own color, with a double tick and 
   const { app, page, userData } = opened
   try {
     await writeTask(page, 'later finish')
+    await settle(page, userData, 'later finish')
     await carryToToday(app, page, day2)
     const live = taskRow(page, 'later finish')
-    await expect(live).toHaveAttribute('data-state', 'done')
+    await expect(live).toHaveAttribute('data-state', 'open')
+    await expect(live).toHaveAttribute('data-carried', '1')
     await live.getByRole('checkbox', { name: 'Mark task done' }).click()
     await expect(live.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true')
     expect(await painted(page, '[data-state="done"] .task-check', 'border-top-color')).toBe(
@@ -94,6 +121,7 @@ test('a carried copy shows its marker, the day count, and a tint that caps at th
   const { app, page, userData } = opened
   try {
     await writeTask(page, 'carry me')
+    await settle(page, userData, 'carry me')
     await expect(taskRow(page, 'carry me')).toHaveAttribute('data-state', 'open')
     await expect(taskRow(page, 'carry me')).not.toHaveAttribute('data-carried')
     expect(await taskRow(page, 'carry me').evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(
@@ -152,6 +180,7 @@ test('turning the highlight off drops the tint and marker color but keeps the to
   const userData = opened.userData
   try {
     await writeTask(page, 'quiet carry')
+    await settle(page, userData, 'quiet carry')
     await carryToToday(app, page, day2)
     await expect(taskRow(page, 'quiet carry')).toHaveAttribute('data-tint', '1')
 
@@ -202,6 +231,7 @@ test('branch nodes carry the same marks as the main list', async () => {
     await page.getByRole('button', { name: 'Branch from this task' }).click()
     await page.keyboard.type('branch child')
     await expect(taskRow(page, 'branch child')).toHaveCount(1)
+    await settle(page, userData, 'branch parent', 'branch child')
     await carryToToday(app, page, day2)
     await expect(taskRow(page, 'branch child')).toHaveCount(1)
     const branch = page.locator('.react-flow__node-branch').filter({ hasText: 'branch child' })

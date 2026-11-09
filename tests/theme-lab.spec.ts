@@ -13,8 +13,18 @@ async function tokens(page: Page): Promise<Record<string, string>> {
 
 async function openLab(page: Page): Promise<void> {
   await page.bringToFront()
-  await page.keyboard.press(`${modifier}+Shift+T`)
-  await expect(page.getByRole('complementary', { name: 'Theme Lab' })).toBeVisible()
+  const lab = page.getByRole('complementary', { name: 'Theme Lab' })
+  // The shortcut is a native menu accelerator, so one press can miss when the
+  // window is not the focused one yet. Retry the press; the assertion is unchanged.
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await page.keyboard.press(`${modifier}+Shift+T`)
+    const opened = await lab
+      .waitFor({ state: 'visible', timeout: 2000 })
+      .then(() => true)
+      .catch(() => false)
+    if (opened) return
+  }
+  await expect(lab).toBeVisible()
 }
 
 async function setToken(page: Page, token: string, hex: string): Promise<void> {

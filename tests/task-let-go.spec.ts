@@ -41,6 +41,21 @@ async function jumpTo(app: ElectronApplication, page: Page, iso: string): Promis
   }, iso)
 }
 
+// Typing is written 200ms later, and a carry run reads the saved rows, so a jump
+// before that flush copies empty text. Escape is the field's own way out: it blurs
+// and clears the editing state, which tints the row and reveals its actions.
+async function settle(page: Page, userData: string, ...texts: string[]): Promise<void> {
+  await page.keyboard.press('Escape')
+  await expect
+    .poll(() => {
+      const rows = saved(userData).map((row) => row.text)
+      return texts.every((text) => rows.includes(text))
+    })
+    .toBe(true)
+  await expect(taskRow(page, texts[0] ?? '')).toHaveAttribute('data-editing', 'false')
+  await page.mouse.move(8, 400)
+}
+
 function opacity(page: Page, selector: string) {
   return page
     .locator(selector)
@@ -75,6 +90,7 @@ test('letting go is reachable by hover and keyboard, is one undo step, and stops
   const { app, page, userData } = opened
   try {
     await writeTask(page, 'let this go')
+    await settle(page, userData, 'let this go')
     const row = taskRow(page, 'let this go')
     await expect(row).toHaveAttribute('data-state', 'open')
     const action = row.getByRole('button', { name: LET_GO })
