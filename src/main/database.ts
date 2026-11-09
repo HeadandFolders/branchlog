@@ -5,10 +5,7 @@ import { tempMark, tempMeasuring, tempMs } from '../shared/temp-timing.ts'
 import { BRANCH_WIDTH } from '../shared/branch-size.ts'
 import { localDateKey } from '../shared/dates.ts'
 import type { ActivityCount, CreateBranchInput, CreateTaskInput, Task, UpdateTaskInput } from '@shared/types'
-import { migrateAi } from './migrate-ai.ts'
-import { migrateImages } from './migrate-images.ts'
-import { migrateTasks } from './migrate.ts'
-import { SCHEMA } from './schema.ts'
+import { applySchema } from './schema.ts'
 import { mapTask, TASK_COLUMNS, type TaskRow } from './task-row.ts'
 
 let database: Database.Database | null = null
@@ -32,18 +29,7 @@ export function initDatabase(userData: string): Database.Database {
   const busyStart = performance.now()
   next.pragma('busy_timeout = 2000')
   tempMark('db-pragma-busy', { ms: tempMs(busyStart) })
-  const schemaStart = performance.now()
-  next.exec(SCHEMA)
-  tempMark('db-schema', { ms: tempMs(schemaStart) })
-  const migrateStart = performance.now()
-  migrateTasks(next)
-  tempMark('db-migrate', { ms: tempMs(migrateStart) })
-  const aiMigrateStart = performance.now()
-  migrateAi(next)
-  tempMark('db-migrate-ai', { ms: tempMs(aiMigrateStart) })
-  const imageMigrateStart = performance.now()
-  migrateImages(next)
-  tempMark('db-migrate-images', { ms: tempMs(imageMigrateStart) })
+  applySchema(next, (step, ms) => tempMark(`db-${step}`, { ms }))
   if (tempMeasuring()) {
     tempMark('db-pragma-values', {
       journal: String(next.pragma('journal_mode', { simple: true })),

@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3'
 import { expect, test } from '@playwright/test'
+import { applySchema } from '../src/main/schema'
 import { migrateAi } from '../src/main/migrate-ai'
 
 function oldDatabase(): Database.Database {
@@ -61,6 +62,23 @@ test('a failed migration rolls back rows and schema and restores foreign key enf
     expect(db.prepare('SELECT * FROM aiReplies').all()).toEqual(replies)
     expect(db.pragma('foreign_keys', { simple: true })).toBe(1)
     expect(db.prepare("SELECT sql FROM sqlite_master WHERE name = 'aiComments'").get()).toMatchObject({ sql: expect.stringContaining("side IN ('left')") })
+  } finally {
+    db.close()
+  }
+})
+
+test('one boot order creates the AI tables and reports every step for timing', () => {
+  const db = new Database(':memory:')
+  try {
+    const steps: [string, number][] = []
+    applySchema(db, (step, ms) => steps.push([step, ms]))
+    expect(steps.map(([step]) => step)).toEqual(['schema', 'migrate', 'migrate-ai', 'migrate-images'])
+    for (const [, ms] of steps) expect(Number.isFinite(ms) && ms >= 0).toBe(true)
+    const tables = (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as { name: string }[]).map((row) => row.name)
+    for (const table of ['aiComments', 'aiReplies']) expect(tables).toContain(table)
+    expect(db.prepare("SELECT sql FROM sqlite_master WHERE name = 'aiComments'").get()).toMatchObject({
+      sql: expect.stringContaining("side IN ('left', 'right')"),
+    })
   } finally {
     db.close()
   }

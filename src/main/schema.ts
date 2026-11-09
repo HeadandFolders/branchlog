@@ -81,9 +81,14 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 `
 
-export function applySchema(db: Database.Database): void {
-  db.exec(SCHEMA)
-  migrateTasks(db)
-  migrateAi(db)
-  migrateImages(db)
+export function applySchema(db: Database.Database, timed?: (step: string, ms: number) => void): void {
+  const step = (name: string, run: () => void): void => {
+    const started = performance.now()
+    run()
+    timed?.(name, Math.round((performance.now() - started) * 100) / 100)
+  }
+  step('schema', () => db.exec(SCHEMA))
+  step('migrate', () => migrateTasks(db))
+  step('migrate-ai', () => migrateAi(db))
+  step('migrate-images', () => migrateImages(db))
 }

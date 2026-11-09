@@ -2,7 +2,7 @@
 
 A local-first desktop notebook. Each day is a page of checkbox tasks on an infinite canvas.
 
-This repository is in **Phase 2**: the desktop shell, the daily page, and same-day branches. The concept map, the calendar, images, and LM Studio comments come in later phases.
+This repository is in **Phase 3**: the desktop shell, the daily page, same-day branches, and cross-day carry and branch links. Phases 1, 2, 4, 5 and 6 are done — the activity calendar, images (paste, drop, move, resize, crop, delete) and the LM Studio margin comments are built. The concept map is not.
 
 ## Setup
 
@@ -20,6 +20,8 @@ npm run dev
 - `npm run dev` — open the app with hot reload
 - `npm run build` — compile main, preload, and renderer
 - `npm run typecheck` — TypeScript strict check
+- `npm run lint` — oxlint
+- `npm test` — build, then run the Playwright suite against the real app. The AI specs point at a local mock LM Studio server, never a model
 
 ## Data
 
@@ -31,4 +33,6 @@ The SQLite file is `branchlog.sqlite` inside `app.getPath('userData')`.
 
 On startup the app copies that file into `backups/` once per day and keeps the last 7 copies. Window size and position are stored beside it in `window-state.json`.
 
-The app is offline. It does not load remote content. The renderer never opens the database itself; it talks to the main process through the preload bridge.
+The app loads no remote content and needs no account. The one outbound call it can make is to the LM Studio address you configure under Settings → AI margin (`http://localhost:1234/v1` by default), and only the main process makes it. Margin comments stay off until you turn them on, the AI never edits your task text, and every phrase it keeps or hides is stored as offsets on your own machine.
+
+The renderer never opens the database itself; it talks to the main process through the preload bridge.
