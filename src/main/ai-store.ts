@@ -160,6 +160,25 @@ export function setCommentStatus(id: string, status: AiCommentStatus): AiComment
   return comment
 }
 
+export function setKeptRanges(commentId: string, replyId: string | null, keptRanges: string): AiComment {
+  const db = getDatabase()
+  const ranges = JSON.parse(keptRanges) as [number, number][]
+  const row = replyId
+    ? (db.prepare('SELECT text FROM aiReplies WHERE id = ? AND commentId = ?').get(replyId, commentId) as
+        | { text: string }
+        | undefined)
+    : (db.prepare('SELECT text FROM aiComments WHERE id = ?').get(commentId) as { text: string } | undefined)
+  if (!row) throw new Error('Invalid comment')
+  for (const [, end] of ranges) {
+    if (end > row.text.length) throw new Error('Invalid comment')
+  }
+  if (replyId) db.prepare('UPDATE aiReplies SET keptRanges = ? WHERE id = ?').run(keptRanges, replyId)
+  else db.prepare('UPDATE aiComments SET keptRanges = ? WHERE id = ?').run(keptRanges, commentId)
+  const comment = getComment(commentId)
+  if (!comment) throw new Error('Invalid comment')
+  return comment
+}
+
 export function removeComment(id: string): RemovedComments {
   const db = getDatabase()
   return db.transaction(() => {

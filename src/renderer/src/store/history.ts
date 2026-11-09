@@ -60,6 +60,7 @@ let causeStamp = 0
 let restoreImages: ((images: CanvasImage[]) => void) | null = null
 let restoreComments: ((comments: AiComment[]) => void) | null = null
 let commentRemoval: ((removed: RemovedTasks, direction: 'undo' | 'redo') => void) | null = null
+let historyPrepare: (() => void) | null = null
 let depth = 0
 let batchBefore: { tasks: Task[]; focus: string | null } | null = null
 let pendingInput = ''
@@ -250,6 +251,7 @@ function restore(
 
 export function undoEditing(): void {
   prepareHistoryStep()
+  historyPrepare?.()
   const entry = undoStack.at(-1)
   if (!entry || !restore(entry.before, entry.beforeFocus, entry.after, entry.removed, entry.images, entry.comments, 'undo')) return
   entry.open = false
@@ -260,6 +262,7 @@ export function undoEditing(): void {
 
 export function redoEditing(): void {
   prepareHistoryStep()
+  historyPrepare?.()
   const entry = redoStack.at(-1)
   if (!entry || !restore(entry.after, entry.afterFocus, entry.before, entry.removed, entry.images, entry.comments, 'redo')) return
   entry.open = false
@@ -333,6 +336,10 @@ export function setCommentRestorer(fn: (comments: AiComment[]) => void): void {
 
 export function setCommentRemovalHandler(fn: (removed: RemovedTasks, direction: 'undo' | 'redo') => void): void {
   commentRemoval = fn
+}
+
+export function setHistoryPrepare(fn: () => void): void {
+  historyPrepare = fn
 }
 
 export function pushCommentHistory(before: AiComment[], after: AiComment[]): void {

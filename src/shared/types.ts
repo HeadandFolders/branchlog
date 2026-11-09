@@ -6,6 +6,7 @@ import type {
   AiReplyResult,
   CommentReplyInput,
   CommentRequest,
+  KeptRangesInput,
   RemovedComments,
 } from './ai-comments'
 import { isAiComment, isAiCommentList } from './ai-comments'
@@ -248,6 +249,7 @@ export interface BranchlogApi {
     requestComment: (input: CommentRequest) => Promise<AiCommentResult>
     reply: (input: CommentReplyInput) => Promise<AiReplyResult>
     setCommentStatusSync: (id: string, status: 'open' | 'resolved') => AiCommentWriteResult
+    setKeptRangesSync: (input: KeptRangesInput) => AiCommentWriteResult
     deleteCommentSync: (id: string) => AiCommentDeleteResult
     restoreCommentsSync: (removed: RemovedComments) => Ack
     replaceCommentsSync: (date: string, comments: AiComment[]) => Ack

@@ -236,7 +236,8 @@ if (!app.requestSingleInstanceLock()) {
     stopCarrySchedule()
     void finishBackup().finally(() => {
       closeDatabase()
-      app.quit()
+      // Re-entering quit during will-quit can be ignored by Electron.
+      app.exit()
     })
   })
 }

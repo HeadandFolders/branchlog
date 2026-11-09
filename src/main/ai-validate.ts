@@ -6,6 +6,7 @@ import {
   type AiReply,
   type CommentReplyInput,
   type CommentRequest,
+  type KeptRangesInput,
   type RemovedComments,
 } from '@shared/ai-comments'
 import { requireCoordinate, requireDateKey, requireId, requireRecord, requireText } from './validate'
@@ -36,6 +37,20 @@ export function parseCommentStatus(value: unknown): { id: string; status: AiComm
   const input = requireRecord(value)
   if (input.status !== 'open' && input.status !== 'resolved') throw new Error('Invalid comment')
   return { id: requireId(input.id), status: input.status }
+}
+
+export function parseKeptRangesInput(value: unknown): KeptRangesInput {
+  const input = requireRecord(value)
+  const commentId = requireId(input.commentId)
+  const replyId = input.replyId === null ? null : requireId(input.replyId)
+  const keptRanges = parseKeptRanges(input.keptRanges)
+  const ranges = JSON.parse(keptRanges) as [number, number][]
+  let cursor = 0
+  for (const [start, end] of ranges) {
+    if (start < cursor || end <= start) throw new Error('Invalid comment')
+    cursor = end
+  }
+  return { commentId, replyId, keptRanges }
 }
 
 function parseCreatedAt(value: unknown): string {

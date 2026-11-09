@@ -408,5 +408,6 @@ export {
   parseCommentReply,
   parseCommentRequest,
   parseCommentStatus,
+  parseKeptRangesInput,
   parseRemovedComments,
 } from './ai-validate'

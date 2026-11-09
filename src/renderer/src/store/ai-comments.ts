@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { AiComment } from '@shared/ai-comments'
-import { pushCommentHistory, setCommentRemovalHandler, setCommentRestorer } from './history'
+import { pushCommentHistory, setCommentRemovalHandler, setCommentRestorer, setHistoryPrepare } from './history'
 
 interface AiCommentsState {
   date: string
@@ -17,12 +17,69 @@ interface AiCommentsState {
   revive: (comments: AiComment[]) => void
   replace: (comments: AiComment[]) => void
   setStatus: (id: string, status: 'open' | 'resolved') => void
+  setKeptRanges: (commentId: string, replyId: string | null, keptRanges: string) => void
   remove: (id: string) => void
   sendReply: (id: string, text: string) => Promise<boolean>
   request: (taskId: string, text: string, x: number, y: number) => Promise<void>
 }
 
 let latestRequest = ''
+
+interface PendingKept {
+  commentId: string
+  replyId: string | null
+  keptRanges: string
+  timer: number
+}
+
+const pendingKept = new Map<string, PendingKept>()
+
+function keptKey(commentId: string, replyId: string | null): string {
+  return replyId ? `${commentId}/${replyId}` : commentId
+}
+
+function writeKept(pending: PendingKept): void {
+  try {
+    const wrote = window.branchlog.ai.setKeptRangesSync({
+      commentId: pending.commentId,
+      replyId: pending.replyId,
+      keptRanges: pending.keptRanges,
+    })
+    if (!wrote.ok) useAiComments.setState({ error: 'Could not save that kept text.' })
+  } catch (error) {
+    console.error(error)
+    useAiComments.setState({ error: 'Could not save that kept text.' })
+  }
+}
+
+export function flushKeptWrites(): void {
+  for (const pending of pendingKept.values()) {
+    clearTimeout(pending.timer)
+    writeKept(pending)
+  }
+  pendingKept.clear()
+}
+
+function cancelKeptWrites(commentIds: ReadonlySet<string>): void {
+  for (const [key, pending] of pendingKept) {
+    if (!commentIds.has(pending.commentId)) continue
+    clearTimeout(pending.timer)
+    pendingKept.delete(key)
+  }
+}
+
+function scheduleKeptWrite(commentId: string, replyId: string | null, keptRanges: string): void {
+  const key = keptKey(commentId, replyId)
+  const existing = pendingKept.get(key)
+  if (existing) clearTimeout(existing.timer)
+  const timer = window.setTimeout(() => {
+    const pending = pendingKept.get(key)
+    if (!pending) return
+    pendingKept.delete(key)
+    writeKept(pending)
+  }, 200)
+  pendingKept.set(key, { commentId, replyId, keptRanges, timer })
+}
 
 export const useAiComments = create<AiCommentsState>((set, get) => ({
   date: '',
@@ -35,6 +92,7 @@ export const useAiComments = create<AiCommentsState>((set, get) => ({
 
   adopt: (date, comments) => {
     latestRequest = ''
+    flushKeptWrites()
     set({
       date,
       comments,
@@ -64,6 +122,8 @@ export const useAiComments = create<AiCommentsState>((set, get) => ({
   },
 
   forgetTasks: (taskIds) => {
+    const gone = new Set(get().comments.filter((comment) => taskIds.has(comment.taskId)).map((comment) => comment.id))
+    cancelKeptWrites(gone)
     set((state) => ({
       comments: state.comments.filter((comment) => !taskIds.has(comment.taskId)),
       thinkingTaskId: state.thinkingTaskId && taskIds.has(state.thinkingTaskId) ? null : state.thinkingTaskId,
@@ -98,6 +158,27 @@ export const useAiComments = create<AiCommentsState>((set, get) => ({
     }))
   },
 
+  setKeptRanges: (commentId, replyId, keptRanges) => {
+    const before = get().comments
+    const comment = before.find((item) => item.id === commentId)
+    if (!comment) return
+    if (replyId) {
+      const reply = comment.replies.find((item) => item.id === replyId)
+      if (!reply || reply.keptRanges === keptRanges) return
+    } else if (comment.keptRanges === keptRanges) return
+    const after = before.map((item) => {
+      if (item.id !== commentId) return item
+      if (!replyId) return { ...item, keptRanges }
+      return {
+        ...item,
+        replies: item.replies.map((reply) => (reply.id === replyId ? { ...reply, keptRanges } : reply)),
+      }
+    })
+    pushCommentHistory(before, after)
+    set({ comments: after, error: null })
+    scheduleKeptWrite(commentId, replyId, keptRanges)
+  },
+
   remove: (id) => {
     const before = get().comments
     if (!before.some((comment) => comment.id === id)) return
@@ -106,6 +187,7 @@ export const useAiComments = create<AiCommentsState>((set, get) => ({
       set({ error: 'Could not delete that comment.' })
       return
     }
+    cancelKeptWrites(new Set([id]))
     const after = before.filter((comment) => comment.id !== id)
     pushCommentHistory(before, after)
     set({ comments: after, error: null })
@@ -168,6 +250,10 @@ export const useAiComments = create<AiCommentsState>((set, get) => ({
 
 setCommentRestorer((comments) => {
   useAiComments.getState().replace(comments)
+})
+
+setHistoryPrepare(() => {
+  flushKeptWrites()
 })
 
 setCommentRemovalHandler((removed, direction) => {

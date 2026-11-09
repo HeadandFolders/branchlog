@@ -38,6 +38,12 @@ export interface CommentReplyInput {
   text: string
 }
 
+export interface KeptRangesInput {
+  commentId: string
+  replyId: string | null
+  keptRanges: string
+}
+
 export interface RemovedComments {
   comments: AiComment[]
 }

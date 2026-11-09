@@ -11,6 +11,7 @@ import {
   type AiReplyResult,
   type CommentReplyInput,
   type CommentRequest,
+  type KeptRangesInput,
   type RemovedComments,
 } from '@shared/ai-comments'
 import { defaultAiSettings, parseAiSettings, type AiSettings } from '@shared/ai-settings'
@@ -225,6 +226,10 @@ const api: BranchlogApi = {
     },
     setCommentStatusSync: (id: string, status: 'open' | 'resolved'): AiCommentWriteResult => {
       const value: unknown = ipcRenderer.sendSync('ai:setCommentStatus', { id, status })
+      return isAiCommentWriteResult(value) ? value : { ok: false }
+    },
+    setKeptRangesSync: (input: KeptRangesInput): AiCommentWriteResult => {
+      const value: unknown = ipcRenderer.sendSync('ai:setKeptRanges', input)
       return isAiCommentWriteResult(value) ? value : { ok: false }
     },
     deleteCommentSync: (id: string): AiCommentDeleteResult => {

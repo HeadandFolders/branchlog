@@ -3,6 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { Axe, Send } from 'lucide-react'
 import { textDirection } from '../lib/direction'
 import { useAiComments } from '../store/ai-comments'
+import { KeepHideText } from './KeepHideText'
 
 export const AiCommentNode = memo(function AiCommentNode({ id }: NodeProps) {
   const comment = useAiComments((state) => state.comments.find((item) => item.id === id))
@@ -10,6 +11,7 @@ export const AiCommentNode = memo(function AiCommentNode({ id }: NodeProps) {
   const setStatus = useAiComments((state) => state.setStatus)
   const remove = useAiComments((state) => state.remove)
   const sendReply = useAiComments((state) => state.sendReply)
+  const setKeptRanges = useAiComments((state) => state.setKeptRanges)
   const [showReplies, setShowReplies] = useState(false)
   const [draft, setDraft] = useState('')
 
@@ -41,7 +43,7 @@ export const AiCommentNode = memo(function AiCommentNode({ id }: NodeProps) {
   return (
     <div className="ai-comment" data-ai-comment={id}>
       <p className="ai-comment-text" dir={textDirection(comment.text)} data-ai-text="">
-        {comment.text}
+        <KeepHideText text={comment.text} keptRanges={comment.keptRanges} onChange={(json) => setKeptRanges(id, null, json)} />
       </p>
       {showReplies && comment.replies.length > 0 ? (
         <div className="ai-reply-thread nowheel" data-ai-replies="">
@@ -51,7 +53,12 @@ export const AiCommentNode = memo(function AiCommentNode({ id }: NodeProps) {
               className={reply.role === 'ai' ? 'ai-reply ai-reply-ai' : 'ai-reply ai-reply-user'}
               dir={textDirection(reply.text)}
             >
-              <span className="ai-reply-role">{reply.role === 'ai' ? 'AI' : 'You'}</span> {reply.text}
+              <span className="ai-reply-role">{reply.role === 'ai' ? 'AI' : 'You'}</span>
+              <KeepHideText
+                text={reply.text}
+                keptRanges={reply.keptRanges}
+                onChange={(json) => setKeptRanges(id, reply.id, json)}
+              />
             </p>
           ))}
         </div>

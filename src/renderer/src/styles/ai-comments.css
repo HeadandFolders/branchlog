@@ -125,6 +125,17 @@
   font-size: 12px;
   line-height: 1.45;
   overflow-wrap: break-word;
+  display: flex;
+  gap: 4px;
+}
+
+.ai-reply .ai-reply-role {
+  flex: none;
+}
+
+.ai-reply .ai-keep {
+  flex: 1;
+  min-width: 0;
 }
 
 .ai-reply-ai {
@@ -217,5 +228,75 @@
   .ai-thinking span {
     animation: none;
     opacity: 0.7;
+  }
+}
+
+.ai-keep {
+  position: relative;
+  display: block;
+  outline: none;
+}
+
+.ai-keep:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.ai-keep-text {
+  animation: ai-keep-fade 150ms ease;
+}
+
+@keyframes ai-keep-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ai-kept {
+  padding: 0;
+  background: var(--ai-soft);
+  color: inherit;
+  cursor: pointer;
+}
+
+.ai-kept:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.ai-keep-ellipsis {
+  color: var(--text-muted);
+}
+
+.ai-keep-label {
+  position: absolute;
+  z-index: 5;
+  margin: 0;
+  padding: 0 2px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.ai-keep-label:hover,
+.ai-keep-label:focus-visible {
+  color: var(--text);
+}
+
+.ai-keep-label:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-keep-text {
+    animation: none;
   }
 }

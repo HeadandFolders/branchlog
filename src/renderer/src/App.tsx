@@ -17,6 +17,7 @@ import { installImagePaste } from './lib/paste-image'
 import { installImageDrop } from './lib/drop-image'
 import { flushTheme, installThemeShortcut, toggleThemeLab } from './lib/theme-engine'
 import { useCarrySync } from './store/carry-sync'
+import { flushKeptWrites } from './store/ai-comments'
 import { toggleAiSettings } from './store/ai-settings'
 import { installHistoryKeys, redoEditing, undoEditing } from './store/history'
 import { installImageLoader } from './store/images'
@@ -91,6 +92,7 @@ function Notebook() {
     const removeAiTrigger = installAiTrigger()
     const onUnload = (): void => {
       useNotebook.getState().flushPendingSync()
+      flushKeptWrites()
       flushTheme()
     }
     window.addEventListener('beforeunload', onUnload)

@@ -11,6 +11,7 @@ import {
   replaceComments,
   restoreCommentsOn,
   setCommentStatus,
+  setKeptRanges,
 } from './ai-store'
 import { getDatabase } from './database'
 import { listModels } from './lm-studio'
@@ -37,6 +38,7 @@ import {
   parseImagePaste,
   parseImageReplace,
   parseImageSize,
+  parseKeptRangesInput,
   parseLayoutCommit,
   parseFlag,
   parseRemovedComments,
@@ -376,6 +378,15 @@ export function installIpc(): void {
     try {
       const input = parseCommentStatus(payload)
       event.returnValue = { ok: true, comment: setCommentStatus(input.id, input.status) }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('ai:setKeptRanges', (event, payload: unknown) => {
+    try {
+      const input = parseKeptRangesInput(payload)
+      event.returnValue = { ok: true, comment: setKeptRanges(input.commentId, input.replyId, input.keptRanges) }
     } catch (error) {
       event.returnValue = failure(error)
     }
