@@ -417,6 +417,8 @@ test('migration backfills chainId and can run twice', () => {
 
 test('five thousand tasks carry on the chain index', () => {
   const db = openDb()
+  db.pragma('journal_mode = WAL')
+  db.pragma('busy_timeout = 2000')
   at('2026-11-01T12:00:00')
   const seed = db.prepare(
     `INSERT INTO tasks (id, text, done, dateCreated, side, orderIndex, chainId)

@@ -3,7 +3,7 @@ import { DateHeader } from './DateHeader'
 import { TaskBullet } from './TaskBullet'
 import { rememberCaret, rangeOffsets } from '../lib/caret'
 import { handleNewTaskKey } from '../lib/new-task'
-import { deleteSelectedTaskText, installCrossTaskCut, selectedTaskPlainText } from '../lib/list-edit'
+import { deleteEmptyFocusedMainTask, deleteSelectedTaskText, installCrossTaskCut, selectedTaskPlainText } from '../lib/list-edit'
 import { useNotebook } from '../store/notebook'
 import { tempCountRender } from '../temp-first-paint'
 
@@ -265,9 +265,12 @@ export function MainListNode() {
       const list = listRef.current
       if (!list) return
       const selection = window.getSelection()
-      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return
-      if (!selection.anchorNode || !list.contains(selection.anchorNode)) return
-      if (!deleteSelectedTaskText(list)) return
+      if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+        if (!selection.anchorNode || !list.contains(selection.anchorNode)) return
+        if (!deleteSelectedTaskText(list)) return
+      } else if (event.key !== 'Backspace' || !deleteEmptyFocusedMainTask()) {
+        return
+      }
       event.preventDefault()
       event.stopPropagation()
       keepHighlight.current = false
@@ -317,7 +320,7 @@ export function MainListNode() {
     }
     clearLiveSelectionPaint()
     const target = event.target
-    if (!(target instanceof Element) || target.closest('.task-check, .branch-dot, .continuation-dot')) return
+    if (!(target instanceof Element) || target.closest('.task-check, .branch-dot, .continuation-dot, .task-state-mark, .task-actions')) return
     const text = target.closest<HTMLElement>('[data-task-text]')
     const id = text?.dataset.taskId
     if (!id || useNotebook.getState().focusedId === id) return
@@ -346,7 +349,7 @@ export function MainListNode() {
         onPointerDown={(event) => {
           if (event.button !== 0) return
           const target = event.target
-          if (target instanceof Element && target.closest('.task-check, .branch-dot, .continuation-dot')) return
+          if (target instanceof Element && target.closest('.task-check, .branch-dot, .continuation-dot, .task-state-mark, .task-actions')) return
           const list = listRef.current
           if (!list) return
           dragListeners.current?.()

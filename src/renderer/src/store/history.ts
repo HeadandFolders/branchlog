@@ -1,5 +1,6 @@
 import type { AiComment } from '@shared/ai-comments'
 import type { CanvasImage, RemovedTasks, Task } from '@shared/types'
+import { refreshChainStates } from './chain-states'
 import { hideDeleteNotice, showDeleteNotice } from './delete-notice'
 import { markLayoutRestore, prepareHistoryStep } from './layout-bridge'
 import { applyRemoval, takeRemoval } from './removed'
@@ -231,6 +232,7 @@ function restore(
   })
   applying = false
   if (api.commit(cloneTasks(tasks))) {
+    refreshChainStates(true)
     if (images) restoreImages?.(direction === 'undo' ? images.before : images.after)
     if (comments) restoreComments?.(direction === 'undo' ? comments.before : comments.after)
     if (removed) commentRemoval?.(removed, direction)

@@ -15,6 +15,7 @@ import type {
   LayoutCommit,
   LayoutPoint,
   MapPosition,
+  ParentLink,
   RemovedTasks,
   Task,
   UpdateTaskInput,
@@ -56,6 +57,13 @@ export function requireId(value: unknown): string {
     throw new Error('Invalid task')
   }
   return value
+}
+
+export function parseTaskIds(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length > 5_000) throw new Error('Invalid request')
+  const ids = value.map((id: unknown) => requireId(id))
+  if (new Set(ids).size !== ids.length) throw new Error('Invalid request')
+  return ids
 }
 
 export function requireText(value: unknown): string {
@@ -145,6 +153,11 @@ export function parseUpdateTask(value: unknown): UpdateTaskInput {
     throw new Error('Invalid request')
   }
   return result
+}
+
+export function parseTaskDrop(value: unknown): { id: string; dropped: boolean } {
+  const input = requireRecord(value)
+  return { id: requireId(input.id), dropped: parseFlag(input.dropped) }
 }
 
 function requireInteger(value: unknown): number {
@@ -246,6 +259,7 @@ export function parseRemovedTasks(value: unknown): RemovedTasks {
     throw new Error('Invalid request')
   }
   if (!Array.isArray(input.carryLinks) || input.carryLinks.length > 5_000) throw new Error('Invalid request')
+  if (!Array.isArray(input.parentLinks) || input.parentLinks.length > 5_000) throw new Error('Invalid request')
   if (!Array.isArray(input.comments) || input.comments.length > 5_000) throw new Error('Invalid request')
   const tasks = input.tasks.map(parseRemovedTask)
   if (new Set(tasks.map((task) => task.id)).size !== tasks.length) throw new Error('Invalid task')
@@ -256,11 +270,21 @@ export function parseRemovedTasks(value: unknown): RemovedTasks {
   }
   const carryLinks = input.carryLinks.map(parseCarryLink)
   if (new Set(carryLinks.map((link) => link.id)).size !== carryLinks.length) throw new Error('Invalid task')
-  const removedComments = parseRemovedComments({ comments: input.comments })
+  const parentLinks = input.parentLinks.map((value): ParentLink => {
+    const link = requireRecord(value)
+    const id = requireId(link.id)
+    const parentId = requireId(link.parentId)
+    if (taskIds.has(id) || !taskIds.has(parentId)) throw new Error('Invalid task')
+    return { id, parentId }
+  })
+  if (new Set(parentLinks.map((link) => link.id)).size !== parentLinks.length) throw new Error('Invalid task')
+  const removedComments = input.comments.length === 0
+    ? { comments: [] }
+    : parseRemovedComments({ comments: input.comments })
   for (const comment of removedComments.comments) {
     if (!taskIds.has(comment.taskId)) throw new Error('Invalid task')
   }
-  return { tasks, mapPositions, carryLinks, comments: removedComments.comments }
+  return { tasks, mapPositions, carryLinks, parentLinks, comments: removedComments.comments }
 }
 
 function parseCarryLink(value: unknown): CarryLink {

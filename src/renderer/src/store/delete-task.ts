@@ -61,8 +61,11 @@ export function removeDeletedTasks(id: string, writer: DeleteWriter): void {
   }
   stageRemoval(result.removed)
   useAiComments.getState().forgetTasks(removedIds)
+  const detachedIds = new Set(result.removed.parentLinks.map((link) => link.id))
   writer.set({
-    tasks: tasks.filter((task) => !removedIds.has(task.id)),
+    tasks: tasks.filter((task) => !removedIds.has(task.id)).map((task) =>
+      detachedIds.has(task.id) ? { ...task, parentId: null } : task,
+    ),
     focusedId: nextFocused,
     focusRequest,
     error: null,

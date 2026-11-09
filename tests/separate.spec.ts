@@ -104,6 +104,34 @@ test('a branch is not pushed left of its parent', () => {
   expect(next.get('child')?.x).toBeGreaterThanOrEqual(180 + SEPARATE_GAP)
 })
 
+test('a node inside the main list column steps out instead of walking down it', () => {
+  const rows: SeparateBody[] = []
+  for (let index = 0; index < 30; index += 1) {
+    rows.push(box(`row${index}`, 0, 64 + index * 38, 560, 38, { fixed: true }))
+  }
+  const bodies = [...rows, box('child', 120, 147, 240, 42, { parentId: 'row2' })]
+  const moves = separateNearby(bodies, 'child')
+  const next = expectClear(bodies, moves)
+  const child = next.get('child')
+  if (!child) throw new Error('child is missing')
+  expect(child.x).toBeGreaterThanOrEqual(560 + SEPARATE_GAP)
+  expect(Math.abs(child.y - 147)).toBeLessThan(80)
+})
+
+test('a node with no parent steps out of the main list column too', () => {
+  const rows: SeparateBody[] = []
+  for (let index = 0; index < 30; index += 1) {
+    rows.push(box(`row${index}`, 0, 64 + index * 38, 560, 38, { fixed: true }))
+  }
+  const bodies = [...rows, box('picture', 300, 147, 240, 42)]
+  const moves = separateNearby(bodies, 'picture')
+  const next = expectClear(bodies, moves)
+  const picture = next.get('picture')
+  if (!picture) throw new Error('picture is missing')
+  expect(picture.x).toBeGreaterThanOrEqual(560 + SEPARATE_GAP)
+  expect(Math.abs(picture.y - 147)).toBeLessThan(80)
+})
+
 test('coincident nodes clear by moving only the new one', () => {
   const bodies = [box('a', 30, 12), box('b', 30, 12), box('c', 30, 12), box('d', 30, 12)]
   const moves = separateBodies(bodies, 'd')

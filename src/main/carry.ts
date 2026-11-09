@@ -53,6 +53,13 @@ export function readAutoCarry(db: Database.Database): boolean {
   return setting(db, AUTO_CARRY) !== '0'
 }
 
+export function writeAutoCarry(db: Database.Database, on: boolean): void {
+  db.prepare(
+    `INSERT INTO settings (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+  ).run(AUTO_CARRY, on ? '1' : '0')
+}
+
 export function readCarryWindowDays(db: Database.Database): number {
   const raw = setting(db, CARRY_WINDOW)
   if (raw === undefined) return DEFAULT_CARRY_WINDOW_DAYS

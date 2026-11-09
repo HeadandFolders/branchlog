@@ -33,6 +33,7 @@ import {
   isImageResult,
   isMenuAction,
   isTask,
+  isTaskChainStateList,
   isWriteResult,
   type Ack,
   type AiConnectionResult,
@@ -52,6 +53,7 @@ import {
   type LayoutCommit,
   type RemovedTasks,
   type Task,
+  type TaskDropInput,
   type ThemeWriteResult,
   type UpdateTaskInput,
   type WriteResult,
@@ -115,6 +117,11 @@ const api: BranchlogApi = {
     updateSync: (input: UpdateTaskInput) => {
       return readWriteResult(ipcRenderer.sendSync('tasks:updateSync', input))
     },
+    setDropped: async (input: TaskDropInput) => {
+      const value: unknown = await ipcRenderer.invoke('tasks:setDropped', input)
+      if (!isTask(value)) throw new Error('Could not complete that request')
+      return value
+    },
     replaceDaySync: (date: string, tasks: Task[]): Ack => {
       const value: unknown = ipcRenderer.sendSync('tasks:replaceDay', { date, tasks })
       if (!isAck(value) || !value.ok) return { ok: false }
@@ -132,6 +139,11 @@ const api: BranchlogApi = {
     activityCounts: async () => {
       const value: unknown = await ipcRenderer.invoke('tasks:activityCounts')
       if (!isActivityCountList(value)) throw new Error('Could not complete that request')
+      return value
+    },
+    chainStates: async (ids) => {
+      const value: unknown = await ipcRenderer.invoke('tasks:chainStates', ids)
+      if (!isTaskChainStateList(value)) throw new Error('Could not complete that request')
       return value
     },
   },
@@ -175,6 +187,18 @@ const api: BranchlogApi = {
     swipeToPan: () => ipcRenderer.sendSync('settings:swipeToPan') === true,
     setSwipeToPan: (on: boolean): Ack => {
       const value: unknown = ipcRenderer.sendSync('settings:setSwipeToPan', on)
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
+    },
+    autoCarry: () => ipcRenderer.sendSync('settings:autoCarry') === true,
+    setAutoCarry: (on: boolean): Ack => {
+      const value: unknown = ipcRenderer.sendSync('settings:setAutoCarry', on)
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
+    },
+    highlightCarried: () => ipcRenderer.sendSync('settings:highlightCarried') === true,
+    setHighlightCarried: (on: boolean): Ack => {
+      const value: unknown = ipcRenderer.sendSync('settings:setHighlightCarried', on)
       if (!isAck(value) || !value.ok) return { ok: false }
       return { ok: true }
     },

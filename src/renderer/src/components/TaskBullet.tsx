@@ -9,12 +9,16 @@ import {
   type RefObject,
 } from 'react'
 import { Handle, Position } from '@xyflow/react'
-import { Check } from 'lucide-react'
+import { Check, CheckCheck } from 'lucide-react'
 import type { Task } from '@shared/types'
 import { branchFromTask, branchShortcutLabel } from '../lib/branch-from'
+import { finishedLaterLabel } from '../lib/state-label'
 import { AiThinkingDots } from './AiThinkingDots'
 import { AiResolvedMarks } from './AiResolvedMarks'
+import { CarriedMark } from './CarriedMark'
 import { ContinuationMark } from './ContinuationMark'
+import { DroppedMark } from './DroppedMark'
+import { LetGoAction } from './LetGoAction'
 import { caretOffsets, insertPlainText } from '../lib/caret'
 import { useTaskFieldFocus } from '../lib/field-focus'
 import { textDirection } from '../lib/direction'
@@ -124,12 +128,31 @@ export function TaskBullet({ task }: TaskBulletProps) {
   const updateText = useNotebook((state) => state.updateText)
   const flushText = useNotebook((state) => state.flushText)
   const toggleDone = useNotebook((state) => state.toggleDone)
+  const goToDate = useNotebook((state) => state.goToDate)
+  const chainState = useNotebook((state) => state.chainStates[task.id])
   const createTask = useNotebook((state) => state.createTask)
   const createBranch = useNotebook((state) => state.createBranch)
   const setFocusedId = useNotebook((state) => state.setFocusedId)
   const editing = useNotebook((state) => state.focusedId === task.id)
   const splitLock = useRef(false)
   useTaskFieldFocus(ref, task.id, editing)
+  const derivedState = chainState?.state ?? (task.done ? 'done' : task.droppedAt ? 'dropped' : 'open')
+  const finishedLater = derivedState === 'finished-later'
+  const shownDone = task.done || finishedLater
+  const carriedFromDay = chainState?.carriedFromDay ?? null
+  const carriedDays = chainState?.carriedDays ?? 0
+  const isCarriedCopy = derivedState === 'open' && carriedFromDay !== null && carriedDays > 0
+  const droppedOn = derivedState === 'dropped' ? (chainState?.date ?? task.droppedAt) : null
+  const canLetGo = derivedState === 'open' && !task.done
+  const finishedLabel = chainState?.date
+    ? `${finishedLaterLabel(chainState.date)}. Activate to open.`
+    : 'Finished later. Activate to open.'
+
+  const openFinishedCopy = async (): Promise<void> => {
+    if (!chainState?.copyId || !chainState.copyDate) return
+    await goToDate(chainState.copyDate)
+    useNotebook.getState().focusAt(chainState.copyId)
+  }
 
   const splitAtCaret = (element: HTMLDivElement): void => {
     batchEdits(() => {
@@ -163,23 +186,33 @@ export function TaskBullet({ task }: TaskBulletProps) {
 
   return (
     <div
-      className={`task-line nopan relative flex items-start gap-3 rounded-[3px] px-2 py-1.5 ${
-        editing ? 'bg-[var(--bg-subtle)]' : ''
-      }`}
+      data-task-row={task.id}
+      data-state={derivedState}
+      data-editing={editing ? 'true' : 'false'}
+      data-carried={isCarriedCopy ? carriedDays : undefined}
+      data-tint={isCarriedCopy ? Math.min(3, carriedDays) : undefined}
+      className="task-line nopan relative flex items-start gap-3 rounded-[3px] px-2 py-1.5"
     >
       <AiThinkingDots taskId={task.id} />
       {task.side === 'main' ? <AiResolvedMarks taskId={task.id} /> : null}
       <ContinuationMark taskId={task.id} />
+      {isCarriedCopy && carriedFromDay ? <CarriedMark fromDay={carriedFromDay} days={carriedDays} /> : null}
+      {droppedOn ? <DroppedMark day={droppedOn} /> : null}
       <button
         type="button"
         role="checkbox"
-        aria-checked={task.done}
-        aria-label={task.done ? 'Mark task not done' : 'Mark task done'}
+        aria-checked={shownDone}
+        aria-readonly={finishedLater || undefined}
+        aria-label={finishedLater ? finishedLabel : task.done ? 'Mark task not done' : 'Mark task done'}
+        title={finishedLater && chainState?.date ? finishedLaterLabel(chainState.date) : undefined}
         className="task-check nopan flex items-center justify-center"
         onMouseDown={(event) => event.preventDefault()}
-        onClick={() => void toggleDone(task.id)}
+        onClick={() => {
+          if (finishedLater) void openFinishedCopy()
+          else void toggleDone(task.id)
+        }}
       >
-        {task.done ? <Check size={12} strokeWidth={2.5} /> : null}
+        {shownDone ? (finishedLater ? <CheckCheck size={12} strokeWidth={2.5} /> : <Check size={12} strokeWidth={2.5} />) : null}
       </button>
       <div className="relative min-w-0 flex-1">
         {task.text === '' ? (
@@ -218,6 +251,9 @@ export function TaskBullet({ task }: TaskBulletProps) {
           onKeyDown={(event) => handleTaskKey(event, task, splitLock, splitAtCaret)}
         />
       </div>
+      {canLetGo || task.droppedAt ? (
+        <LetGoAction taskId={task.id} dropped={task.droppedAt !== null} dropDay={task.droppedAt} />
+      ) : null}
       <button
         type="button"
         className="branch-dot nopan nodrag"

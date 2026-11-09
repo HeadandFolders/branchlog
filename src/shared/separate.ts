@@ -32,6 +32,8 @@ interface Item {
   pushed: boolean
   originX: number
   originY: number
+  columnId: string | null
+  columnWay: number
 }
 
 interface Penetration {
@@ -54,6 +56,8 @@ function cloneItem(body: SeparateBody): Item {
     pushed: false,
     originX: body.x,
     originY: body.y,
+    columnId: null,
+    columnWay: 0,
   }
 }
 
@@ -104,11 +108,50 @@ function direction(delta: number): number {
   return 1
 }
 
-function shove(mover: Item, amount: number, axis: 'x' | 'y', delta: number, byId: Map<string, Item>): boolean {
-  const way = direction(axis === 'x' ? delta : delta)
+// Fixed bodies are the main list rows: one continuous column a node can walk
+// forever. A second shove away from a different row, the same way, means the
+// node is walking the column instead of leaving it.
+function walksTheColumn(mover: Item, column: Item, way: number): boolean {
+  if (mover.columnId === null || mover.columnId === column.id) return false
+  return mover.columnWay === way
+}
+
+function stepOutOfColumn(mover: Item, column: Item, edge: number | null): boolean {
+  const min = edge === null ? Number.NEGATIVE_INFINITY : edge + SEPARATE_GAP
+  const right = column.x + column.width + SEPARATE_GAP
+  const left = column.x - mover.width - SEPARATE_GAP
+  const first = mover.x + mover.width / 2 < column.x + column.width / 2 ? left : right
+  const second = first === left ? right : left
+  for (const target of [first, second]) {
+    if (target < min || target === mover.x) continue
+    mover.x = target
+    mover.pushed = true
+    return true
+  }
+  return false
+}
+
+function shove(
+  mover: Item,
+  amount: number,
+  axis: 'x' | 'y',
+  delta: number,
+  byId: Map<string, Item>,
+  partner: Item,
+): boolean {
+  const way = direction(delta)
+  const edge = parentEdge(mover, byId)
+  if (axis === 'y' && partner.fixed && walksTheColumn(mover, partner, way) && stepOutOfColumn(mover, partner, edge)) {
+    return true
+  }
   const dx = axis === 'x' ? way * amount : 0
   const dy = axis === 'y' ? way * amount : 0
-  return moveItem(mover, dx, dy, parentEdge(mover, byId))
+  const moved = moveItem(mover, dx, dy, edge)
+  if (moved && axis === 'y' && partner.fixed) {
+    mover.columnId = partner.id
+    mover.columnWay = way
+  }
+  return moved
 }
 
 function resolvePair(a: Item, b: Item, changedId: string, byId: Map<string, Item>): number {
@@ -127,13 +170,13 @@ function resolvePair(a: Item, b: Item, changedId: string, byId: Map<string, Item
   const otherDelta = other === 'x' ? hit.cx : hit.cy
   const before = a.x + a.y + b.x + b.y
   if (rankA < rankB) {
-    if (!shove(a, primary, axis, delta, byId)) shove(a, secondary, other, otherDelta, byId)
+    if (!shove(a, primary, axis, delta, byId, b)) shove(a, secondary, other, otherDelta, byId, b)
   } else if (rankB < rankA) {
-    if (!shove(b, primary, axis, -delta, byId)) shove(b, secondary, other, -otherDelta, byId)
+    if (!shove(b, primary, axis, -delta, byId, a)) shove(b, secondary, other, -otherDelta, byId, a)
   } else if (a.id > b.id) {
-    if (!shove(a, primary, axis, delta, byId)) shove(b, primary, axis, -delta, byId)
-  } else if (!shove(b, primary, axis, -delta, byId)) {
-    shove(a, primary, axis, delta, byId)
+    if (!shove(a, primary, axis, delta, byId, b)) shove(b, primary, axis, -delta, byId, a)
+  } else if (!shove(b, primary, axis, -delta, byId, a)) {
+    shove(a, primary, axis, delta, byId, b)
   }
   return Math.abs(a.x + a.y + b.x + b.y - before)
 }

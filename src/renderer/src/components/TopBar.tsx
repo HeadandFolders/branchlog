@@ -19,6 +19,10 @@ export function TopBar() {
   const setAutoSeparate = usePreferences((state) => state.setAutoSeparate)
   const swipeToPan = usePreferences((state) => state.swipeToPan)
   const setSwipeToPan = usePreferences((state) => state.setSwipeToPan)
+  const autoCarry = usePreferences((state) => state.autoCarry)
+  const setAutoCarry = usePreferences((state) => state.setAutoCarry)
+  const highlightCarried = usePreferences((state) => state.highlightCarried)
+  const setHighlightCarried = usePreferences((state) => state.setHighlightCarried)
   const showCalendar = useView((state) => state.showCalendar)
 
   useEffect(() => {
@@ -83,6 +87,26 @@ export function TopBar() {
             >
               <span>Trackpad: swipe to pan (off = scroll to zoom)</span>
               {swipeToPan ? <span className="text-[12px] text-[var(--text-faint)]">On</span> : null}
+            </button>
+            <button
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked={autoCarry}
+              className="flex w-full items-center justify-between gap-4 px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
+              onClick={() => setAutoCarry(!autoCarry)}
+            >
+              <span>Carry unfinished tasks to the next day</span>
+              {autoCarry ? <span className="text-[12px] text-[var(--text-faint)]">On</span> : null}
+            </button>
+            <button
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked={highlightCarried}
+              className="flex w-full items-center justify-between gap-4 px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
+              onClick={() => setHighlightCarried(!highlightCarried)}
+            >
+              <span>Highlight carried tasks</span>
+              {highlightCarried ? <span className="text-[12px] text-[var(--text-faint)]">On</span> : null}
             </button>
             <button
               type="button"

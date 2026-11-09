@@ -1,0 +1,132 @@
+/* Derived task states: carried, dropped, finished-later. */
+/* Every color here is a token. Shape marks the state too, so color is never the only signal. */
+
+/* The row paints over its node, so the default is transparent and only carries a color when the row itself needs one. */
+.task-line {
+  --row-bg: transparent;
+  --row-tint: var(--row-bg);
+  background: var(--row-tint);
+}
+
+.task-line[data-editing='true'] {
+  --row-bg: var(--bg-subtle);
+}
+
+.task-line[data-tint='1'] {
+  --row-tint: color-mix(in srgb, var(--carried) 6%, var(--bg));
+}
+
+.task-line[data-tint='2'] {
+  --row-tint: color-mix(in srgb, var(--carried) 10%, var(--bg));
+}
+
+.task-line[data-tint='3'] {
+  --row-tint: color-mix(in srgb, var(--carried) 14%, var(--bg));
+}
+
+[data-carried-highlight='0'] .task-line {
+  --row-tint: var(--row-bg);
+}
+
+.task-line[data-state='finished-later'] .bullet-text {
+  color: var(--text-muted);
+  text-decoration-line: line-through;
+  text-decoration-color: var(--text-muted);
+}
+
+.task-line[data-state='dropped'] .bullet-text {
+  color: var(--dropped);
+  text-decoration-line: line-through;
+  text-decoration-color: var(--dropped);
+}
+
+.task-line[data-state='finished-later'] .task-check[aria-checked='true'] {
+  border-color: var(--finished-later);
+  background: color-mix(in srgb, var(--finished-later) 16%, var(--bg));
+  color: var(--finished-later);
+}
+
+.task-state-mark {
+  box-sizing: border-box;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 16px;
+  margin-top: 5px;
+  color: var(--text-muted);
+  cursor: help;
+}
+
+.task-state-mark[data-mark='carried'] {
+  color: var(--carried-strong);
+}
+
+.task-state-mark[data-mark='dropped'] {
+  color: var(--dropped);
+}
+
+[data-carried-highlight='0'] .task-state-mark[data-mark='carried'] {
+  color: var(--text-muted);
+}
+
+.task-actions {
+  position: absolute;
+  top: 4px;
+  right: 26px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.task-line:hover .task-actions,
+.task-line:focus-within .task-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.task-action {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.task-line[data-editing='true'] .task-action,
+.react-flow__node-branch:hover .task-action {
+  background: var(--bg-subtle);
+}
+
+.task-action:hover {
+  color: var(--text);
+}
+
+.task-action[data-action='let-go']:hover {
+  color: var(--dropped);
+}
+
+.task-action[data-action='undrop']:hover {
+  color: var(--carried-strong);
+}
+
+button.task-action:focus-visible {
+  color: var(--text);
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.branch-node .task-actions {
+  right: 30px;
+}

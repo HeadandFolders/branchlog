@@ -41,6 +41,98 @@ test.describe('deleting a task removes its descendants', () => {
     await closeApp(app, userData)
   })
 
+  test('select all and backspace twice deletes an empty branch and ctrl n still creates', async () => {
+    await writeTask(page, 'Parent')
+    await page.getByRole('button', { name: 'Branch from this task' }).click()
+    await expect(page.locator('.react-flow__node-branch [data-task-text]')).toHaveText('')
+
+    const parent = page.locator('.task-list [data-task-text]')
+    await parent.click()
+    await page.locator('.task-list').evaluate((list) => {
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+      for (const node of list.querySelectorAll<HTMLElement>('[data-task-text]')) {
+        node.contentEditable = 'false'
+      }
+      const range = document.createRange()
+      range.selectNodeContents(list)
+      const selection = window.getSelection()
+      selection?.removeAllRanges()
+      selection?.addRange(range)
+      const backspace = new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true })
+      list.dispatchEvent(backspace)
+      list.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }))
+    })
+
+    await expect(page.locator('[data-task-text]')).toHaveCount(0)
+    await expect(page.locator('.react-flow__edge')).toHaveCount(0)
+    await expect(page.getByRole('status')).toHaveText('Deleted 2 tasks. Undo')
+    await page.keyboard.press(`${modifier}+N`)
+    await expect(page.locator('.task-list [data-task-text]')).toHaveCount(1)
+    await expect(page.locator('.task-list [data-task-text]')).toHaveText('')
+  })
+
+  test('backspace twice deletes the first of two carried tasks with its branch', async () => {
+    await closeApp(app, userData, true)
+    let launched = await launchApp(userData, { env: { BRANCHLOG_NOW: '2026-11-08T12:00:00' } })
+    app = launched.app
+    page = launched.page
+    await writeTask(page, 'First carried')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('Second carried')
+    await expect(page.locator('.task-list [data-task-text]')).toHaveText(['First carried', 'Second carried'])
+    await closeApp(app, userData, true)
+
+    launched = await launchApp(userData, { env: { BRANCHLOG_NOW: '2026-11-09T12:00:00' } })
+    app = launched.app
+    page = launched.page
+    const main = page.locator('.task-list [data-task-text]')
+    await expect(main).toHaveText(['First carried', 'Second carried'])
+    await page.locator('.task-list').getByRole('button', { name: 'Branch from this task' }).first().click()
+    const branch = page.locator('.react-flow__node-branch [data-task-text]')
+    await expect(branch).toHaveText('')
+
+    await main.first().click()
+    await page.keyboard.press(`${modifier}+A`)
+    await page.keyboard.press('Backspace')
+    await expect(main.first()).toHaveText('')
+    await expect(branch).toHaveCount(1)
+    await page.keyboard.press('Backspace')
+
+    await expect(main).toHaveText(['Second carried'])
+    await expect(branch).toHaveCount(0)
+    await expect(page.getByRole('status')).toHaveText('Deleted 2 tasks. Undo')
+  })
+
+  test('deleting an empty task with a resolved comment and reply still works', async () => {
+    await writeTask(page, 'Parent')
+    const parent = page.locator('.task-list [data-task-text]')
+    const parentId = await parent.getAttribute('data-task-id')
+    if (!parentId) throw new Error('Parent id is missing')
+    await page.keyboard.press(`${modifier}+A`)
+    await page.keyboard.press('Backspace')
+    await expect(parent).toHaveText('')
+    const db = openDb(userData)
+    const commentId = crypto.randomUUID()
+    db.prepare(
+      `INSERT INTO aiComments (
+         id, taskId, side, type, text, status, keptRanges, x, y, createdAt
+       ) VALUES (?, ?, 'left', 'remark', 'Resolved note', 'resolved', '[]', 0, 0, '2026-11-09T00:00:00.000Z')`,
+    ).run(commentId, parentId)
+    db.prepare(
+      `INSERT INTO aiReplies (id, commentId, role, text, keptRanges, createdAt)
+       VALUES (?, ?, 'ai', 'Reply', '[]', '2026-11-09T00:01:00.000Z')`,
+    ).run(crypto.randomUUID(), commentId)
+    db.close()
+    await page.reload()
+    await expect(page.getByRole('button', { name: 'Reopen AI comment' })).toBeVisible()
+    await page.locator('.task-list [data-task-text]').click()
+    await page.keyboard.press('Backspace')
+    await expect(page.locator('[data-task-text]')).toHaveCount(0)
+    await expect(page.getByRole('status')).toHaveText('Deleted 1 task. Undo')
+    await page.keyboard.press(`${modifier}+N`)
+    await expect(page.locator('.task-list [data-task-text]')).toHaveCount(1)
+  })
+
   test('deleting a leaf removes it, and undo puts it back', async () => {
     await writeTask(page, 'Keep')
     await page.getByRole('button', { name: 'Branch from this task' }).click()

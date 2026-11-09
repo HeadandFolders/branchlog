@@ -71,6 +71,14 @@ function armMidnight(): void {
   }, delay)
 }
 
+export function carryOnDemand(): void {
+  if (!armed) {
+    rerun = true
+    return
+  }
+  publish('setting')
+}
+
 export function installCarrySchedule(): void {
   prime()
   armMidnight()

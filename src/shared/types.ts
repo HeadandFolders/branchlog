@@ -79,9 +79,26 @@ export interface UpdateTaskInput {
   height?: number
 }
 
+export interface TaskDropInput {
+  id: string
+  dropped: boolean
+}
+
 export interface ActivityCount {
   date: string
   count: number
+}
+
+export type TaskChainStateKind = 'open' | 'done' | 'dropped' | 'finished-later'
+
+export interface TaskChainState {
+  id: string
+  state: TaskChainStateKind
+  date: string | null
+  copyId: string | null
+  copyDate: string | null
+  carriedFromDay: string | null
+  carriedDays: number
 }
 
 export type MenuAction =
@@ -111,6 +128,11 @@ export interface CarryLink {
   carriedFromId: string | null
 }
 
+export interface ParentLink {
+  id: string
+  parentId: string
+}
+
 export interface CarryRun {
   id: string
   date: string
@@ -121,6 +143,7 @@ export interface RemovedTasks {
   tasks: Task[]
   mapPositions: MapPosition[]
   carryLinks: CarryLink[]
+  parentLinks: ParentLink[]
   comments: AiComment[]
 }
 
@@ -224,10 +247,12 @@ export interface BranchlogApi {
     searchEarlier: (query: string) => Promise<EarlierTask[]>
     update: (input: UpdateTaskInput) => Promise<Task>
     updateSync: (input: UpdateTaskInput) => WriteResult
+    setDropped: (input: TaskDropInput) => Promise<Task>
     replaceDaySync: (date: string, tasks: Task[]) => Ack
     deleteSync: (id: string) => DeleteResult
     restoreSync: (removed: RemovedTasks) => Ack
     activityCounts: () => Promise<ActivityCount[]>
+    chainStates: (ids: string[]) => Promise<TaskChainState[]>
   }
   images: {
     listByDate: (date: string) => Promise<CanvasImage[]>
@@ -242,6 +267,10 @@ export interface BranchlogApi {
     setAutoSeparate: (on: boolean) => Ack
     swipeToPan: () => boolean
     setSwipeToPan: (on: boolean) => Ack
+    autoCarry: () => boolean
+    setAutoCarry: (on: boolean) => Ack
+    highlightCarried: () => boolean
+    setHighlightCarried: (on: boolean) => Ack
     theme: () => ThemeDocument
     setTheme: (theme: ThemeDocument) => ThemeWriteResult
   }
@@ -345,6 +374,10 @@ export function isCarryLink(value: unknown): value is CarryLink {
   return typeof value.id === 'string' && (value.carriedFromId === null || typeof value.carriedFromId === 'string')
 }
 
+function isParentLink(value: unknown): value is ParentLink {
+  return isRecord(value) && typeof value.id === 'string' && typeof value.parentId === 'string'
+}
+
 export function isCarryRun(value: unknown): value is CarryRun {
   if (!isRecord(value)) return false
   return typeof value.id === 'string' && typeof value.date === 'string' && isTaskList(value.tasks)
@@ -365,6 +398,7 @@ export function isRemovedTasks(value: unknown): value is RemovedTasks {
     !Array.isArray(value.tasks) ||
     !Array.isArray(value.mapPositions) ||
     !Array.isArray(value.carryLinks) ||
+    !Array.isArray(value.parentLinks) ||
     !Array.isArray(value.comments)
   ) {
     return false
@@ -373,6 +407,7 @@ export function isRemovedTasks(value: unknown): value is RemovedTasks {
     value.tasks.every(isTask) &&
     value.mapPositions.every(isMapPosition) &&
     value.carryLinks.every(isCarryLink) &&
+    value.parentLinks.every(isParentLink) &&
     value.comments.every(isAiComment)
   )
 }
@@ -426,6 +461,25 @@ export function isActivityCount(value: unknown): value is ActivityCount {
 
 export function isActivityCountList(value: unknown): value is ActivityCount[] {
   return Array.isArray(value) && value.every(isActivityCount)
+}
+
+export function isTaskChainState(value: unknown): value is TaskChainState {
+  if (!isRecord(value)) return false
+  return (
+    typeof value.id === 'string' &&
+    (value.state === 'open' || value.state === 'done' || value.state === 'dropped' || value.state === 'finished-later') &&
+    (value.date === null || typeof value.date === 'string') &&
+    (value.copyId === null || typeof value.copyId === 'string') &&
+    (value.copyDate === null || typeof value.copyDate === 'string') &&
+    (value.carriedFromDay === null || typeof value.carriedFromDay === 'string') &&
+    typeof value.carriedDays === 'number' &&
+    Number.isInteger(value.carriedDays) &&
+    value.carriedDays >= 0
+  )
+}
+
+export function isTaskChainStateList(value: unknown): value is TaskChainState[] {
+  return Array.isArray(value) && value.every(isTaskChainState)
 }
 
 export function isAiConnectionResult(value: unknown): value is AiConnectionResult {

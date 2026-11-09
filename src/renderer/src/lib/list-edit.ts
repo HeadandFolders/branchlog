@@ -53,6 +53,14 @@ export function deleteSelectedTaskText(list: HTMLElement): boolean {
   return true
 }
 
+export function deleteEmptyFocusedMainTask(): boolean {
+  const notebook = useNotebook.getState()
+  const task = notebook.tasks.find((item) => item.id === notebook.focusedId && item.side === 'main')
+  if (!task || task.text !== '') return false
+  notebook.deleteTask(task.id)
+  return true
+}
+
 export function cutSelectedTaskText(list: HTMLElement): boolean {
   if (selectedTaskPlainText(list) == null) return false
   document.execCommand('copy')

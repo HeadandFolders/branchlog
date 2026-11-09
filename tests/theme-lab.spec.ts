@@ -117,6 +117,31 @@ test('light and dark preview override the system, and follow system restores it'
   }
 })
 
+test('the task state tokens are listed and repaint the page live', async () => {
+  const { app, page, userData } = await launchApp('', { env: { BRANCHLOG_NOW: '2026-11-01T12:00:00' } })
+  try {
+    const task = await writeTask(page, 'let this go')
+    const row = task.locator('xpath=../..')
+    await row.hover()
+    await row.getByRole("button", { name: "Let go (won't carry over)" }).click()
+    await expect(row).toHaveAttribute('data-state', 'dropped')
+    await openLab(page)
+    for (const token of ['carried', 'carried-strong', 'finished-later', 'dropped']) {
+      await expect(page.locator(`[data-token="${token}"]`)).toHaveCount(1)
+    }
+    await setToken(page, 'dropped', '#ff0000')
+    await expect
+      .poll(() =>
+        row.locator('.bullet-text').evaluate((element) => getComputedStyle(element).getPropertyValue('color')),
+      )
+      .toBe('rgb(255, 0, 0)')
+    await setToken(page, 'carried-strong', '#00ff00')
+    await expect.poll(() => tokens(page).then((value) => value['carried-strong'])).toBe('#00ff00')
+  } finally {
+    await closeApp(app, userData)
+  }
+})
+
 test('contrast ratios and the AA limit', async () => {
   const { app, page, userData } = await launchApp()
   try {

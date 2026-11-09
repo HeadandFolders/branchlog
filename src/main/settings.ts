@@ -2,6 +2,7 @@ import { getDatabase } from './database'
 
 const AUTO_SEPARATE = 'autoSeparate'
 const SWIPE_TO_PAN = 'swipeToPan'
+const HIGHLIGHT_CARRIED = 'highlightCarried'
 
 function readFlag(key: string): boolean {
   const row = getDatabase().prepare(`SELECT value FROM settings WHERE key = ?`).get(key) as
@@ -34,4 +35,12 @@ export function readSwipeToPan(): boolean {
 
 export function writeSwipeToPan(on: boolean): void {
   writeFlag(SWIPE_TO_PAN, on)
+}
+
+export function readHighlightCarried(): boolean {
+  return readFlag(HIGHLIGHT_CARRIED)
+}
+
+export function writeHighlightCarried(on: boolean): void {
+  writeFlag(HIGHLIGHT_CARRIED, on)
 }

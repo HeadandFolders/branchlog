@@ -16,13 +16,22 @@ import {
 } from './ai-store'
 import { getDatabase } from './database'
 import { listModels } from './lm-studio'
-import { createBranch, createTask, listActivityCounts, listTasksByDate, updateTask } from './database'
+import { createBranch, createTask, getTask, listActivityCounts, listTasksByDate, updateTask } from './database'
+import { dropTask, readAutoCarry, undropTask, writeAutoCarry } from './carry'
 import { replaceDay } from './day-sync'
 import { deleteImages, dropImage, listImages, pasteImage, replaceImages, resizeImage } from './images'
 import { commitLayout } from './layout-save'
-import { readAutoSeparate, readSwipeToPan, writeAutoSeparate, writeSwipeToPan } from './settings'
+import {
+  readAutoSeparate,
+  readHighlightCarried,
+  readSwipeToPan,
+  writeAutoSeparate,
+  writeHighlightCarried,
+  writeSwipeToPan,
+} from './settings'
 import { readTheme, writeTheme } from './theme-store'
-import { takeStartupCarry } from './carry-schedule'
+import { carryOnDemand, takeStartupCarry } from './carry-schedule'
+import { listTaskChainStates } from './task-state'
 import { deleteTask, restoreRemoved } from './task-tree'
 import {
   parseAiBaseUrl,
@@ -43,8 +52,10 @@ import {
   parseFlag,
   parseRemovedComments,
   parseRemovedTasks,
+  parseTaskDrop,
   parseTheme,
   parseReplaceDay,
+  parseTaskIds,
   parseUpdateTask,
   requireDateKey,
   requireId,
@@ -172,12 +183,41 @@ export function installIpc(): void {
     }
   })
 
+  ipcMain.handle('tasks:chainStates', (_event, payload: unknown) => {
+    try {
+      return listTaskChainStates(parseTaskIds(payload))
+    } catch (error) {
+      console.error('tasks:chainStates', error)
+      if (error instanceof Error && error.message.startsWith('Invalid')) throw new Error(error.message)
+      throw new Error('Could not complete that request')
+    }
+  })
+
   ipcMain.handle('tasks:update', (_event, payload: unknown) => {
     tempMark('ipc-call', { channel: 'tasks:update' })
     try {
       return updateTask(parseUpdateTask(payload))
     } catch (error) {
       console.error('tasks:update', error)
+      if (error instanceof Error && error.message.startsWith('Invalid')) {
+        throw new Error(error.message)
+      }
+      throw new Error('Could not complete that request')
+    }
+  })
+
+  ipcMain.handle('tasks:setDropped', (_event, payload: unknown) => {
+    tempMark('ipc-call', { channel: 'tasks:setDropped' })
+    try {
+      const input = parseTaskDrop(payload)
+      const db = getDatabase()
+      if (input.dropped) dropTask(db, input.id)
+      else undropTask(db, input.id)
+      const task = getTask(input.id)
+      if (!task) throw new Error('Invalid task')
+      return task
+    } catch (error) {
+      console.error('tasks:setDropped', error)
       if (error instanceof Error && error.message.startsWith('Invalid')) {
         throw new Error(error.message)
       }
@@ -320,6 +360,44 @@ export function installIpc(): void {
   ipcMain.on('settings:setSwipeToPan', (event, payload: unknown) => {
     try {
       writeSwipeToPan(parseFlag(payload))
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('settings:autoCarry', (event) => {
+    try {
+      event.returnValue = readAutoCarry(getDatabase())
+    } catch (error) {
+      console.error(error)
+      event.returnValue = true
+    }
+  })
+
+  ipcMain.on('settings:setAutoCarry', (event, payload: unknown) => {
+    try {
+      const on = parseFlag(payload)
+      writeAutoCarry(getDatabase(), on)
+      event.returnValue = { ok: true }
+      if (on) carryOnDemand()
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('settings:highlightCarried', (event) => {
+    try {
+      event.returnValue = readHighlightCarried()
+    } catch (error) {
+      console.error(error)
+      event.returnValue = true
+    }
+  })
+
+  ipcMain.on('settings:setHighlightCarried', (event, payload: unknown) => {
+    try {
+      writeHighlightCarried(parseFlag(payload))
       event.returnValue = { ok: true }
     } catch (error) {
       event.returnValue = failure(error)

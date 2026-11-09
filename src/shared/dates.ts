@@ -22,6 +22,13 @@ export function addDays(dateKey: string, days: number): string {
   return localDateKey(date)
 }
 
+const DAY_MS = 86_400_000
+
+export function daysBetween(fromKey: string, toKey: string): number {
+  const diff = parseDateKey(toKey).getTime() - parseDateKey(fromKey).getTime()
+  return Math.round(diff / DAY_MS)
+}
+
 export function msUntilNextLocalMidnight(from = now()): number {
   const next = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 1, 0, 0, 0, 0)
   const delay = next.getTime() - from.getTime()

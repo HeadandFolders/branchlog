@@ -1,5 +1,5 @@
 import type Database from 'better-sqlite3'
-import type { MapPosition, RemovedTasks } from '../shared/types.ts'
+import type { MapPosition, ParentLink, RemovedTasks } from '../shared/types.ts'
 import { listCommentsForTasks, restoreCommentsOn } from './ai-store.ts'
 import { relinkAround, type SavedCarryLink } from './carry-link.ts'
 import { mapTask, TASK_COLUMNS, type TaskRow } from './task-row.ts'
@@ -21,10 +21,11 @@ export function removeTask(db: Database.Database, id: string): RemovedTasks {
   const remove = db.transaction((taskId: string): RemovedTasks => {
     const rows = db
       .prepare(
-        `WITH RECURSIVE branch(id) AS (
-           SELECT id FROM tasks WHERE id = ?
+        `WITH RECURSIVE branch(id, dateCreated) AS (
+           SELECT id, dateCreated FROM tasks WHERE id = ?
            UNION ALL
-           SELECT tasks.id FROM tasks JOIN branch ON tasks.parentId = branch.id
+           SELECT tasks.id, tasks.dateCreated FROM tasks JOIN branch ON tasks.parentId = branch.id
+           WHERE tasks.id = tasks.chainId OR tasks.dateCreated = branch.dateCreated
          )
          SELECT ${TASK_COLUMNS}
          FROM tasks
@@ -36,6 +37,18 @@ export function removeTask(db: Database.Database, id: string): RemovedTasks {
     const carryLinks = relinkAround(db, doomed)
     const ids = rows.map((row) => row.id)
     const marks = ids.map(() => '?').join(', ')
+    const parentLinks = db
+      .prepare(
+        `SELECT id, parentId FROM tasks
+         WHERE parentId IN (${marks}) AND id NOT IN (${marks})`,
+      )
+      .all(...ids, ...ids) as ParentLink[]
+    if (parentLinks.length > 0) {
+      db.prepare(
+        `UPDATE tasks SET parentId = NULL
+         WHERE parentId IN (${marks}) AND id NOT IN (${marks})`,
+      ).run(...ids, ...ids)
+    }
     const mapPositions = db
       .prepare(`SELECT taskId, x, y FROM mapPositions WHERE taskId IN (${marks})`)
       .all(...ids) as MapPosition[]
@@ -45,7 +58,7 @@ export function removeTask(db: Database.Database, id: string): RemovedTasks {
       n: number
     }
     if (left.n !== 0) throw new Error('Could not delete that task.')
-    return { tasks: rows.map(mapTask), mapPositions, carryLinks, comments }
+    return { tasks: rows.map(mapTask), mapPositions, carryLinks, parentLinks, comments }
   })
   return remove(id)
 }
@@ -81,6 +94,10 @@ export function restoreRemovedOn(db: Database.Database, removed: RemovedTasks): 
     const setParent = db.prepare('UPDATE tasks SET parentId = ? WHERE id = ?')
     for (const task of removed.tasks) {
       if (task.parentId) setParent.run(task.parentId, task.id)
+    }
+    for (const link of removed.parentLinks) {
+      const result = setParent.run(link.parentId, link.id)
+      if (result.changes !== 1) throw new Error('Invalid task')
     }
     const setCarried = db.prepare('UPDATE tasks SET carriedFromId = ? WHERE id = ?')
     for (const task of removed.tasks) {

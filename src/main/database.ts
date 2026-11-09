@@ -1,23 +1,21 @@
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import Database from 'better-sqlite3'
-import { app } from 'electron'
-import { tempMark, tempMeasuring, tempMs } from '@shared/temp-timing'
-import { BRANCH_WIDTH } from '@shared/branch-size'
-import { localDateKey } from '@shared/dates'
+import { tempMark, tempMeasuring, tempMs } from '../shared/temp-timing.ts'
+import { BRANCH_WIDTH } from '../shared/branch-size.ts'
+import { localDateKey } from '../shared/dates.ts'
 import type { ActivityCount, CreateBranchInput, CreateTaskInput, Task, UpdateTaskInput } from '@shared/types'
-import { migrateAi } from './migrate-ai'
-import { migrateImages } from './migrate-images'
-import { migrateTasks } from './migrate'
-import { SCHEMA } from './schema'
-import { mapTask, TASK_COLUMNS, type TaskRow } from './task-row'
+import { migrateAi } from './migrate-ai.ts'
+import { migrateImages } from './migrate-images.ts'
+import { migrateTasks } from './migrate.ts'
+import { SCHEMA } from './schema.ts'
+import { mapTask, TASK_COLUMNS, type TaskRow } from './task-row.ts'
 
 let database: Database.Database | null = null
 
-export function initDatabase(): Database.Database {
+export function initDatabase(userData: string): Database.Database {
   if (database) return database
   const started = performance.now()
-  const userData = app.getPath('userData')
   const mkdirStart = performance.now()
   mkdirSync(userData, { recursive: true })
   tempMark('db-mkdir', { ms: tempMs(mkdirStart) })

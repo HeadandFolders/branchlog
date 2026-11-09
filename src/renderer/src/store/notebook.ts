@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import { addDays, localDateKey } from '@shared/dates'
 import { tempMark, tempMs } from '@shared/temp-timing'
-import type { Continuation, MenuAction, Task } from '@shared/types'
+import type { Continuation, MenuAction, Task, TaskChainState } from '@shared/types'
 import { useAiComments } from './ai-comments'
+import { attachChainStates, refreshChainStates } from './chain-states'
 import { removeDeletedTasks } from './delete-task'
 import { attachHistory, clearHistory } from './history'
 import { layoutAfterWrite, layoutBeforeWrite, prepareHistoryStep } from './layout-bridge'
@@ -17,6 +18,7 @@ interface NotebookState {
   currentDate: string
   tasks: Task[]
   continuations: Record<string, Continuation>
+  chainStates: Record<string, TaskChainState>
   ready: boolean
   error: string | null
   focusedId: string | null
@@ -37,6 +39,7 @@ interface NotebookState {
   flushText: (id: string) => Promise<void>
   flushPendingSync: () => void
   toggleDone: (id: string) => Promise<void>
+  setDropped: (id: string, dropped: boolean) => Promise<void>
   deleteTask: (id: string) => void
   runMenuAction: (action: MenuAction) => void
 }
@@ -121,6 +124,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
   currentDate: localDateKey(),
   tasks: [],
   continuations: {},
+  chainStates: {},
   ready: false,
   error: null,
   focusedId: null,
@@ -145,6 +149,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
       currentDate: date,
       tasks: [],
       continuations: {},
+      chainStates: {},
       ready: false,
       error: null,
       focusedId: null,
@@ -386,10 +391,37 @@ export const useNotebook = create<NotebookState>((set, get) => ({
             : task,
         ),
       }))
+      refreshChainStates(true)
     } catch (error) {
       console.error(error)
       set((state) => ({
         tasks: state.tasks.map((task) => (task.id === id ? { ...task, ...previous } : task)),
+        error: 'Could not update that task.',
+      }))
+    }
+  },
+
+  setDropped: async (id, dropped) => {
+    layoutBeforeWrite('')
+    const current = get().tasks.find((task) => task.id === id)
+    if (!current) return
+    const previous = current.droppedAt
+    set((state) => ({
+      tasks: state.tasks.map((task) =>
+        task.id === id ? { ...task, droppedAt: dropped ? localDateKey() : null } : task,
+      ),
+      error: null,
+    }))
+    try {
+      const updated = await window.branchlog.tasks.setDropped({ id, dropped })
+      set((state) => ({
+        tasks: state.tasks.map((task) => (task.id === id ? { ...task, droppedAt: updated.droppedAt } : task)),
+      }))
+      refreshChainStates(true)
+    } catch (error) {
+      console.error(error)
+      set((state) => ({
+        tasks: state.tasks.map((task) => (task.id === id ? { ...task, droppedAt: previous } : task)),
         error: 'Could not update that task.',
       }))
     }
@@ -438,6 +470,12 @@ attachHistory({
   set: (partial) => useNotebook.setState(partial),
   subscribe: (listener) => useNotebook.subscribe(listener),
   commit: commitDay,
+})
+
+attachChainStates({
+  get: () => useNotebook.getState(),
+  set: (partial) => useNotebook.setState(partial),
+  subscribe: (listener) => useNotebook.subscribe(listener),
 })
 
 export function cancelPositionSaves(ids: readonly string[]): void {

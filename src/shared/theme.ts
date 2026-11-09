@@ -19,6 +19,10 @@ export const THEME_TOKENS = [
   'accent-dot-rest',
   'active-0',
   'active-1',
+  'carried',
+  'carried-strong',
+  'finished-later',
+  'dropped',
 ] as const
 
 export type ThemeToken = (typeof THEME_TOKENS)[number]
@@ -46,6 +50,7 @@ export const THEME_GROUPS: { label: string; tokens: ThemeToken[] }[] = [
   { label: 'Lines', tokens: ['line', 'edge', 'edge-hover', 'check-border', 'selection', 'focus-ring'] },
   { label: 'AI', tokens: ['ai', 'ai-soft', 'ai-line', 'edge-ai', 'active-1'] },
   { label: 'Accent', tokens: ['accent-dot', 'accent-dot-rest'] },
+  { label: 'Task states', tokens: ['carried', 'carried-strong', 'finished-later', 'dropped'] },
 ]
 
 export const CONTRAST_PAIRS: { id: string; label: string; fg: ThemeToken; bg: ThemeToken }[] = [
@@ -55,6 +60,9 @@ export const CONTRAST_PAIRS: { id: string; label: string; fg: ThemeToken; bg: Th
   { id: 'ai-bg', label: 'AI on background', fg: 'ai', bg: 'bg' },
   { id: 'ai-soft', label: 'AI on AI soft', fg: 'ai', bg: 'ai-soft' },
   { id: 'text-subtle', label: 'Text on subtle background', fg: 'text', bg: 'bg-subtle' },
+  { id: 'carried-bg', label: 'Carried marker on background', fg: 'carried-strong', bg: 'bg' },
+  { id: 'finished-bg', label: 'Finished later on background', fg: 'finished-later', bg: 'bg' },
+  { id: 'dropped-bg', label: 'Dropped text on background', fg: 'dropped', bg: 'bg' },
 ]
 
 const HEX = /^#[0-9a-f]{6}$/
@@ -80,6 +88,10 @@ export const DEFAULT_LIGHT: Palette = {
   'accent-dot-rest': '#71716f',
   'active-0': '#e6e6e0',
   'active-1': '#2f6f6a',
+  carried: '#6b7f93',
+  'carried-strong': '#46607a',
+  'finished-later': '#856638',
+  dropped: '#91606b',
 }
 
 export const DEFAULT_DARK: Palette = {
@@ -103,6 +115,10 @@ export const DEFAULT_DARK: Palette = {
   'accent-dot-rest': '#979793',
   'active-0': '#2a2a26',
   'active-1': '#7fbfb8',
+  carried: '#7e93a8',
+  'carried-strong': '#a2b6c9',
+  'finished-later': '#c9a574',
+  dropped: '#c98f9b',
 }
 
 const DEFAULTS: Record<ThemeMode, Palette> = { light: DEFAULT_LIGHT, dark: DEFAULT_DARK }

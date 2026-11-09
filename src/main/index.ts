@@ -199,7 +199,7 @@ if (!app.requestSingleInstanceLock()) {
       app.setAppUserModelId('com.branchlog.app')
     }
     const databaseStart = performance.now()
-    initDatabase()
+    initDatabase(app.getPath('userData'))
     tempMark('init-database-returned', { ms: tempMs(databaseStart) })
     const ipcStart = performance.now()
     installIpc()

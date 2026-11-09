@@ -88,6 +88,7 @@ function DailyFlow() {
   const measuredUpdate = useRef(false)
   const { screenToFlowPosition } = useReactFlow()
   const swipeToPan = usePreferences((state) => state.swipeToPan)
+  const highlightCarried = usePreferences((state) => state.highlightCarried)
 
   const frame = useCallback(() => {
     const instance = instanceRef.current
@@ -264,6 +265,7 @@ function DailyFlow() {
       ref={wrapperRef}
       className="h-full w-full"
       data-swipe-pan={swipeToPan ? '1' : '0'}
+      data-carried-highlight={highlightCarried ? '1' : '0'}
       onWheelCapture={keepOwnScroll}
     >
       <ReactFlow
