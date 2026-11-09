@@ -4,6 +4,7 @@ import type {
   AiCommentResult,
   AiCommentWriteResult,
   AiReplyResult,
+  AskAiInput,
   CommentReplyInput,
   CommentRequest,
   KeptRangesInput,
@@ -181,6 +182,10 @@ export interface ImageSizeInput extends ImageCrop {
   height: number
 }
 
+export interface ImageDeleteInput {
+  ids: string[]
+}
+
 export interface ImageRecord extends ImageCrop {
   id: string
   dateKey: string
@@ -230,6 +235,7 @@ export interface BranchlogApi {
     drop: (input: ImageDropInput) => Promise<ImageResult>
     resizeSync: (input: ImageSizeInput) => Ack
     replaceSync: (date: string, images: ImageRecord[]) => Ack
+    deleteSync: (input: ImageDeleteInput) => Ack
   }
   settings: {
     autoSeparate: () => boolean
@@ -247,6 +253,8 @@ export interface BranchlogApi {
     setSettings: (settings: AiSettings) => ThemeWriteResult
     testConnection: (baseUrl: string) => Promise<AiConnectionResult>
     requestComment: (input: CommentRequest) => Promise<AiCommentResult>
+    ask: (input: AskAiInput) => Promise<AiCommentResult>
+    cancel: (requestId: string) => void
     reply: (input: CommentReplyInput) => Promise<AiReplyResult>
     setCommentStatusSync: (id: string, status: 'open' | 'resolved') => AiCommentWriteResult
     setKeptRangesSync: (input: KeptRangesInput) => AiCommentWriteResult

@@ -9,6 +9,7 @@ import {
   type AiCommentResult,
   type AiCommentWriteResult,
   type AiReplyResult,
+  type AskAiInput,
   type CommentReplyInput,
   type CommentRequest,
   type KeptRangesInput,
@@ -42,6 +43,7 @@ import {
   type CreateContinuationInput,
   type CreateTaskInput,
   type DeleteResult,
+  type ImageDeleteInput,
   type ImageDropInput,
   type ImagePasteInput,
   type ImageRecord,
@@ -157,6 +159,11 @@ const api: BranchlogApi = {
       if (!isAck(value) || !value.ok) return { ok: false }
       return { ok: true }
     },
+    deleteSync: (input: ImageDeleteInput): Ack => {
+      const value: unknown = ipcRenderer.sendSync('images:delete', input)
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
+    },
   },
   settings: {
     autoSeparate: () => ipcRenderer.sendSync('settings:autoSeparate') === true,
@@ -219,6 +226,13 @@ const api: BranchlogApi = {
     requestComment: async (input: CommentRequest): Promise<AiCommentResult> => {
       const value: unknown = await ipcRenderer.invoke('ai:requestComment', input)
       return isAiCommentResult(value) ? value : { kind: 'none' }
+    },
+    ask: async (input: AskAiInput): Promise<AiCommentResult> => {
+      const value: unknown = await ipcRenderer.invoke('ai:ask', input)
+      return isAiCommentResult(value) ? value : { kind: 'none' }
+    },
+    cancel: (requestId: string): void => {
+      ipcRenderer.send('ai:cancel', requestId)
     },
     reply: async (input: CommentReplyInput): Promise<AiReplyResult> => {
       const value: unknown = await ipcRenderer.invoke('ai:reply', input)

@@ -1,11 +1,11 @@
-import { memo, useState } from 'react'
+import { memo } from 'react'
 import { NodeResizer, type NodeProps } from '@xyflow/react'
+import { Axe } from 'lucide-react'
 import { layoutAfterWrite, layoutBeforeWrite } from '../store/layout-bridge'
 import { pushImageHistory } from '../store/history'
 import { useImages } from '../store/images'
 import { useNotebook } from '../store/notebook'
 import { tempCountRender } from '../temp-first-paint'
-import { cropImageStyle } from '../lib/image-crop'
 import { ImageCrop } from './ImageCrop'
 
 const MIN_IMAGE_SIZE = 16
@@ -13,7 +13,6 @@ const MIN_IMAGE_SIZE = 16
 export const ImageNode = memo(function ImageNode({ id, selected }: NodeProps) {
   tempCountRender('ImageNode')
   const image = useImages((state) => state.images.find((item) => item.id === id))
-  const [cropMode, setCropMode] = useState(false)
   if (!image) return null
   const crop = {
     cropLeft: image.cropLeft,
@@ -22,9 +21,9 @@ export const ImageNode = memo(function ImageNode({ id, selected }: NodeProps) {
     cropBottom: image.cropBottom,
   }
   return (
-    <div className={`canvas-image nopan${cropMode ? ' crop-mode' : ''}`}>
+    <div className="canvas-image nopan">
       <NodeResizer
-        isVisible={selected === true && !cropMode}
+        isVisible={selected === true}
         keepAspectRatio
         minWidth={MIN_IMAGE_SIZE}
         minHeight={MIN_IMAGE_SIZE}
@@ -44,21 +43,17 @@ export const ImageNode = memo(function ImageNode({ id, selected }: NodeProps) {
           if (phase === 'defer') layoutAfterWrite()
         }}
       />
-      {cropMode ? (
-        <ImageCrop image={image} />
-      ) : (
-        <div className="canvas-image-frame">
-          <img src={image.src} alt="" draggable={false} style={cropImageStyle(image)} />
-        </div>
+      <ImageCrop image={image} active={selected === true} />
+      {selected === true && (
+        <button
+          type="button"
+          className="image-delete nodrag nopan"
+          aria-label="Delete image"
+          onClick={() => useImages.getState().remove([id])}
+        >
+          <Axe size={13} />
+        </button>
       )}
-      <button
-        type="button"
-        className="image-crop-toggle"
-        aria-pressed={cropMode}
-        onClick={() => setCropMode((mode) => !mode)}
-      >
-        {cropMode ? 'Done' : 'Crop'}
-      </button>
     </div>
   )
 })

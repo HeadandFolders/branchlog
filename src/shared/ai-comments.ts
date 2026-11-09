@@ -13,7 +13,7 @@ export interface AiReply {
 export interface AiComment {
   id: string
   taskId: string
-  side: 'left'
+  side: 'left' | 'right'
   type: AiCommentType
   text: string
   status: AiCommentStatus
@@ -30,6 +30,12 @@ export interface CommentRequest {
   text: string
   x: number
   y: number
+}
+
+export interface AskAiInput {
+  taskId: string
+  requestId: string
+  text: string
 }
 
 export interface CommentReplyInput {
@@ -111,7 +117,7 @@ export function isAiComment(value: unknown): value is AiComment {
   return (
     typeof value.id === 'string' &&
     typeof value.taskId === 'string' &&
-    value.side === 'left' &&
+    (value.side === 'left' || value.side === 'right') &&
     isAiCommentType(value.type) &&
     typeof value.text === 'string' &&
     (value.status === 'open' || value.status === 'resolved') &&

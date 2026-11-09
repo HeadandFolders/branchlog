@@ -1,3 +1,5 @@
+import type { Task } from '@shared/types'
+
 interface PendingSize {
   x: number
   y: number
@@ -14,6 +16,19 @@ interface SavedSize {
 }
 
 const pendingSize = new Map<string, PendingSize>()
+
+export function updateSizedTaskText(
+  task: Task,
+  text: string,
+  read: () => SavedSize | undefined,
+  fail: (message: string) => void,
+): Task {
+  const height = task.side === 'right' && text.length < task.text.length ? 0 : task.height
+  if (height !== task.height) {
+    scheduleSize(task.id, task.x, task.y, task.width, height, read, fail)
+  }
+  return { ...task, text, height }
+}
 
 export function shiftPendingSize(id: string, x: number, y: number): boolean {
   const pending = pendingSize.get(id)

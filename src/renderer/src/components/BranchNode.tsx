@@ -5,6 +5,7 @@ import { rememberCaret } from '../lib/caret'
 import { useNotebook } from '../store/notebook'
 import { tempCountRender } from '../temp-first-paint'
 import { TaskBullet } from './TaskBullet'
+import { BranchAi } from './BranchAi'
 
 const BRANCH_HANDLE = {
   top: 21,
@@ -73,11 +74,10 @@ export const BranchNode = memo(function BranchNode({ id, selected }: NodeProps) 
           if (params.direction[1] !== 0) heightDrag.current = true
         }}
         onResizeEnd={(_event, params) => {
-          const nodeEl = rootRef.current?.closest('.react-flow__node')
-          const content = nodeEl instanceof HTMLElement ? nodeEl.offsetHeight : params.height
+          const content = rootRef.current?.offsetHeight ?? BRANCH_LINE_HEIGHT
           const height = heightDrag.current
             ? Math.max(Math.round(params.height), content, BRANCH_LINE_HEIGHT)
-            : Math.max(content, BRANCH_LINE_HEIGHT)
+            : task.height
           heightDrag.current = false
           updateSize(id, params.x, params.y, Math.max(BRANCH_MIN_WIDTH, Math.round(params.width)), Math.round(height))
         }}
@@ -91,6 +91,7 @@ export const BranchNode = memo(function BranchNode({ id, selected }: NodeProps) 
         style={BRANCH_HANDLE}
       />
       <TaskBullet task={task} />
+      <BranchAi taskId={id} />
       <button
         type="button"
         className="branch-delete nopan nodrag"

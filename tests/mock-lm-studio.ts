@@ -14,19 +14,25 @@ export interface MockLmStudio {
   requests: MockRequest[]
   setChatMode: (mode: MockChatMode) => void
   setModels: (ids: string[]) => void
+  holdChatResponses: () => void
+  releaseChatResponses: () => void
   close: () => Promise<void>
 }
 
 const COMMENT = { comment: 'What does done look like for this?', type: 'question' }
+export const MOCK_ANSWER = 'Start with an outline, then draft the introduction.'
 
-function chatBody(mode: MockChatMode): { status: number; payload: unknown } {
+function chatBody(mode: MockChatMode, body: Record<string, unknown> | null): { status: number; payload: unknown } {
+  const messages = body?.messages as { role: string; content: string }[] | undefined
+  const isAnswer = messages?.some((message) => message.role === 'system' && message.content.includes('"answer"')) ?? false
+  const payload = isAnswer ? { answer: MOCK_ANSWER } : COMMENT
   if (mode === 'error500') return { status: 500, payload: { error: 'mock model crashed' } }
   if (mode === 'malformed') return { status: 200, payload: completion('{"comment": "unterminated') }
-  if (mode === 'fenced') return { status: 200, payload: completion('```json\n' + JSON.stringify(COMMENT) + '\n```') }
-  if (mode === 'null') return { status: 200, payload: completion(JSON.stringify({ comment: null })) }
+  if (mode === 'fenced') return { status: 200, payload: completion('```json\n' + JSON.stringify(payload) + '\n```') }
+  if (mode === 'null') return { status: 200, payload: completion(JSON.stringify(isAnswer ? { answer: null } : { comment: null })) }
   if (mode === 'plain') return { status: 200, payload: completion('Try a smaller first step.') }
   if (mode === 'reply') return { status: 200, payload: completion(JSON.stringify({ reply: 'A smaller first step still counts.' })) }
-  return { status: 200, payload: completion(JSON.stringify(COMMENT)) }
+  return { status: 200, payload: completion(JSON.stringify(payload)) }
 }
 
 function completion(content: string): unknown {
@@ -47,6 +53,8 @@ export async function startMockLmStudio(
   const delayMs = options.delayMs ?? 1500
   const requests: MockRequest[] = []
   const timers = new Set<NodeJS.Timeout>()
+  let holding = false
+  const heldResponses: (() => void)[] = []
 
   const server: Server = createServer((request, response) => {
     const url = request.url ?? ''
@@ -72,8 +80,12 @@ export async function startMockLmStudio(
           send(response, 400, { error: "response_format is not supported by this engine" })
           return
         }
-        const answer = chatBody(chatMode)
+        const answer = chatBody(chatMode, body)
         const finish = (): void => send(response, answer.status, answer.payload)
+        if (holding) {
+          heldResponses.push(finish)
+          return
+        }
         if (chatMode === 'delayed') {
           const timer = setTimeout(() => {
             timers.delete(timer)
@@ -104,6 +116,13 @@ export async function startMockLmStudio(
     },
     setModels: (ids) => {
       models = ids
+    },
+    holdChatResponses: () => {
+      holding = true
+    },
+    releaseChatResponses: () => {
+      holding = false
+      for (const finish of heldResponses.splice(0)) finish()
     },
     close: () =>
       new Promise<void>((resolve) => {

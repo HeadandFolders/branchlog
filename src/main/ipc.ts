@@ -3,7 +3,8 @@ import { tempMark, tempMs } from '@shared/temp-timing'
 import { themeBackground, type ThemeDocument } from '@shared/theme'
 import type { ContinuationWriteResult, WriteResult } from '@shared/types'
 import { createContinuation, listContinuations, searchEarlierTasks } from './continuation'
-import { requestComment, replyToComment } from './ai-comment'
+import { installAiRequestIpc } from './ai-request-ipc'
+import { cancelAiFlights } from './ai-flight'
 import { readAiSettings, writeAiSettings } from './ai-settings-store'
 import {
   listCommentsByDate,
@@ -17,7 +18,7 @@ import { getDatabase } from './database'
 import { listModels } from './lm-studio'
 import { createBranch, createTask, listActivityCounts, listTasksByDate, updateTask } from './database'
 import { replaceDay } from './day-sync'
-import { dropImage, listImages, pasteImage, replaceImages, resizeImage } from './images'
+import { deleteImages, dropImage, listImages, pasteImage, replaceImages, resizeImage } from './images'
 import { commitLayout } from './layout-save'
 import { readAutoSeparate, readSwipeToPan, writeAutoSeparate, writeSwipeToPan } from './settings'
 import { readTheme, writeTheme } from './theme-store'
@@ -27,13 +28,12 @@ import {
   parseAiBaseUrl,
   parseAiSettingsPayload,
   parseCommentReplace,
-  parseCommentReply,
-  parseCommentRequest,
   parseCommentStatus,
   parseCreateBranch,
   parseCreateContinuation,
   parseCreateTask,
   parseEarlierQuery,
+  parseImageDelete,
   parseImageDrop,
   parseImagePaste,
   parseImageReplace,
@@ -258,6 +258,15 @@ export function installIpc(): void {
     }
   })
 
+  ipcMain.on('images:delete', (event, payload: unknown) => {
+    try {
+      deleteImages(parseImageDelete(payload))
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
   ipcMain.on('settings:autoSeparate', (event) => {
     try {
       event.returnValue = readAutoSeparate()
@@ -337,7 +346,10 @@ export function installIpc(): void {
 
   ipcMain.on('ai:setSettings', (event, payload: unknown) => {
     try {
-      writeAiSettings(parseAiSettingsPayload(payload))
+      const before = readAiSettings()
+      const settings = parseAiSettingsPayload(payload)
+      writeAiSettings(settings)
+      if (!settings.enabled || settings.baseUrl !== before.baseUrl || settings.model !== before.model) cancelAiFlights()
       event.returnValue = { ok: true }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Could not save the AI settings.'
@@ -356,23 +368,7 @@ export function installIpc(): void {
     return listModels(baseUrl)
   })
 
-  ipcMain.handle('ai:requestComment', async (_event, payload: unknown) => {
-    try {
-      return await requestComment(parseCommentRequest(payload))
-    } catch (error) {
-      console.error('ai:requestComment', error)
-      return { kind: 'none' }
-    }
-  })
-
-  ipcMain.handle('ai:reply', async (_event, payload: unknown) => {
-    try {
-      return await replyToComment(parseCommentReply(payload))
-    } catch (error) {
-      console.error('ai:reply', error)
-      return { kind: 'none' }
-    }
-  })
+  installAiRequestIpc()
 
   ipcMain.on('ai:setCommentStatus', (event, payload: unknown) => {
     try {

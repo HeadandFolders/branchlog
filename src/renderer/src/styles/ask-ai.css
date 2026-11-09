@@ -1,0 +1,49 @@
+.branch-ask-ai {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 60px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.branch-node:hover .branch-ask-ai,
+.react-flow__node-branch.selected .branch-ask-ai,
+.branch-node:focus-within .branch-ask-ai {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.branch-ask-ai:disabled {
+  cursor: default;
+  color: var(--text-faint);
+}
+
+.ai-answer {
+  box-sizing: border-box;
+  width: auto;
+  margin: 6px 12px 8px 40px;
+  padding-bottom: 18px;
+  text-align: start;
+}
+
+.ai-answer .ai-reply-input {
+  text-align: start;
+}
+
+.ai-answer .ai-comment-tools {
+  left: 0;
+  right: auto;
+}
+
+.ai-answer:hover .ai-comment-tools {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.branch-ai-note {
+  margin: 4px 12px 8px 40px;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.4;
+}

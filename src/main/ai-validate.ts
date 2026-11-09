@@ -4,6 +4,7 @@ import {
   type AiComment,
   type AiCommentStatus,
   type AiReply,
+  type AskAiInput,
   type CommentReplyInput,
   type CommentRequest,
   type KeptRangesInput,
@@ -20,6 +21,21 @@ export function parseCommentRequest(value: unknown): CommentRequest {
     x: requireCoordinate(input.x),
     y: requireCoordinate(input.y),
   }
+}
+
+export function parseAskAiInput(value: unknown): AskAiInput {
+  const input = requireRecord(value)
+  const text = requireText(input.text)
+  if (text.trim() === '') throw new Error('Invalid text')
+  return {
+    taskId: requireId(input.taskId),
+    requestId: requireId(input.requestId),
+    text,
+  }
+}
+
+export function parseAiCancel(value: unknown): string {
+  return requireId(value)
 }
 
 export function parseCommentReply(value: unknown): CommentReplyInput {
@@ -77,7 +93,7 @@ function parseReply(value: unknown, commentId: string): AiReply {
 function parseComment(value: unknown): AiComment {
   const input = requireRecord(value)
   const id = requireId(input.id)
-  if (input.side !== 'left') throw new Error('Invalid comment')
+  if (input.side !== 'left' && input.side !== 'right') throw new Error('Invalid comment')
   if (!isAiCommentType(input.type)) throw new Error('Invalid comment')
   if (input.status !== 'open' && input.status !== 'resolved') throw new Error('Invalid comment')
   if (!Array.isArray(input.replies) || input.replies.length > 500) throw new Error('Invalid comment')
@@ -86,7 +102,7 @@ function parseComment(value: unknown): AiComment {
   return {
     id,
     taskId: requireId(input.taskId),
-    side: 'left',
+    side: input.side,
     type: input.type,
     text: requireText(input.text),
     status: input.status,

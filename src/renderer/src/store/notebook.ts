@@ -6,7 +6,7 @@ import { useAiComments } from './ai-comments'
 import { removeDeletedTasks } from './delete-task'
 import { attachHistory, clearHistory } from './history'
 import { layoutAfterWrite, layoutBeforeWrite, prepareHistoryStep } from './layout-bridge'
-import { cancelPendingSizes, clearPendingSize, flushSizesSync, scheduleSize, shiftPendingSize } from './task-size'
+import { cancelPendingSizes, clearPendingSize, flushSizesSync, scheduleSize, shiftPendingSize, updateSizedTaskText } from './task-size'
 
 interface FocusRequest {
   id: string
@@ -262,7 +262,10 @@ export const useNotebook = create<NotebookState>((set, get) => ({
   updateText: (id, text) => {
     layoutBeforeWrite('')
     set((state) => ({
-      tasks: state.tasks.map((task) => (task.id === id ? { ...task, text } : task)),
+      tasks: state.tasks.map((task) => task.id === id
+        ? updateSizedTaskText(task, text, () => get().tasks.find((item) => item.id === id),
+          (message) => set({ error: message }))
+        : task),
     }))
     const existing = pendingText.get(id)
     if (existing) clearTimeout(existing.timer)

@@ -1,5 +1,5 @@
 export const SEPARATE_GAP = 16
-const NEIGHBOR_RADIUS = 720
+export const NEIGHBOR_RADIUS = 720
 const PARENT_SLACK = 480
 const MAX_PASSES = 64
 

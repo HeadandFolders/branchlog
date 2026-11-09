@@ -176,7 +176,8 @@ Do not break:
 | Move | Done | Drag stop calls `useImages.move` |
 | Drag and drop image files | Done | `lib/drop-image.ts`, `images:drop` channel (`dropImage` in `src/main/images.ts`), `tests/image-drop.spec.ts`. Bytes are read in the renderer and decoded in main like a paste. Non-image drops show an error |
 | Resize | Done | `NodeResizer` in `ImageNode.tsx` (corners, aspect kept), `images:resize` channel, `resize` in `store/images.ts`, `tests/image-resize.spec.ts` |
-| Crop | Done | Non-destructive. `cropLeft/cropTop/cropRight/cropBottom` fractions on the row (`migrate-images.ts`), `ImageCrop.tsx` side handles behind a Crop toggle, math in `lib/image-crop.ts`, saved through `images:resize`, undo via image history, `tests/image-crop.spec.ts`. The PNG file is never rewritten |
+| Crop | Done | Non-destructive. `cropLeft/cropTop/cropRight/cropBottom` fractions on the row (`migrate-images.ts`), `ImageCrop.tsx` edge-midpoint handles on a selected image (corner handles still resize), math in `lib/image-crop.ts`, saved through `images:resize`, undo via image history, `tests/image-crop.spec.ts`. The PNG file is never rewritten |
+| Delete | Done | Backspace on a selected image (`ImageDeleteKeys.tsx`, reads React Flow selection) or the axe button on the selection (`ImageNode.tsx`), `useImages.remove` → `images:delete` (`deleteImages` in `src/main/images.ts`), row removed and PNG kept so undo restores it, `tests/image-delete.spec.ts` |
 | **Phase 6. LM Studio margin comments** | **Not started** | No client, no comment UI. Schema allows `side = 'left'` only (the plan's user-initiated right side does not fit). Status is `open` \| `resolved` (no `dismissed`). Tokens `--ai`, `--ai-soft`, `--ai-line`, `--edge-ai` exist. Production CSP `connect-src` is `'self'` only (`security.ts`), so localhost LM Studio would be blocked until that changes |
 | **Phase 7. Packaging** | **Not started** | No installer script. Export and Import menu items are `enabled: false`. The first-paint script can assemble a Windows folder only |
 
@@ -255,7 +256,7 @@ No `TODO` or `FIXME` in source. No `test.skip` or `test.fixme`. The suite was no
 | `task-branch-caret.spec.ts` | Branch-dot click focuses the new branch; text survives restart |
 | `task-branch-size.spec.ts` | Wrap, resize, arrow on the checkbox; default size for an old notebook |
 | `task-separate.spec.ts` | Auto-separate for create, drop, resize, text growth, images; undo; setting off |
-| `image-paste.spec.ts`, `image-drop.spec.ts`, `image-resize.spec.ts`, `image-crop.spec.ts` | Paste from clipboard flavors and copied files, file drop with its error, corner resize with undo and restart, crop of two sides with undo, redo, and restart |
+| `image-paste.spec.ts`, `image-drop.spec.ts`, `image-resize.spec.ts`, `image-crop.spec.ts`, `image-persist.spec.ts`, `image-migrate.spec.ts`, `image-delete.spec.ts` | Paste from clipboard flavors and copied files, file drop with its error, corner resize with undo and restart, crop of two sides with undo, redo, and restart, a dropped image surviving a close and reopen, an old database without the crop columns loading and cropping after the startup migration, and delete by Backspace or the axe button with undo, redo, the typing guard, and restart |
 | `canvas-pan.spec.ts` | Swipe-to-pan, pinch zoom, setting survives restart |
 | `theme-lab.spec.ts`, `theme-lab-store.spec.ts`, `theme-lab-perf.spec.ts` | Theme Lab edits, presets, import, undo, first frame, drag does not re-render nodes |
 | `task-first-word.spec.ts` | Commented out. Not collected |

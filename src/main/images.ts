@@ -165,6 +165,17 @@ export function resizeImage(input: ImageSizeInput): void {
   if (result.changes !== 1) throw new Error('Invalid image')
 }
 
+export function deleteImages(ids: string[]): void {
+  const db = getDatabase()
+  const run = db.transaction((list: string[]) => {
+    const statement = db.prepare('DELETE FROM images WHERE id = ?')
+    let changes = 0
+    for (const id of list) changes += statement.run(id).changes
+    if (changes !== list.length) throw new Error('Invalid image')
+  })
+  run(ids)
+}
+
 export function replaceImages(dateKey: string, images: ImageRecord[]): void {
   const db = getDatabase()
   const insert = db.prepare(

@@ -30,7 +30,7 @@ CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(dateCompleted);
 CREATE TABLE IF NOT EXISTS aiComments (
   id TEXT PRIMARY KEY,
   taskId TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
-  side TEXT NOT NULL DEFAULT 'left' CHECK (side IN ('left')),
+  side TEXT NOT NULL DEFAULT 'left' CHECK (side IN ('left', 'right')),
   type TEXT NOT NULL DEFAULT 'remark' CHECK (type IN ('question', 'remark', 'correction')),
   text TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved')),

@@ -2,6 +2,7 @@ import { isAiCommentType, type AiCommentType } from '@shared/ai-comments'
 
 const MAX_COMMENT_CHARS = 500
 const MAX_REPLY_CHARS = 2_000
+const MAX_ANSWER_CHARS = 2_000
 
 export interface ParsedComment {
   text: string
@@ -16,6 +17,15 @@ export function parseCommentJson(json: unknown): ParsedComment | null {
   if (text === '' || text.length > MAX_COMMENT_CHARS) return null
   const type = isAiCommentType(record.type) ? record.type : 'remark'
   return { text, type }
+}
+
+export function parseAnswerJson(json: unknown): string | null {
+  if (typeof json !== 'object' || json === null || Array.isArray(json)) return null
+  const answer = (json as { answer?: unknown }).answer
+  if (typeof answer !== 'string') return null
+  const text = answer.trim()
+  if (text === '' || text.length > MAX_ANSWER_CHARS) return null
+  return text
 }
 
 export function parseReplyJson(json: unknown): string | null {

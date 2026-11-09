@@ -19,6 +19,7 @@ import { flushTheme, installThemeShortcut, toggleThemeLab } from './lib/theme-en
 import { useCarrySync } from './store/carry-sync'
 import { flushKeptWrites } from './store/ai-comments'
 import { toggleAiSettings } from './store/ai-settings'
+import { installAskAiLifecycle } from './store/ask-ai'
 import { installHistoryKeys, redoEditing, undoEditing } from './store/history'
 import { installImageLoader } from './store/images'
 import { useNotebook } from './store/notebook'
@@ -90,6 +91,7 @@ function Notebook() {
     const removePaste = installImagePaste()
     const removeDrop = installImageDrop()
     const removeAiTrigger = installAiTrigger()
+    const removeAskAi = installAskAiLifecycle()
     const onUnload = (): void => {
       useNotebook.getState().flushPendingSync()
       flushKeptWrites()
@@ -108,6 +110,7 @@ function Notebook() {
       removePaste()
       removeDrop()
       removeAiTrigger()
+      removeAskAi()
       window.removeEventListener('beforeunload', onUnload)
     }
   }, [goToDate])

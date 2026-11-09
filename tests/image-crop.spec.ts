@@ -84,6 +84,22 @@ async function dropPhoto(app: ElectronApplication, page: Page): Promise<void> {
   )
 }
 
+async function renderedImage(page: Page): Promise<{ frameWidth: number; imgWidth: number; imgHeight: number; imgTop: number }> {
+  return page.evaluate(() => {
+    const frame = document.querySelector('.canvas-image-frame')
+    const img = frame?.querySelector('img')
+    if (!frame || !img) throw new Error('Image frame is missing')
+    const frameBox = frame.getBoundingClientRect()
+    const imgBox = img.getBoundingClientRect()
+    return {
+      frameWidth: Math.round(frameBox.width),
+      imgWidth: Math.round(imgBox.width),
+      imgHeight: Math.round(imgBox.height),
+      imgTop: Math.round(imgBox.top - frameBox.top),
+    }
+  })
+}
+
 async function dragHandle(page: Page, handle: string, dx: number, dy: number): Promise<void> {
   const box = await page.locator(handle).boundingBox()
   if (!box) throw new Error(`Handle ${handle} is missing`)
@@ -109,8 +125,8 @@ test('crop trims two sides, undoes, redoes, and survives a restart', async () =>
     expect(Math.round(box.width)).toBe(200)
 
     await node.click()
-    await page.locator('.image-crop-toggle', { hasText: 'Crop' }).click()
     await expect(page.locator('.image-crop-right')).toBeVisible()
+    expect(await renderedImage(page)).toEqual({ frameWidth: 200, imgWidth: 200, imgHeight: 120, imgTop: 0 })
 
     // Trim 50px from the right: width 200 -> 150, cropRight -> 0.25.
     await dragHandle(page, '.image-crop-right', -50, 0)
@@ -124,6 +140,8 @@ test('crop trims two sides, undoes, redoes, and survives a restart', async () =>
       cropRight: 0.25,
       cropBottom: 0,
     })
+    // The picture is cropped, not squeezed: the img stays 200px wide inside a 150px frame.
+    expect(await renderedImage(page)).toEqual({ frameWidth: 150, imgWidth: 200, imgHeight: 120, imgTop: 0 })
 
     // Trim 30px from the top: height 120 -> 90, cropTop -> 0.25.
     await dragHandle(page, '.image-crop-top', 0, 30)
@@ -136,6 +154,8 @@ test('crop trims two sides, undoes, redoes, and survives a restart', async () =>
       cropRight: 0.25,
       cropBottom: 0,
     })
+    // The img keeps its 200x120 rendered size and is shifted up 30px behind the 150x90 frame.
+    expect(await renderedImage(page)).toEqual({ frameWidth: 150, imgWidth: 200, imgHeight: 120, imgTop: -30 })
 
     // Undo both trims, then redo them.
     await page.keyboard.press(`${modifier}+z`)
@@ -164,6 +184,7 @@ test('crop trims two sides, undoes, redoes, and survives a restart', async () =>
     if (!after) throw new Error('Image node is missing after restart')
     expect(Math.round(after.width)).toBe(150)
     expect(Math.round(after.height)).toBe(90)
+    expect(await renderedImage(page)).toEqual({ frameWidth: 150, imgWidth: 200, imgHeight: 120, imgTop: -30 })
     expect(savedImage(userData)).toEqual({
       width: 150,
       height: 90,

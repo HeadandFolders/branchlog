@@ -198,14 +198,20 @@ export const useAiComments = create<AiCommentsState>((set, get) => ({
     const date = get().date
     set({ replyingId: id })
     try {
+      flushKeptWrites()
       const result = await window.branchlog.ai.reply({ commentId: id, requestId: crypto.randomUUID(), text })
       if (get().date !== date) return false
       if (result.kind === 'replied') {
-        set((state) => ({
-          comments: state.comments.map((comment) => (comment.id === id ? result.comment : comment)),
-          offline: false,
-          error: null,
-        }))
+        const before = get().comments
+        const current = before.find((comment) => comment.id === id)
+        if (!current) return false
+        const updated = {
+          ...current,
+          replies: result.comment.replies.map((reply) => current.replies.find((item) => item.id === reply.id) ?? reply),
+        }
+        const after = before.map((comment) => (comment.id === id ? updated : comment))
+        if (result.comment.side === 'right') pushCommentHistory(before, after)
+        set({ comments: after, offline: false, error: null })
         return true
       }
       if (result.kind === 'offline') set({ offline: true })

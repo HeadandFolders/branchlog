@@ -11,6 +11,7 @@ import './styles/globals.css'
 import './styles/theme-lab.css'
 import './styles/ai-settings.css'
 import './styles/ai-comments.css'
+import './styles/ask-ai.css'
 import './styles/continuation.css'
 
 const root = document.getElementById('root')

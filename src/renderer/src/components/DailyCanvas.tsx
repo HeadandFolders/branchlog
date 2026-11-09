@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -40,6 +41,7 @@ import { autoSeparateEnabled, usePreferences } from '../store/preferences'
 import { tempCountRender, tempNoteFlowDimensions } from '../temp-first-paint'
 import { AiCommentNode } from './AiCommentNode'
 import { BranchNode } from './BranchNode'
+import { ImageDeleteKeys } from './ImageDeleteKeys'
 import { ImageNode } from './ImageNode'
 import { MainListNode } from './MainListNode'
 
@@ -70,7 +72,7 @@ function DailyFlow() {
   const imagesReady = useImages((state) => state.ready)
   const imagesRef = useRef(images)
   imagesRef.current = images
-  const comments = useAiComments((state) => state.comments)
+  const comments = useAiComments(useShallow((state) => state.comments.filter((comment) => comment.side === 'left')))
   const commentsRef = useRef(comments)
   commentsRef.current = comments
   const ready = useNotebook((state) => state.ready)
@@ -336,6 +338,7 @@ export function DailyCanvas() {
   return (
     <ReactFlowProvider>
       <DailyFlow />
+      <ImageDeleteKeys />
     </ReactFlowProvider>
   )
 }

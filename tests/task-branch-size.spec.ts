@@ -136,7 +136,7 @@ test('a branch reads as a task line, wraps, resizes, and keeps its arrow on the 
     const stored = savedSize(userData, branchId)
     if (!stored) throw new Error('Saved size is missing')
     expect(stored.width).toBeGreaterThanOrEqual(140)
-    expect(stored.height).toBeGreaterThan(beforeNarrow)
+    expect(stored.height).toBe(0)
 
     const parentDot = branch.locator('.branch-dot')
     await parentDot.click()
@@ -164,12 +164,81 @@ test('a branch reads as a task line, wraps, resizes, and keeps its arrow on the 
     const again = await relaunch(userData)
     app = again.app
     userData = again.userData
-    const restored = again.page.locator('.react-flow__node-branch', { hasText: 'several lines' })
+    const restored = again.page.locator(`.react-flow__node-branch[data-id="${branchId}"]`)
     await expect(restored).toBeVisible()
     const restoredWidth = await restored.evaluate((element) => element.offsetWidth)
     expect(Math.abs(restoredWidth - stored.width)).toBeLessThanOrEqual(2)
+    const restoredHeight = await restored.evaluate((element) => element.offsetHeight)
+    expect(Math.abs(restoredHeight - narrow.height)).toBeLessThanOrEqual(2)
     const restoredClip = await restored.locator('[data-task-text]').evaluate((element) => element.scrollHeight - element.clientHeight)
     expect(restoredClip).toBeLessThanOrEqual(1)
+    await restored.locator('[data-task-text]').click()
+    await again.page.keyboard.press(`${modifier}+A`)
+    await again.page.keyboard.insertText('Hi')
+    await expect(restored.locator('[data-task-text]')).toHaveText('Hi')
+    await expect.poll(() => restored.evaluate((element) => element.offsetHeight)).toBeLessThan(80)
+    expect(await restored.evaluate((element) => element.offsetWidth)).toBe(restoredWidth)
+  } finally {
+    await closeApp(app, userData)
+  }
+})
+
+test('shortening a resized branch shrinks its border, with undo, redo, and restart', async () => {
+  const launched = await launchApp()
+  let { app, page, userData } = launched
+  try {
+    await writeTask(page, 'Origin')
+    await page.getByRole('button', { name: 'Branch from this task' }).click()
+    const branch = page.locator('.react-flow__node-branch')
+    const text = branch.locator('[data-task-text]')
+    const original = 'A branch with several wrapped lines. '.repeat(6)
+    await page.keyboard.insertText(original)
+    await expect(text).toHaveText(original)
+    const id = await text.getAttribute('data-task-id')
+    if (!id) throw new Error('Branch id is missing')
+    await branch.click({ position: { x: 6, y: 6 } })
+    const handle = branch.locator('.react-flow__resize-control.line.bottom')
+    await expect(handle).toBeVisible()
+    const box = await handle.boundingBox()
+    if (!box) throw new Error('Resize handle is missing')
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(box.x + box.width / 2, box.y + 100, { steps: 8 })
+    await page.mouse.up()
+    await expect.poll(() => savedSize(userData, id)?.height ?? 0).toBeGreaterThan(200)
+    const resized = await branch.evaluate((element) => ({ width: element.offsetWidth, height: element.offsetHeight }))
+
+    await text.click()
+    await page.keyboard.press(`${modifier}+A`)
+    await page.keyboard.insertText('Short branch')
+    await expect(text).toHaveText('Short branch')
+    await expect.poll(() => branch.evaluate((element) => element.offsetHeight)).toBeLessThan(80)
+    await expect.poll(() => savedSize(userData, id)?.height).toBe(0)
+    expect(await branch.evaluate((element) => element.offsetWidth)).toBe(resized.width)
+    await page.keyboard.press(`${modifier}+Z`)
+    await expect(text).toHaveText(original)
+    await expect.poll(() => branch.evaluate((element) => element.offsetHeight)).toBe(resized.height)
+    await page.keyboard.press(`${modifier}+Y`)
+    await expect(text).toHaveText('Short branch')
+    await expect.poll(() => branch.evaluate((element) => element.offsetHeight)).toBeLessThan(80)
+
+    await page.keyboard.press(`${modifier}+A`)
+    await page.keyboard.press('Backspace')
+    await expect(text).toHaveText('')
+    await expect(branch).toBeVisible()
+    await expect.poll(() => branch.evaluate((element) => element.offsetHeight)).toBeLessThan(80)
+    await text.click()
+    await page.keyboard.insertText('Short branch')
+    await page.keyboard.press('Escape')
+    await closeApp(app, userData, true)
+    const again = await relaunch(userData)
+    app = again.app
+    page = again.page
+    userData = again.userData
+    const restored = page.locator('.react-flow__node-branch')
+    await expect(restored.locator('[data-task-text]')).toHaveText('Short branch')
+    await expect.poll(() => restored.evaluate((element) => element.offsetHeight)).toBeLessThan(80)
+    expect(await restored.evaluate((element) => element.offsetWidth)).toBe(resized.width)
   } finally {
     await closeApp(app, userData)
   }

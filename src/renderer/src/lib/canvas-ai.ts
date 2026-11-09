@@ -30,7 +30,7 @@ export function buildCommentEdges(comments: AiComment[], tasks: Task[]): Edge[] 
   const taskIds = new Set(tasks.filter((task) => task.side === 'main').map((task) => task.id))
   const edges: Edge[] = []
   for (const comment of comments) {
-    if (!taskIds.has(comment.taskId)) continue
+    if (comment.side !== 'left' || !taskIds.has(comment.taskId)) continue
     edges.push({
       id: `edge-ai-${comment.id}`,
       source: comment.id,
@@ -49,6 +49,7 @@ export function buildCommentEdges(comments: AiComment[], tasks: Task[]): Edge[] 
 
 export function commentStructureKey(comments: AiComment[]): string {
   return comments
+    .filter((comment) => comment.side === 'left')
     .map((comment) => `${comment.id}|${comment.x}|${comment.y}|${comment.status}|${comment.replies.length}`)
     .join(';')
 }

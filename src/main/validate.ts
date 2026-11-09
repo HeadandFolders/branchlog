@@ -377,6 +377,16 @@ export function parseImageReplace(value: unknown): { date: string; images: Image
   return { date, images }
 }
 
+export function parseImageDelete(value: unknown): string[] {
+  const input = requireRecord(value)
+  if (!Array.isArray(input.ids) || input.ids.length < 1 || input.ids.length > 500) {
+    throw new Error('Invalid image')
+  }
+  const ids = input.ids.map((item: unknown) => requireId(item))
+  if (new Set(ids).size !== ids.length) throw new Error('Invalid image')
+  return ids
+}
+
 export function parseTheme(value: unknown): ThemeDocument {
   return parseThemeDocument(value)
 }
@@ -404,6 +414,8 @@ export function parseReplaceDay(value: unknown): { date: string; tasks: Task[] }
 }
 
 export {
+  parseAiCancel,
+  parseAskAiInput,
   parseCommentReplace,
   parseCommentReply,
   parseCommentRequest,

@@ -7,6 +7,7 @@ import { BRANCH_WIDTH } from '@shared/branch-size'
 import { localDateKey } from '@shared/dates'
 import type { ActivityCount, CreateBranchInput, CreateTaskInput, Task, UpdateTaskInput } from '@shared/types'
 import { migrateAi } from './migrate-ai'
+import { migrateImages } from './migrate-images'
 import { migrateTasks } from './migrate'
 import { SCHEMA } from './schema'
 import { mapTask, TASK_COLUMNS, type TaskRow } from './task-row'
@@ -42,6 +43,9 @@ export function initDatabase(): Database.Database {
   const aiMigrateStart = performance.now()
   migrateAi(next)
   tempMark('db-migrate-ai', { ms: tempMs(aiMigrateStart) })
+  const imageMigrateStart = performance.now()
+  migrateImages(next)
+  tempMark('db-migrate-images', { ms: tempMs(imageMigrateStart) })
   if (tempMeasuring()) {
     tempMark('db-pragma-values', {
       journal: String(next.pragma('journal_mode', { simple: true })),

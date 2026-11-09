@@ -1,4 +1,5 @@
 import { separateNearby, type SeparateBody, type SeparateMove } from '@shared/separate'
+import { compactNearby, type NodeSize } from '@shared/compact'
 import { armLayoutHistory } from '../store/history'
 import { registerLayoutBridge } from '../store/layout-bridge'
 
@@ -39,6 +40,7 @@ let restoreEpoch = 0
 let sizeEpoch = 0
 const sizeSeen = new Map<string, number>()
 const sizes = new Map<string, { width: number; height: number }>()
+const resizeStarts = new Map<string, NodeSize>()
 
 function reducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -99,17 +101,17 @@ function startEase(next: Session): void {
   frame = requestAnimationFrame(play)
 }
 
-function targetsFrom(changedId: string, pinned: boolean): Map<string, Point> | null {
+function targetsFrom(changedId: string, pinned: boolean, previousSize?: NodeSize): Map<string, Point> | null {
   if (!host) return null
   const bodies = host.bodies(changedId).map((body) => (body.id === changedId ? { ...body, pinned } : body))
-  const moves = separateNearby(bodies, changedId)
+  const moves = previousSize ? compactNearby(bodies, changedId, previousSize) : separateNearby(bodies, changedId)
   if (moves.length === 0) return null
   return new Map(moves.map((move) => [move.id, { x: move.x, y: move.y }]))
 }
 
-function begin(changedId: string, pinned: boolean, live: boolean): void {
+function begin(changedId: string, pinned: boolean, live: boolean, previousSize?: NodeSize): void {
   if (!host || !host.enabled()) return
-  const targets = targetsFrom(changedId, pinned)
+  const targets = targetsFrom(changedId, pinned, previousSize)
   if (!targets) {
     if (session?.changedId === changedId && session.live) return
     return
@@ -177,6 +179,7 @@ export function finishLayoutNow(): void {
 
 export function resetLayoutBaseline(): void {
   sizeEpoch += 1
+  resizeStarts.clear()
 }
 
 export function layoutRestoreEpoch(): number {
@@ -192,12 +195,18 @@ export function noteNodeSize(id: string, width: number, height: number, resizing
   const previous = sizes.get(id)
   sizes.set(id, { width, height })
   if (!previous) return
-  if (Math.abs(previous.height - height) < 1 && Math.abs(previous.width - width) < 1) return
+  const origin = resizeStarts.get(id) ?? previous
+  const endedResize = resizeStarts.has(id) && !resizing
+  const changed = Math.abs(previous.height - height) >= 1 || Math.abs(previous.width - width) >= 1
   if (resizing) {
-    liveLayout(id)
+    resizeStarts.set(id, origin)
+    if (changed) liveLayout(id)
     return
   }
-  engageLayout(id, true)
+  resizeStarts.delete(id)
+  if (!changed && !endedResize) return
+  const shrunk = width < origin.width - 1 || height < origin.height - 1
+  begin(id, true, false, shrunk ? origin : undefined)
 }
 
 export function notedSize(id: string): { width: number; height: number } | null {
@@ -252,6 +261,7 @@ export function installLayout(next: LayoutHost): () => void {
     markRestore: () => {
       restoreEpoch += 1
       sizeEpoch += 1
+      resizeStarts.clear()
     },
   })
   window.__branchlogLayout = {
@@ -261,6 +271,7 @@ export function installLayout(next: LayoutHost): () => void {
   }
   return () => {
     cancelFrame()
+    resizeStarts.clear()
     session = null
     host = null
     removeBridge()

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { CanvasImage, ImageCrop } from '@shared/types'
-import { setImageRestorer } from './history'
+import { pushImageHistory, setImageRestorer } from './history'
 import { useNotebook } from './notebook'
 
 interface ImageState {
@@ -11,6 +11,7 @@ interface ImageState {
   add: (image: CanvasImage) => void
   move: (id: string, x: number, y: number) => void
   resize: (id: string, x: number, y: number, width: number, height: number, crop: ImageCrop) => void
+  remove: (ids: readonly string[]) => void
   place: (moves: readonly { id: string; x: number; y: number }[]) => void
   replace: (images: CanvasImage[]) => void
 }
@@ -51,6 +52,20 @@ export const useImages = create<ImageState>((set, get) => ({
     set((state) => ({
       images: state.images.map((image) => (image.id === id ? { ...image, x, y, width, height, ...crop } : image)),
     }))
+  },
+
+  remove: (ids) => {
+    const doomed = [...new Set(ids)]
+    if (doomed.length === 0) return
+    const wrote = window.branchlog.images.deleteSync({ ids: doomed })
+    if (!wrote.ok) {
+      useNotebook.setState({ error: 'Could not delete that image.' })
+      return
+    }
+    const before = get().images.map((image) => ({ ...image }))
+    const dropped = new Set(doomed)
+    set({ images: before.filter((image) => !dropped.has(image.id)) })
+    pushImageHistory(before, get().images)
   },
 
   place: (moves) => {

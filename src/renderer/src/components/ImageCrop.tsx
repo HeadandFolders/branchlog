@@ -30,7 +30,7 @@ function deltaOf(drag: CropDrag, event: ReactPointerEvent): number {
   return screen / drag.zoom
 }
 
-export const ImageCrop = memo(function ImageCrop({ image }: { image: CanvasImage }) {
+export const ImageCrop = memo(function ImageCrop({ image, active }: { image: CanvasImage; active: boolean }) {
   const { getZoom } = useReactFlow()
   const drag = useRef<CropDrag | null>(null)
   const [preview, setPreview] = useState<CropBox | null>(null)
@@ -88,17 +88,18 @@ export const ImageCrop = memo(function ImageCrop({ image }: { image: CanvasImage
       <div className="canvas-image-frame" style={frameStyle}>
         <img src={image.src} alt="" draggable={false} style={cropImageStyle(shown)} />
       </div>
-      {SIDES.map((side) => (
-        <div
-          key={side}
-          role="separator"
-          aria-label={`Crop from the ${side}`}
-          className={`image-crop-handle image-crop-${side} nodrag nopan`}
-          onPointerDown={onPointerDown(side)}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-        />
-      ))}
+      {active &&
+        SIDES.map((side) => (
+          <div
+            key={side}
+            role="separator"
+            aria-label={`Crop from the ${side}`}
+            className={`image-crop-handle image-crop-${side} nodrag nopan`}
+            onPointerDown={onPointerDown(side)}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+          />
+        ))}
     </>
   )
 })

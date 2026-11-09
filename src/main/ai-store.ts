@@ -5,7 +5,7 @@ import { getDatabase } from './database'
 interface CommentRow {
   id: string
   taskId: string
-  side: 'left'
+  side: AiComment['side']
   type: AiCommentType
   text: string
   status: AiCommentStatus
@@ -42,7 +42,7 @@ function mapComment(row: CommentRow, replies: AiReply[]): AiComment {
   return {
     id: row.id,
     taskId: row.taskId,
-    side: 'left',
+    side: row.side,
     type: row.type,
     text: row.text,
     status: row.status,
@@ -106,14 +106,15 @@ export function getComment(id: string): AiComment | null {
 export function countCommentsOn(date: string): number {
   const row = getDatabase()
     .prepare(
-      `SELECT COUNT(*) AS n FROM aiComments c JOIN tasks t ON t.id = c.taskId WHERE t.dateCreated = ?`,
+      `SELECT COUNT(*) AS n FROM aiComments c JOIN tasks t ON t.id = c.taskId
+       WHERE t.dateCreated = ? AND c.side = 'left'`,
     )
     .get(date) as { n: number }
   return row.n
 }
 
 const INSERT_COMMENT = `INSERT INTO aiComments (${COMMENT_COLUMNS})
-  VALUES (@id, @taskId, 'left', @type, @text, @status, @keptRanges, @x, @y, @createdAt)`
+  VALUES (@id, @taskId, @side, @type, @text, @status, @keptRanges, @x, @y, @createdAt)`
 const INSERT_REPLY = `INSERT INTO aiReplies (${REPLY_COLUMNS})
   VALUES (@id, @commentId, @role, @text, @keptRanges, @createdAt)`
 
@@ -121,6 +122,7 @@ function insertOn(db: Database.Database, comment: AiComment): void {
   db.prepare(INSERT_COMMENT).run({
     id: comment.id,
     taskId: comment.taskId,
+    side: comment.side,
     type: comment.type,
     text: comment.text,
     status: comment.status,
@@ -214,9 +216,10 @@ export function replaceComments(date: string, comments: AiComment[]): void {
     }
     const upsert = db.prepare(
       `INSERT INTO aiComments (${COMMENT_COLUMNS})
-       VALUES (@id, @taskId, 'left', @type, @text, @status, @keptRanges, @x, @y, @createdAt)
+       VALUES (@id, @taskId, @side, @type, @text, @status, @keptRanges, @x, @y, @createdAt)
        ON CONFLICT(id) DO UPDATE SET
          taskId = excluded.taskId,
+         side = excluded.side,
          type = excluded.type,
          text = excluded.text,
          status = excluded.status,
@@ -229,6 +232,7 @@ export function replaceComments(date: string, comments: AiComment[]): void {
       upsert.run({
         id: comment.id,
         taskId: comment.taskId,
+        side: comment.side,
         type: comment.type,
         text: comment.text,
         status: comment.status,
