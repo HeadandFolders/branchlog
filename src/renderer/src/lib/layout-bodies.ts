@@ -87,7 +87,7 @@ export function collectBodies(
     })
   }
   for (const comment of comments) {
-    if (comment.side !== 'left') continue
+    if (comment.side !== 'left' || comment.status !== 'open') continue
     const node = nodeById.get(comment.id)
     if (!node) continue
     const size = nodeSize(node, AI_COMMENT_WIDTH, 40)

@@ -24,13 +24,27 @@ export function textPieces(root: Node): TextPiece[] {
   return pieces
 }
 
+export function domRange(root: Node, [start, end]: KeepRange): Range | null {
+  const pieces = textPieces(root)
+  const anchor = pieces.find((piece) => start >= piece.start && start <= piece.start + piece.length)
+  const focus = pieces.find((piece) => end >= piece.start && end <= piece.start + piece.length)
+  if (!anchor || !focus) return null
+  const range = document.createRange()
+  range.setStart(anchor.node, start - anchor.start)
+  range.setEnd(focus.node, end - focus.start)
+  return range
+}
+
 export function selectionRange(root: Node, selection: Selection): KeepRange | null {
   if (selection.rangeCount === 0 || selection.isCollapsed) return null
-  const { anchorNode, anchorOffset, focusNode, focusOffset } = selection
+  const { anchorNode, focusNode } = selection
   if (!anchorNode || !focusNode || !root.contains(anchorNode) || !root.contains(focusNode)) return null
-  const pieces = textPieces(root)
-  const anchorIndex = pieces.findIndex((piece) => piece.node === anchorNode)
-  const focusIndex = pieces.findIndex((piece) => piece.node === focusNode)
-  if (anchorIndex < 0 || focusIndex < 0) return null
-  return rangeFromOffsets(pieces, anchorIndex, anchorOffset, focusIndex, focusOffset)
+  const native = selection.getRangeAt(0)
+  const pieces = textPieces(root).filter((piece) => native.intersectsNode(piece.node))
+  const first = pieces[0]
+  const last = pieces.at(-1)
+  if (!first || !last) return null
+  const start = native.startContainer === first.node ? native.startOffset : 0
+  const end = native.endContainer === last.node ? native.endOffset : last.length
+  return rangeFromOffsets(pieces, 0, start, pieces.length - 1, end)
 }

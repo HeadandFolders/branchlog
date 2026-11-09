@@ -78,7 +78,7 @@ export function buildCanvasNodes(
   const prior = new Map(previous.map((node) => [node.id, node]))
   const branches = tasks.filter((task) => task.side === 'right').map((task) => branchNode(task, prior.get(task.id)))
   const pictures = images.map((image) => imageNode(image, prior.get(image.id)))
-  const margins = comments.filter((comment) => comment.side === 'left').map((comment) => commentNode(comment, prior.get(comment.id)))
+  const margins = comments.filter((comment) => comment.side === 'left' && comment.status === 'open').map((comment) => commentNode(comment, prior.get(comment.id)))
   return [list, ...branches, ...pictures, ...margins]
 }
 

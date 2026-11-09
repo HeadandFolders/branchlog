@@ -4,11 +4,9 @@ import type { Task } from '@shared/types'
 
 export const AI_COMMENT_WIDTH = 240
 export const AI_COMMENT_GAP = 32
-const RESOLVED_SIZE = 16
 
 export function commentNode(comment: AiComment, earlier: Node | undefined): Node {
-  const resolved = comment.status === 'resolved'
-  const width = resolved ? RESOLVED_SIZE : AI_COMMENT_WIDTH
+  const width = AI_COMMENT_WIDTH
   const node: Node = {
     id: comment.id,
     type: 'aiComment',
@@ -22,7 +20,7 @@ export function commentNode(comment: AiComment, earlier: Node | undefined): Node
     style: { pointerEvents: 'all', width },
   }
   if (earlier?.selected) node.selected = true
-  if (!resolved && earlier?.measured?.width && earlier.measured.height) node.measured = earlier.measured
+  if (earlier?.measured?.width && earlier.measured.height) node.measured = earlier.measured
   return node
 }
 
@@ -30,7 +28,7 @@ export function buildCommentEdges(comments: AiComment[], tasks: Task[]): Edge[] 
   const taskIds = new Set(tasks.filter((task) => task.side === 'main').map((task) => task.id))
   const edges: Edge[] = []
   for (const comment of comments) {
-    if (comment.side !== 'left' || !taskIds.has(comment.taskId)) continue
+    if (comment.side !== 'left' || comment.status !== 'open' || !taskIds.has(comment.taskId)) continue
     edges.push({
       id: `edge-ai-${comment.id}`,
       source: comment.id,

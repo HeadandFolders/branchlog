@@ -1,10 +1,16 @@
 import { useAiComments } from '../store/ai-comments'
 
-export function AiThinkingDots({ taskId }: { taskId: string }) {
-  const thinking = useAiComments((state) => state.thinkingTaskId === taskId)
+export function AiThinkingDots({ taskId, commentId }: { taskId?: string; commentId?: string }) {
+  const thinking = useAiComments((state) => taskId ? state.thinkingTaskId === taskId : state.replyingId === commentId)
   if (!thinking) return null
   return (
-    <span className="ai-thinking" role="status" aria-label="AI is thinking" data-ai-thinking="">
+    <span
+      className={commentId ? 'ai-thinking ai-reply-thinking' : 'ai-thinking'}
+      role="status"
+      aria-label={commentId ? 'AI is replying' : 'AI is thinking'}
+      data-ai-thinking=""
+      data-ai-replying={commentId}
+    >
       <span />
       <span />
       <span />

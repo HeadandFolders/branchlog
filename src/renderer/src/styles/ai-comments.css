@@ -116,8 +116,6 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 180px;
-  overflow-y: auto;
 }
 
 .ai-reply {
@@ -242,7 +240,7 @@
   outline-offset: 2px;
 }
 
-.ai-keep-text {
+.ai-keep[data-keep-state='full'] .ai-keep-text {
   animation: ai-keep-fade 150ms ease;
 }
 
@@ -296,7 +294,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ai-keep-text {
+  .ai-keep[data-keep-state='full'] .ai-keep-text {
     animation: none;
   }
 }

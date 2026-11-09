@@ -45,10 +45,11 @@ async function selectOffsets(page: Page, wrapper: Locator, start: number, end: n
 }
 
 async function keepPhrase(page: Page, wrapper: Locator, start: number, end: number): Promise<void> {
-  await wrapper.hover()
+  const kept = wrapper.locator('xpath=ancestor::*[@data-ai-comment][1]').locator('[data-kept-range]').first()
+  if (await kept.count() > 0) await kept.hover()
+  else await wrapper.hover()
   await selectOffsets(page, wrapper, start, end)
-  await page.locator('[data-keep-label]').click()
-  await page.mouse.move(5, 5)
+  await page.locator('[data-keep-pin]').click()
 }
 
 function savedRanges(userData: string): { comment: string; replies: string[] } {
@@ -85,7 +86,7 @@ test('keeping a phrase hides the rest; hover reveals it and moving away collapse
     })
     expect(highlight.kept).toBe(highlight.soft)
 
-    await wrapper.hover()
+    await wrapper.locator('[data-kept-range]').first().hover()
     await expect(wrapper).toHaveAttribute('data-keep-state', 'full')
     await expect(wrapper).toContainText(COMMENT_TEXT)
     await expect(wrapper.locator('.sr-only')).toHaveCount(0)
@@ -111,10 +112,9 @@ test('two kept ranges show an ellipsis, and a selection across them merges into 
     await expect(wrapper.locator('[data-kept-range]')).toHaveCount(2)
     await expect(wrapper.locator('[data-keep-ellipsis]')).toHaveCount(1)
 
-    await wrapper.hover()
+    await wrapper.locator('[data-kept-range]').first().hover()
     await selectOffsets(page, wrapper, 6, 12)
-    await page.locator('[data-keep-label]').click()
-    await page.mouse.move(5, 5)
+    await page.locator('[data-keep-pin]').click()
     await expect(wrapper.locator('[data-kept-range]')).toHaveCount(1)
     await expect(wrapper.locator('[data-kept-range]')).toHaveText('does done')
     await expect(wrapper.locator('[data-keep-ellipsis]')).toHaveCount(0)
@@ -133,7 +133,7 @@ test('clicking a kept range shows Remove, and removing it brings the full text b
     const wrapper = commentWrapper(page)
     await expect(wrapper).toHaveCount(1)
     await keepPhrase(page, wrapper, 5, 9)
-    await wrapper.hover()
+    await wrapper.locator('[data-kept-range]').first().hover()
     await wrapper.locator('[data-kept-range]').click()
     await page.locator('[data-remove-label]').click()
     await expect(wrapper.locator('[data-kept-range]')).toHaveCount(0)
@@ -212,7 +212,7 @@ test('each keep and each remove is one undo step', async () => {
     await page.keyboard.press(`${modifier}+Shift+Z`)
     await expect(wrapper.locator('[data-kept-range]')).toHaveText('does')
 
-    await wrapper.hover()
+    await wrapper.locator('[data-kept-range]').first().hover()
     await wrapper.locator('[data-kept-range]').click()
     await page.locator('[data-remove-label]').click()
     await expect(wrapper.locator('[data-kept-range]')).toHaveCount(0)
@@ -236,8 +236,16 @@ test('the keyboard route keeps a selection with Enter and removes a range', asyn
     await expect(wrapper).toHaveCount(1)
     await wrapper.focus()
     await selectOffsets(page, wrapper, 5, 9)
+    const pin = page.locator('[data-keep-pin]')
+    await expect(pin).toBeVisible()
+    await expect(wrapper).toBeFocused()
     await page.keyboard.press('Enter')
     await expect(wrapper.locator('[data-kept-range]')).toHaveText('does')
+    await wrapper.locator('[data-kept-range]').focus()
+    await selectOffsets(page, wrapper, 9, 14)
+    await expect(pin).toBeVisible()
+    await page.keyboard.press('Enter')
+    await expect(wrapper.locator('[data-kept-range]')).toHaveText('does done')
 
     await wrapper.locator('[data-kept-range]').focus()
     await page.keyboard.press('Enter')
@@ -261,7 +269,7 @@ test('delete still removes everything, and undo restores the kept ranges too', a
     await expect(wrapper).toHaveCount(1)
     await keepPhrase(page, wrapper, 5, 9)
     const node = page.locator('.react-flow__node-aiComment')
-    await node.hover()
+    await wrapper.locator('[data-kept-range]').first().hover()
     await node.getByRole('button', { name: 'Delete', exact: true }).click()
     await expect(page.locator('[data-ai-comment]')).toHaveCount(0)
     await page.keyboard.press(`${modifier}+Z`)

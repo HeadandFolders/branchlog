@@ -13,6 +13,7 @@ import { Check } from 'lucide-react'
 import type { Task } from '@shared/types'
 import { branchFromTask, branchShortcutLabel } from '../lib/branch-from'
 import { AiThinkingDots } from './AiThinkingDots'
+import { AiResolvedMarks } from './AiResolvedMarks'
 import { ContinuationMark } from './ContinuationMark'
 import { caretOffsets, insertPlainText } from '../lib/caret'
 import { useTaskFieldFocus } from '../lib/field-focus'
@@ -167,6 +168,7 @@ export function TaskBullet({ task }: TaskBulletProps) {
       }`}
     >
       <AiThinkingDots taskId={task.id} />
+      {task.side === 'main' ? <AiResolvedMarks taskId={task.id} /> : null}
       <ContinuationMark taskId={task.id} />
       <button
         type="button"

@@ -22,7 +22,9 @@ export async function askBranch(branch: Locator): Promise<void> {
 
 export async function keepAnswer(page: Page, branch: Locator): Promise<void> {
   const wrapper = branch.locator('[data-ai-text] [data-keep-text]')
-  await wrapper.hover()
+  const kept = branch.locator('[data-ai-answer] [data-kept-range]').first()
+  if (await kept.count() > 0) await kept.hover()
+  else await wrapper.hover()
   await wrapper.evaluate((element) => {
     const node = element.querySelector('[data-offset="0"]')?.firstChild
     if (!node) throw new Error('Missing full answer')
@@ -33,8 +35,7 @@ export async function keepAnswer(page: Page, branch: Locator): Promise<void> {
     selection?.removeAllRanges()
     selection?.addRange(range)
   })
-  await page.locator('[data-keep-label]').click()
-  await page.mouse.move(5, 5)
+  await page.locator('[data-keep-pin]').click()
   await expect(wrapper).toHaveAttribute('data-keep-state', 'kept')
   await expect(wrapper.locator('[data-kept-range]')).toHaveText('Start with an outline')
 }

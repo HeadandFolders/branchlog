@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactElement } from 'react'
+import { createPortal } from 'react-dom'
+import { Pin } from 'lucide-react'
 import {
   clampRanges,
   displaySegments,
@@ -8,13 +10,7 @@ import {
   serializeRanges,
   type KeepRange,
 } from '../lib/keep-ranges'
-import { selectionRange } from '../lib/keep-selection'
-
-interface KeepPick {
-  range: KeepRange
-  left: number
-  top: number
-}
+import { domRange, selectionRange } from '../lib/keep-selection'
 
 interface RemovePick {
   index: number
@@ -26,16 +22,39 @@ interface KeepHideTextProps {
   text: string
   keptRanges: string
   onChange: (keptRanges: string) => void
+  toolbar: HTMLElement | null
+  expanded: boolean
+  onKeep: () => void
+  onSelectionChange: (element: HTMLElement, active: boolean) => void
 }
 
-export function KeepHideText({ text, keptRanges, onChange }: KeepHideTextProps): ReactElement {
+function clearSelectionIn(wrapper: HTMLElement | null): void {
+  const selection = window.getSelection()
+  if (selection?.anchorNode && wrapper?.contains(selection.anchorNode)) selection.removeAllRanges()
+}
+
+export function KeepHideText({ text, keptRanges, onChange, toolbar, expanded, onKeep, onSelectionChange }: KeepHideTextProps): ReactElement {
   const ranges = clampRanges(parseRanges(keptRanges), text.length)
   const wrapperRef = useRef<HTMLSpanElement>(null)
-  const [hover, setHover] = useState(false)
-  const [keyFocus, setKeyFocus] = useState(false)
-  const [keepPick, setKeepPick] = useState<KeepPick | null>(null)
+  const pinRef = useRef<HTMLButtonElement>(null)
+  const selectingPointer = useRef<number | null>(null)
+  const [selecting, setSelecting] = useState(false)
+  const [keepPick, setKeepPick] = useState<KeepRange | null>(null)
   const [removePick, setRemovePick] = useState<RemovePick | null>(null)
-  const collapsed = ranges.length > 0 && !hover && !keyFocus
+  const [pendingRanges, setPendingRanges] = useState<KeepRange[]>([])
+  const collapsed = ranges.length > 0 && !expanded && !selecting && !keepPick && pendingRanges.length === 0
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current
+    if (wrapper) onSelectionChange(wrapper, selecting || keepPick !== null || pendingRanges.length > 0)
+  }, [selecting, keepPick, pendingRanges.length, onSelectionChange])
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current
+    return () => {
+      if (wrapper) onSelectionChange(wrapper, false)
+    }
+  }, [onSelectionChange])
 
   useEffect(() => {
     const onSelection = (): void => {
@@ -47,24 +66,61 @@ export function KeepHideText({ text, keptRanges, onChange }: KeepHideTextProps):
       }
       const range = selectionRange(wrapper, selection)
       if (!range) {
-        setKeepPick(null)
+        if (pendingRanges.length === 0) setKeepPick(null)
         return
       }
-      const rect = selection.getRangeAt(0).getBoundingClientRect()
-      const base = wrapper.getBoundingClientRect()
-      setKeepPick({
-        range,
-        left: Math.max(0, Math.min(rect.right - base.left, base.width - 34)),
-        top: rect.top - base.top - 18,
-      })
+      setKeepPick((current) => current?.[0] === range[0] && current[1] === range[1] ? current : range)
+    }
+    const onOutside = (event: PointerEvent): void => {
+      if (event.target instanceof Node && (wrapperRef.current?.contains(event.target) || pinRef.current?.contains(event.target))) return
+      setPendingRanges((current) => current.length > 0 ? [] : current)
+      setKeepPick(null)
+      clearSelectionIn(wrapperRef.current)
+    }
+    const onPointerEnd = (event: PointerEvent): void => {
+      if (selectingPointer.current !== event.pointerId) return
+      selectingPointer.current = null
+      setSelecting(false)
+      if (event.type !== 'pointerup' || !event.ctrlKey) return
+      const wrapper = wrapperRef.current
+      const selection = window.getSelection()
+      const range = wrapper && selection && selectionRange(wrapper, selection)
+      if (!range) return
+      onSelection()
+      setPendingRanges((current) => mergeRanges(current, range))
     }
     document.addEventListener('selectionchange', onSelection)
-    return () => document.removeEventListener('selectionchange', onSelection)
-  }, [])
+    document.addEventListener('pointerdown', onOutside, true)
+    document.addEventListener('pointerup', onPointerEnd, true)
+    document.addEventListener('pointercancel', onPointerEnd, true)
+    return () => {
+      document.removeEventListener('selectionchange', onSelection)
+      document.removeEventListener('pointerdown', onOutside, true)
+      document.removeEventListener('pointerup', onPointerEnd, true)
+      document.removeEventListener('pointercancel', onPointerEnd, true)
+    }
+  }, [pendingRanges.length])
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current
+    if (!wrapper || pendingRanges.length === 0) return
+    const selected = pendingRanges.flatMap((range) => {
+      const native = domRange(wrapper, range)
+      return native ? [native] : []
+    })
+    const highlight = new Highlight(...selected)
+    CSS.highlights.set('ai-pending-keep', highlight)
+    return () => {
+      if (CSS.highlights.get('ai-pending-keep') === highlight) CSS.highlights.delete('ai-pending-keep')
+    }
+  }, [pendingRanges, keptRanges, collapsed])
 
   const keep = (range: KeepRange): void => {
-    onChange(serializeRanges(mergeRanges(ranges, range)))
+    onChange(serializeRanges(mergeRanges([...ranges, ...pendingRanges], range)))
+    setPendingRanges([])
     setKeepPick(null)
+    setRemovePick(null)
+    onKeep()
     window.getSelection()?.removeAllRanges()
   }
 
@@ -82,38 +138,53 @@ export function KeepHideText({ text, keptRanges, onChange }: KeepHideTextProps):
 
   const onWrapperKey = (event: KeyboardEvent<HTMLSpanElement>): void => {
     if (event.key === 'Escape') {
+      selectingPointer.current = null
+      setSelecting(false)
+      setPendingRanges([])
       setKeepPick(null)
       setRemovePick(null)
+      window.getSelection()?.removeAllRanges()
       return
     }
-    if (event.key !== 'Enter' || event.target !== event.currentTarget || !keepPick) return
+    if (event.key !== 'Enter' || !keepPick) return
+    if (event.target instanceof Element && event.target.closest('button')) return
     event.preventDefault()
     event.stopPropagation()
-    keep(keepPick.range)
+    keep(keepPick)
   }
 
   const segments = displaySegments(text, ranges)
   return (
     <span
       ref={wrapperRef}
-      className="ai-keep nodrag"
-      tabIndex={0}
+      className="ai-keep nodrag nopan"
+      tabIndex={!expanded && ranges.length === 0 ? -1 : 0}
       data-keep-text=""
       data-keep-state={collapsed ? 'kept' : 'full'}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => {
-        setHover(false)
+      data-pending-count={pendingRanges.length || undefined}
+      onPointerDown={(event) => {
+        event.stopPropagation()
+        if (event.target instanceof Element && event.target.closest('button')) return
+        if (event.button !== 0) return
+        selectingPointer.current = event.pointerId
+        setSelecting(true)
+        if (!event.ctrlKey) setPendingRanges((current) => current.length > 0 ? [] : current)
         setRemovePick(null)
       }}
-      onFocusCapture={(event) => {
-        if (event.target instanceof Element && event.target.matches(':focus-visible')) setKeyFocus(true)
-      }}
+      onPointerUp={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
+      onMouseLeave={() => setRemovePick(null)}
       onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setKeyFocus(false)
+        const target = event.relatedTarget as Node | null
+        if (event.currentTarget.contains(target) || (target && pinRef.current?.contains(target))) return
+        setPendingRanges((current) => current.length > 0 ? [] : current)
+        setKeepPick(null)
+        setRemovePick(null)
+        if (target) clearSelectionIn(event.currentTarget)
       }}
-      onKeyDown={onWrapperKey}
+      onKeyDownCapture={onWrapperKey}
     >
-      <span key={collapsed ? 'kept' : 'full'} className="ai-keep-text">
+      <span className="ai-keep-text">
         {segments.map((segment, index) => {
           if (segment.kind === 'ellipsis') {
             return collapsed ? (
@@ -135,6 +206,7 @@ export function KeepHideText({ text, keptRanges, onChange }: KeepHideTextProps):
                 aria-label={`Remove kept text: ${segment.text}`}
                 onClick={(event) => {
                   event.stopPropagation()
+                  if (event.ctrlKey || !window.getSelection()?.isCollapsed) return
                   showRemove(position, event.currentTarget)
                 }}
                 onKeyDown={(event) => {
@@ -155,17 +227,21 @@ export function KeepHideText({ text, keptRanges, onChange }: KeepHideTextProps):
           )
         })}
       </span>
-      {keepPick ? (
+      {keepPick && toolbar ? createPortal(
         <button
+          ref={pinRef}
           type="button"
-          className="ai-keep-label"
-          data-keep-label=""
-          style={{ left: keepPick.left, top: keepPick.top }}
+          className="ai-tool ai-keep-pin"
+          aria-label="Keep selected text"
+          title={pendingRanges.length > 1 ? `Keep ${pendingRanges.length} selected phrases` : 'Keep selected text'}
+          data-keep-pin=""
+          data-keep-count={pendingRanges.length || 1}
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => keep(keepPick.range)}
+          onClick={() => keep(keepPick)}
         >
-          Keep
-        </button>
+          <Pin size={12} />
+        </button>,
+        toolbar,
       ) : null}
       {removePick ? (
         <button
