@@ -1,4 +1,5 @@
 import type { DeleteResult, Task } from '@shared/types'
+import { useAiComments } from './ai-comments'
 import { stageRemoval } from './removed'
 
 interface FocusRequest {
@@ -59,6 +60,7 @@ export function removeDeletedTasks(id: string, writer: DeleteWriter): void {
     }
   }
   stageRemoval(result.removed)
+  useAiComments.getState().forgetTasks(removedIds)
   writer.set({
     tasks: tasks.filter((task) => !removedIds.has(task.id)),
     focusedId: nextFocused,

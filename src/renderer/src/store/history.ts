@@ -1,3 +1,4 @@
+import type { AiComment } from '@shared/ai-comments'
 import type { CanvasImage, RemovedTasks, Task } from '@shared/types'
 import { hideDeleteNotice, showDeleteNotice } from './delete-notice'
 import { markLayoutRestore, prepareHistoryStep } from './layout-bridge'
@@ -34,6 +35,7 @@ interface Entry {
   open: boolean
   removed: RemovedTasks | null
   images: { before: CanvasImage[]; after: CanvasImage[] } | null
+  comments: { before: AiComment[]; after: AiComment[] } | null
 }
 
 const BURST = new Set([
@@ -56,6 +58,8 @@ let api: HistoryApi | null = null
 let applying = false
 let causeStamp = 0
 let restoreImages: ((images: CanvasImage[]) => void) | null = null
+let restoreComments: ((comments: AiComment[]) => void) | null = null
+let commentRemoval: ((removed: RemovedTasks, direction: 'undo' | 'redo') => void) | null = null
 let depth = 0
 let batchBefore: { tasks: Task[]; focus: string | null } | null = null
 let pendingInput = ''
@@ -77,7 +81,10 @@ function sameTask(a: Task, b: Task): boolean {
     a.width === b.width &&
     a.height === b.height &&
     a.side === b.side &&
-    a.orderIndex === b.orderIndex
+    a.orderIndex === b.orderIndex &&
+    a.carriedFromId === b.carriedFromId &&
+    a.chainId === b.chainId &&
+    a.droppedAt === b.droppedAt
   )
 }
 
@@ -108,7 +115,10 @@ function singleTextChange(before: Task[], after: Task[]): string | null {
       left.width === right.width &&
       left.height === right.height &&
       left.side === right.side &&
-      left.orderIndex === right.orderIndex
+      left.orderIndex === right.orderIndex &&
+      left.carriedFromId === right.carriedFromId &&
+      left.chainId === right.chainId &&
+      left.droppedAt === right.droppedAt
     if (!textOnly) return null
     if (left.text !== right.text) {
       if (changed) return null
@@ -185,6 +195,7 @@ function pushChange(
     open: textId !== null && BURST.has(inputType),
     removed,
     images: null,
+    comments: null,
   })
   if (undoStack.length > 200) undoStack.shift()
   redoStack.length = 0
@@ -198,6 +209,7 @@ function restore(
   from: Task[],
   removed: RemovedTasks | null,
   images: { before: CanvasImage[]; after: CanvasImage[] } | null,
+  comments: { before: AiComment[]; after: AiComment[] } | null,
   direction: 'undo' | 'redo',
 ): boolean {
   if (!api) return false
@@ -219,6 +231,8 @@ function restore(
   applying = false
   if (api.commit(cloneTasks(tasks))) {
     if (images) restoreImages?.(direction === 'undo' ? images.before : images.after)
+    if (comments) restoreComments?.(direction === 'undo' ? comments.before : comments.after)
+    if (removed) commentRemoval?.(removed, direction)
     return true
   }
   if (removed) applyRemoval(direction === 'undo' ? 'redo' : 'undo', removed)
@@ -237,7 +251,7 @@ function restore(
 export function undoEditing(): void {
   prepareHistoryStep()
   const entry = undoStack.at(-1)
-  if (!entry || !restore(entry.before, entry.beforeFocus, entry.after, entry.removed, entry.images, 'undo')) return
+  if (!entry || !restore(entry.before, entry.beforeFocus, entry.after, entry.removed, entry.images, entry.comments, 'undo')) return
   entry.open = false
   undoStack.pop()
   redoStack.push(entry)
@@ -247,7 +261,7 @@ export function undoEditing(): void {
 export function redoEditing(): void {
   prepareHistoryStep()
   const entry = redoStack.at(-1)
-  if (!entry || !restore(entry.after, entry.afterFocus, entry.before, entry.removed, entry.images, 'redo')) return
+  if (!entry || !restore(entry.after, entry.afterFocus, entry.before, entry.removed, entry.images, entry.comments, 'redo')) return
   entry.open = false
   redoStack.pop()
   undoStack.push(entry)
@@ -309,6 +323,37 @@ export function setImageRestorer(fn: (images: CanvasImage[]) => void): void {
   restoreImages = fn
 }
 
+function cloneComments(comments: AiComment[]): AiComment[] {
+  return comments.map((comment) => ({ ...comment, replies: comment.replies.map((reply) => ({ ...reply })) }))
+}
+
+export function setCommentRestorer(fn: (comments: AiComment[]) => void): void {
+  restoreComments = fn
+}
+
+export function setCommentRemovalHandler(fn: (removed: RemovedTasks, direction: 'undo' | 'redo') => void): void {
+  commentRemoval = fn
+}
+
+export function pushCommentHistory(before: AiComment[], after: AiComment[]): void {
+  if (!api) return
+  const state = api.get()
+  undoStack.push({
+    before: cloneTasks(state.tasks),
+    after: cloneTasks(state.tasks),
+    beforeFocus: state.focusedId,
+    afterFocus: state.focusedId,
+    textId: null,
+    open: false,
+    removed: null,
+    images: null,
+    comments: { before: cloneComments(before), after: cloneComments(after) },
+  })
+  if (undoStack.length > 200) undoStack.shift()
+  redoStack.length = 0
+  causeStamp = undoStack.length
+}
+
 export function armLayoutHistory(): number {
   causeStamp = undoStack.length
   return causeStamp
@@ -326,6 +371,7 @@ export function pushImageHistory(before: CanvasImage[], after: CanvasImage[]): v
     open: false,
     removed: null,
     images: { before: cloneImages(before), after: cloneImages(after) },
+    comments: null,
   })
   if (undoStack.length > 200) undoStack.shift()
   redoStack.length = 0
@@ -362,6 +408,7 @@ export function foldMovedTasks(moves: readonly { id: string; x: number; y: numbe
     open: false,
     removed: null,
     images: null,
+    comments: null,
   })
   if (undoStack.length > 200) undoStack.shift()
   redoStack.length = 0
@@ -380,6 +427,44 @@ export function foldMovedImages(moves: readonly { id: string; x: number; y: numb
       return next ? { ...image, x: next.x, y: next.y } : image
     }),
   }
+}
+
+export function recordCarry(date: string, created: Task[]): boolean {
+  if (!api || created.length === 0) return true
+  const state = api.get()
+  if (!state.ready || state.currentDate !== date) return false
+  const ids = new Set(created.map((task) => task.id))
+  const have = new Set(state.tasks.map((task) => task.id))
+  const missing = created.filter((task) => !have.has(task.id) && task.dateCreated === date)
+  let after = state.tasks
+  if (missing.length > 0) {
+    after = [...state.tasks, ...missing].sort(compareCarryOrder)
+    applying = true
+    api.set({ tasks: cloneTasks(after) })
+    applying = false
+  }
+  const before = after.filter((task) => !ids.has(task.id))
+  if (sameTasks(before, after)) return true
+  undoStack.push({
+    before: cloneTasks(before),
+    after: cloneTasks(after),
+    beforeFocus: state.focusedId,
+    afterFocus: state.focusedId,
+    textId: null,
+    open: false,
+    removed: null,
+    images: null,
+    comments: null,
+  })
+  if (undoStack.length > 200) undoStack.shift()
+  redoStack.length = 0
+  hideDeleteNotice()
+  return true
+}
+
+function compareCarryOrder(a: Task, b: Task): number {
+  if (a.side !== b.side) return a.side === 'main' ? -1 : 1
+  return a.orderIndex - b.orderIndex
 }
 
 export function attachHistory(next: HistoryApi): void {

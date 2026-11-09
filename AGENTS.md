@@ -130,7 +130,7 @@ Dragging does not write. `onNodeDrag` does not call `window.branchlog`. `onNodeD
 | Table | Key columns | Used by the app |
 |---|---|---|
 | `tasks` | id, text, done, dateCreated, dateCompleted, parentId (cascade), x, y, width, height, side (`main` \| `right`), orderIndex, carriedFromId, chainId, droppedAt | Yes. `x`/`y`/`width`/`height` are the daily canvas. Main list ignores size. Unique `(chainId, dateCreated)`. `chainId` defaults to the row id via trigger `tasks_fill_chain`. |
-| `images` | id, dateKey, fileName, x, y, width, height | Yes. File is `userData/images/<id>.png`. |
+| `images` | id, dateKey, fileName, x, y, width, height, cropLeft, cropTop, cropRight, cropBottom | Yes. File is `userData/images/<id>.png`. Crop columns are trimmed fractions; the file is never rewritten. |
 | `settings` | key, value | Yes: `autoSeparate`, `swipeToPan`, `theme`, `autoCarry` (on unless the value is `0`), `carryWindowDays` (default 14, else 0–3660). No settings UI for the carry keys. |
 | `mapPositions` | taskId, x, y | Table only. No map UI reads it. Delete/restore keeps the rows. |
 | `aiComments` | id, taskId, side (`left` only), text, status (`open` \| `resolved`), keptRanges, x, y, createdAt | Table only. No queries from the UI. |
@@ -171,10 +171,12 @@ Do not break:
 | Carry: the same unfinished task onto a later day | Partial | `carry.ts`, `carry-schedule.ts`, `carry-sync.ts`. Automatic copy at startup, focus, resume, and midnight. No Playwright spec. `dropTask` has no IPC and no page |
 | Concept Map | Not started | Menu item disabled (`CmdOrCtrl+M`). `mapPositions` is never drawn |
 | **Phase 4. Activity calendar** | **Not started** | Menu item disabled. No calendar component. `dateCompleted` is set to the local date when a box is checked (`updateTask`), and `--active-0` / `--active-1` exist in `globals.css` |
-| **Phase 5. Images** | **Partial** | |
-| Paste anywhere on the canvas | Done | `lib/paste-image.ts`, `images.ts`, `ImageNode.tsx`. Longest edge capped at 480. `task-separate.spec.ts` ("a pasted image separates") |
+| **Phase 5. Images** | **Done** | |
+| Paste anywhere on the canvas | Done | `lib/paste-image.ts`, `images.ts`, `ImageNode.tsx`. Accepts PNG/JPEG bitmaps, browser "copy image" (html alongside), and copied image files (via `text/uri-list`). A rejected paste shows an error. Longest edge capped at 480. `task-separate.spec.ts` ("a pasted image separates"), `image-paste.spec.ts` |
 | Move | Done | Drag stop calls `useImages.move` |
-| Resize | Not started | `ImageNode.tsx` has no resizer. Width and height are fixed at paste |
+| Drag and drop image files | Done | `lib/drop-image.ts`, `images:drop` channel (`dropImage` in `src/main/images.ts`), `tests/image-drop.spec.ts`. Bytes are read in the renderer and decoded in main like a paste. Non-image drops show an error |
+| Resize | Done | `NodeResizer` in `ImageNode.tsx` (corners, aspect kept), `images:resize` channel, `resize` in `store/images.ts`, `tests/image-resize.spec.ts` |
+| Crop | Done | Non-destructive. `cropLeft/cropTop/cropRight/cropBottom` fractions on the row (`migrate-images.ts`), `ImageCrop.tsx` side handles behind a Crop toggle, math in `lib/image-crop.ts`, saved through `images:resize`, undo via image history, `tests/image-crop.spec.ts`. The PNG file is never rewritten |
 | **Phase 6. LM Studio margin comments** | **Not started** | No client, no comment UI. Schema allows `side = 'left'` only (the plan's user-initiated right side does not fit). Status is `open` \| `resolved` (no `dismissed`). Tokens `--ai`, `--ai-soft`, `--ai-line`, `--edge-ai` exist. Production CSP `connect-src` is `'self'` only (`security.ts`), so localhost LM Studio would be blocked until that changes |
 | **Phase 7. Packaging** | **Not started** | No installer script. Export and Import menu items are `enabled: false`. The first-paint script can assemble a Windows folder only |
 
@@ -224,7 +226,6 @@ No `TODO` or `FIXME` in source. No `test.skip` or `test.fixme`. The suite was no
 | Low | `EDITOR_AUDIT.md` is stale. Undo, Up/Down, Escape, context menu, direction, and focus rings now have specs (`task-undo`, `task-navigation`, `task-a11y`). The audit still says those are missing. Multi-line paste still does not split into bullets; the clipboard spec locks that | `EDITOR_AUDIT.md` vs those specs |
 | Low | Startup probes were meant to be removed after a report. There is no `FIRST_PAINT_REPORT.md`. JSON runs live in `first-paint-results/` | `temp-first-paint.ts`, `temp-timing.ts` |
 | Low | A failed `autoSeparate` or `swipeToPan` read is returned as `true`, so a broken settings read looks like the feature is on | `src/main/ipc.ts` |
-| Low | A failed image paste returns without a store error | `lib/paste-image.ts` |
 | Low | `README.md` says Phase 2 and that images, the map, the calendar, and AI are all later. Images and Theme Lab are already in the tree | `README.md` |
 
 `COLOR_AUDIT.md` is a finished token pass, not an open bug list. `transparent`, `none`, and the system `Highlight` keywords were left on purpose. No `HEALTH_REPORT.md` or `TEST_COVERAGE.md`.
@@ -254,6 +255,7 @@ No `TODO` or `FIXME` in source. No `test.skip` or `test.fixme`. The suite was no
 | `task-branch-caret.spec.ts` | Branch-dot click focuses the new branch; text survives restart |
 | `task-branch-size.spec.ts` | Wrap, resize, arrow on the checkbox; default size for an old notebook |
 | `task-separate.spec.ts` | Auto-separate for create, drop, resize, text growth, images; undo; setting off |
+| `image-paste.spec.ts`, `image-drop.spec.ts`, `image-resize.spec.ts`, `image-crop.spec.ts` | Paste from clipboard flavors and copied files, file drop with its error, corner resize with undo and restart, crop of two sides with undo, redo, and restart |
 | `canvas-pan.spec.ts` | Swipe-to-pan, pinch zoom, setting survives restart |
 | `theme-lab.spec.ts`, `theme-lab-store.spec.ts`, `theme-lab-perf.spec.ts` | Theme Lab edits, presets, import, undo, first frame, drag does not re-render nodes |
 | `task-first-word.spec.ts` | Commented out. Not collected |
@@ -293,4 +295,4 @@ Branch `main`. A full `git status` was not repeated for this edit. Confirmed fro
 
 3. **Refuse a branch from a finished task.** `lib/branch-from.ts`, `createContinuation` in `continuation.ts`, and `EarlierSearch.tsx` (`choose` still runs for a struck-through done row). Cover it in `tests/task-continuation.spec.ts`.
 
-After those: the carried-days marker (hover "carried N days", age tint only behind a setting), then the Concept Map as one node per `chainId` with an "N days" badge. Image resize (Phase 5) is still open and is not this phase.
+After those: the carried-days marker (hover "carried N days", age tint only behind a setting), then the Concept Map as one node per `chainId` with an "N days" badge. Image resize (Phase 5) is done: corners with the aspect kept, saved through `images:resize`.

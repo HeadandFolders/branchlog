@@ -12,6 +12,7 @@ import { Handle, Position } from '@xyflow/react'
 import { Check } from 'lucide-react'
 import type { Task } from '@shared/types'
 import { branchFromTask, branchShortcutLabel } from '../lib/branch-from'
+import { AiThinkingDots } from './AiThinkingDots'
 import { ContinuationMark } from './ContinuationMark'
 import { caretOffsets, insertPlainText } from '../lib/caret'
 import { useTaskFieldFocus } from '../lib/field-focus'
@@ -165,6 +166,7 @@ export function TaskBullet({ task }: TaskBulletProps) {
         editing ? 'bg-[var(--bg-subtle)]' : ''
       }`}
     >
+      <AiThinkingDots taskId={task.id} />
       <ContinuationMark taskId={task.id} />
       <button
         type="button"
@@ -223,14 +225,24 @@ export function TaskBullet({ task }: TaskBulletProps) {
         onClick={branchFrom}
       />
       {task.side === 'main' ? (
-        <Handle
-          id={`out-${task.id}`}
-          type="source"
-          position={Position.Right}
-          isConnectable={false}
-          className="branch-handle"
-          style={{ top: 19, width: 1, height: 1, minWidth: 0, minHeight: 0, opacity: 0, border: 'none', background: 'transparent' }}
-        />
+        <>
+          <Handle
+            id={`in-${task.id}`}
+            type="target"
+            position={Position.Left}
+            isConnectable={false}
+            className="branch-handle"
+            style={{ top: 19, width: 1, height: 1, minWidth: 0, minHeight: 0, opacity: 0, border: 'none', background: 'transparent' }}
+          />
+          <Handle
+            id={`out-${task.id}`}
+            type="source"
+            position={Position.Right}
+            isConnectable={false}
+            className="branch-handle"
+            style={{ top: 19, width: 1, height: 1, minWidth: 0, minHeight: 0, opacity: 0, border: 'none', background: 'transparent' }}
+          />
+        </>
       ) : null}
     </div>
   )

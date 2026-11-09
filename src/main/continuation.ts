@@ -52,9 +52,10 @@ export function createContinuation(input: CreateContinuationInput): { task: Task
 
     db.prepare(
       `INSERT INTO tasks (
-         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
-       ) VALUES (?, ?, 0, ?, NULL, ?, 0, 0, ?, 0, 'main', ?)`,
-    ).run(branch.id, branch.text, today, parent.id, BRANCH_WIDTH, orderIndex)
+         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
+         carriedFromId, chainId, droppedAt
+       ) VALUES (?, ?, 0, ?, NULL, ?, 0, 0, ?, 0, 'main', ?, NULL, ?, NULL)`,
+    ).run(branch.id, branch.text, today, parent.id, BRANCH_WIDTH, orderIndex, branch.id)
 
     const task: Task = {
       id: branch.id,
@@ -69,6 +70,9 @@ export function createContinuation(input: CreateContinuationInput): { task: Task
       height: 0,
       side: 'main',
       orderIndex,
+      carriedFromId: null,
+      chainId: branch.id,
+      droppedAt: null,
     }
     const continuation: Continuation = {
       taskId: task.id,

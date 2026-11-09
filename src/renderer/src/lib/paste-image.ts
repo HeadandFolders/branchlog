@@ -12,9 +12,12 @@ export function installImagePaste(): () => void {
     lastY = event.clientY
   }
   const onPaste = (event: ClipboardEvent): void => {
-    const text = event.clipboardData?.getData('text/plain') ?? ''
-    const html = event.clipboardData?.getData('text/html') ?? ''
-    if (text !== '' || html !== '') return
+    const data = event.clipboardData
+    const files = data?.files
+    const hasImageFile = Array.from(files ?? []).some((file) => file.type.startsWith('image/'))
+    const text = data?.getData('text/plain') ?? ''
+    const html = data?.getData('text/html') ?? ''
+    if (!hasImageFile && (text !== '' || html !== '')) return
     const point = flowPoint({ x: lastX, y: lastY })
     if (!point) return
     event.preventDefault()
@@ -28,7 +31,10 @@ export function installImagePaste(): () => void {
         y: point.y,
       })
       .then((result) => {
-        if (!result.ok) return
+        if (!result.ok) {
+          useNotebook.setState({ error: 'Could not paste that image.' })
+          return
+        }
         useImages.getState().add(result.image)
         pushImageHistory(before, useImages.getState().images)
       })

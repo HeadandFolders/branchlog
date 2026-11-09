@@ -9,6 +9,8 @@ import '@fontsource/newsreader/latin-600.css'
 import { App } from './App'
 import './styles/globals.css'
 import './styles/theme-lab.css'
+import './styles/ai-settings.css'
+import './styles/ai-comments.css'
 import './styles/continuation.css'
 
 const root = document.getElementById('root')

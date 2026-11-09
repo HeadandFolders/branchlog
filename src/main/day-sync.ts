@@ -1,22 +1,33 @@
 import type { Task } from '@shared/types'
+import { relinkAround, restoreCarrySuccessor } from './carry-link'
 import { getDatabase } from './database'
 
 export function replaceDay(date: string, tasks: Task[]): void {
   const db = getDatabase()
   const write = db.transaction(() => {
-    const existing = db.prepare('SELECT id FROM tasks WHERE dateCreated = ?').all(date) as { id: string }[]
+    const existing = db.prepare('SELECT id, carriedFromId FROM tasks WHERE dateCreated = ?').all(date) as {
+      id: string
+      carriedFromId: string | null
+    }[]
     const keep = new Set(tasks.map((task) => task.id))
+    const doomed = new Map<string, { carriedFromId: string | null }>()
     for (const row of existing) {
       if (keep.has(row.id)) continue
-      db.prepare('UPDATE tasks SET parentId = NULL WHERE parentId = ?').run(row.id)
-      db.prepare('DELETE FROM tasks WHERE id = ?').run(row.id)
+      doomed.set(row.id, { carriedFromId: row.carriedFromId })
+    }
+    relinkAround(db, doomed)
+    for (const id of doomed.keys()) {
+      db.prepare('UPDATE tasks SET parentId = NULL WHERE parentId = ?').run(id)
+      db.prepare('DELETE FROM tasks WHERE id = ?').run(id)
     }
 
     const upsert = db.prepare(
       `INSERT INTO tasks (
-         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
+         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
+         carriedFromId, chainId, droppedAt
        ) VALUES (
-         @id, @text, @done, @dateCreated, @dateCompleted, NULL, @x, @y, @width, @height, @side, @orderIndex
+         @id, @text, @done, @dateCreated, @dateCompleted, NULL, @x, @y, @width, @height, @side, @orderIndex,
+         NULL, @chainId, @droppedAt
        )
        ON CONFLICT(id) DO UPDATE SET
          text = excluded.text,
@@ -28,7 +39,9 @@ export function replaceDay(date: string, tasks: Task[]): void {
          width = excluded.width,
          height = excluded.height,
          side = excluded.side,
-         orderIndex = excluded.orderIndex`,
+         orderIndex = excluded.orderIndex,
+         chainId = excluded.chainId,
+         droppedAt = excluded.droppedAt`,
     )
     for (const task of tasks) {
       const row = db.prepare('SELECT dateCreated FROM tasks WHERE id = ?').get(task.id) as
@@ -47,10 +60,14 @@ export function replaceDay(date: string, tasks: Task[]): void {
         height: task.height,
         side: task.side,
         orderIndex: task.orderIndex,
+        chainId: task.chainId,
+        droppedAt: task.droppedAt,
       })
     }
 
     const setParent = db.prepare('UPDATE tasks SET parentId = ? WHERE id = ?')
+    const setCarried = db.prepare('UPDATE tasks SET carriedFromId = ? WHERE id = ?')
+    for (const task of tasks) setCarried.run(task.carriedFromId, task.id)
     for (const task of tasks) {
       if (!task.parentId) setParent.run(null, task.id)
     }
@@ -67,6 +84,7 @@ export function replaceDay(date: string, tasks: Task[]): void {
       if (next.length === pending.length) throw new Error('Invalid task')
       pending = next
     }
+    for (const task of tasks) restoreCarrySuccessor(db, task)
   })
   write()
 }

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CanvasImage } from '@shared/types'
+import type { CanvasImage, ImageCrop } from '@shared/types'
 import { setImageRestorer } from './history'
 import { useNotebook } from './notebook'
 
@@ -10,6 +10,7 @@ interface ImageState {
   load: (date: string) => Promise<void>
   add: (image: CanvasImage) => void
   move: (id: string, x: number, y: number) => void
+  resize: (id: string, x: number, y: number, width: number, height: number, crop: ImageCrop) => void
   place: (moves: readonly { id: string; x: number; y: number }[]) => void
   replace: (images: CanvasImage[]) => void
 }
@@ -46,6 +47,12 @@ export const useImages = create<ImageState>((set, get) => ({
     }))
   },
 
+  resize: (id, x, y, width, height, crop) => {
+    set((state) => ({
+      images: state.images.map((image) => (image.id === id ? { ...image, x, y, width, height, ...crop } : image)),
+    }))
+  },
+
   place: (moves) => {
     if (moves.length === 0) return
     const moved = new Map(moves.map((move) => [move.id, move]))
@@ -71,6 +78,10 @@ export const useImages = create<ImageState>((set, get) => ({
         y: image.y,
         width: image.width,
         height: image.height,
+        cropLeft: image.cropLeft,
+        cropTop: image.cropTop,
+        cropRight: image.cropRight,
+        cropBottom: image.cropBottom,
       })),
     )
     if (!wrote.ok) useNotebook.setState({ error: 'Could not undo that edit.' })

@@ -6,6 +6,7 @@ import { tempMark, tempMeasuring, tempMs } from '@shared/temp-timing'
 import { BRANCH_WIDTH } from '@shared/branch-size'
 import { localDateKey } from '@shared/dates'
 import type { ActivityCount, CreateBranchInput, CreateTaskInput, Task, UpdateTaskInput } from '@shared/types'
+import { migrateAi } from './migrate-ai'
 import { migrateTasks } from './migrate'
 import { SCHEMA } from './schema'
 import { mapTask, TASK_COLUMNS, type TaskRow } from './task-row'
@@ -38,6 +39,9 @@ export function initDatabase(): Database.Database {
   const migrateStart = performance.now()
   migrateTasks(next)
   tempMark('db-migrate', { ms: tempMs(migrateStart) })
+  const aiMigrateStart = performance.now()
+  migrateAi(next)
+  tempMark('db-migrate-ai', { ms: tempMs(aiMigrateStart) })
   if (tempMeasuring()) {
     tempMark('db-pragma-values', {
       journal: String(next.pragma('journal_mode', { simple: true })),
@@ -61,6 +65,13 @@ export function closeDatabase(): void {
   if (!database) return
   database.close()
   database = null
+}
+
+export function getTask(id: string): Task | undefined {
+  const row = getDatabase()
+    .prepare(`SELECT ${TASK_COLUMNS} FROM tasks WHERE id = ?`)
+    .get(id) as TaskRow | undefined
+  return row ? mapTask(row) : undefined
 }
 
 export function listTasksByDate(dateCreated: string): Task[] {

@@ -15,6 +15,7 @@ import { BRANCH_LINE_HEIGHT } from '@shared/branch-size'
 import { settleFocusRequest, focusSettlePending } from '../lib/focus-field'
 import { registerFlowPoint } from '../lib/branch-from'
 import { buildCanvasEdges, buildCanvasNodes, imageStructureKey, overlayPositions, taskStructureKey } from '../lib/canvas-graph'
+import { buildCommentEdges, commentStructureKey } from '../lib/canvas-ai'
 import { collectBodies, measureAnchors } from '../lib/layout-bodies'
 import {
   engageLayout,
@@ -30,12 +31,14 @@ import { canvasNavigation, keepOwnScroll } from '../lib/canvas-navigation'
 import { registerFramePage } from '../lib/viewport'
 import { tempMark } from '@shared/temp-timing'
 import { pushImageHistory } from '../store/history'
+import { useAiComments } from '../store/ai-comments'
 import { useImages } from '../store/images'
 import { commitLayoutMoves } from '../store/layout-commit'
 import { layoutAfterWrite, layoutBeforeWrite } from '../store/layout-bridge'
 import { useNotebook } from '../store/notebook'
 import { autoSeparateEnabled, usePreferences } from '../store/preferences'
 import { tempCountRender, tempNoteFlowDimensions } from '../temp-first-paint'
+import { AiCommentNode } from './AiCommentNode'
 import { BranchNode } from './BranchNode'
 import { ImageNode } from './ImageNode'
 import { MainListNode } from './MainListNode'
@@ -46,6 +49,7 @@ const nodeTypes: NodeTypes = {
   mainList: MainListNode,
   branch: BranchNode,
   image: ImageNode,
+  aiComment: AiCommentNode,
 }
 
 function DailyFlow() {
@@ -66,6 +70,9 @@ function DailyFlow() {
   const imagesReady = useImages((state) => state.ready)
   const imagesRef = useRef(images)
   imagesRef.current = images
+  const comments = useAiComments((state) => state.comments)
+  const commentsRef = useRef(comments)
+  commentsRef.current = comments
   const ready = useNotebook((state) => state.ready)
   const currentDate = useNotebook((state) => state.currentDate)
   const updatePosition = useNotebook((state) => state.updatePosition)
@@ -75,6 +82,7 @@ function DailyFlow() {
   nodesRef.current = nodes
   const structure = taskStructureKey(tasks)
   const pictures = imageStructureKey(images)
+  const margins = commentStructureKey(comments)
   const measuredUpdate = useRef(false)
   const { screenToFlowPosition } = useReactFlow()
   const swipeToPan = usePreferences((state) => state.swipeToPan)
@@ -108,14 +116,14 @@ function DailyFlow() {
   }, [])
 
   const reset = useCallback(() => {
-    const next = buildCanvasNodes(tasksRef.current, imagesRef.current, nodesRef.current)
+    const next = buildCanvasNodes(tasksRef.current, imagesRef.current, nodesRef.current, commentsRef.current)
     nodesRef.current = next
     setNodes(next)
   }, [])
 
   useEffect(() => {
     return installLayout({
-      bodies: () => collectBodies(nodesRef.current, tasksRef.current, imagesRef.current, measureAnchors(screenToFlowPosition)),
+      bodies: () => collectBodies(nodesRef.current, tasksRef.current, imagesRef.current, measureAnchors(screenToFlowPosition), commentsRef.current),
       positions: () => new Map(nodesRef.current.map((node) => [node.id, { x: node.position.x, y: node.position.y }])),
       apply,
       reset,
@@ -128,10 +136,11 @@ function DailyFlow() {
     if (draggingId.current || resizingId.current) return
     const current = tasksRef.current
     const picturesNow = imagesRef.current
-    const built = overlayPositions(buildCanvasNodes(current, picturesNow, nodesRef.current), heldPositions())
+    const commentsNow = commentsRef.current
+    const built = overlayPositions(buildCanvasNodes(current, picturesNow, nodesRef.current, commentsNow), heldPositions())
     nodesRef.current = built
     setNodes(built)
-    setEdges(buildCanvasEdges(current))
+    setEdges([...buildCanvasEdges(current), ...buildCommentEdges(commentsNow, current)])
     tempMark('canvas-rebuild', { tasks: current.length })
     if (!ready) return
     const epoch = layoutRestoreEpoch()
@@ -140,6 +149,7 @@ function DailyFlow() {
       seenIds.current = new Set([
         ...current.filter((task) => task.side === 'right').map((task) => task.id),
         ...picturesNow.map((image) => image.id),
+        ...commentsNow.map((comment) => comment.id),
       ])
       resetLayoutBaseline()
       return
@@ -147,7 +157,10 @@ function DailyFlow() {
     if (bootedDate.current !== currentDate) {
       bootedDate.current = currentDate
       imageBoot.current = ''
-      seenIds.current = new Set(current.filter((task) => task.side === 'right').map((task) => task.id))
+      seenIds.current = new Set([
+        ...current.filter((task) => task.side === 'right').map((task) => task.id),
+        ...commentsNow.map((comment) => comment.id),
+      ])
       resetLayoutBaseline()
       return
     }
@@ -158,6 +171,7 @@ function DailyFlow() {
     const fresh = [
       ...current.filter((task) => task.side === 'right' && !seenIds.current.has(task.id)).map((task) => task.id),
       ...picturesNow.filter((image) => !seenIds.current.has(image.id)).map((image) => image.id),
+      ...commentsNow.filter((comment) => !seenIds.current.has(comment.id)).map((comment) => comment.id),
     ]
     for (const id of fresh) seenIds.current.add(id)
     const newest = fresh.at(-1)
@@ -168,7 +182,7 @@ function DailyFlow() {
       rememberNodeSize(newest, element.offsetWidth / zoom, element.offsetHeight / zoom)
     }
     engageLayout(newest, false)
-  }, [currentDate, imagesReady, pictures, ready, structure])
+  }, [currentDate, imagesReady, margins, pictures, ready, structure])
 
   useLayoutEffect(() => {
     if (!focusSettlePending()) {
@@ -195,8 +209,14 @@ function DailyFlow() {
         resizeBaseline.current = origin
       }
     }
+    const imageIds = new Set(imagesRef.current.map((image) => image.id))
     const adjusted = changes.map((change): NodeChange => {
-      if (change.type === 'dimensions' && change.id !== 'main-list' && change.setAttributes === true) {
+      if (
+        change.type === 'dimensions' &&
+        change.id !== 'main-list' &&
+        !imageIds.has(change.id) &&
+        change.setAttributes === true
+      ) {
         return { ...change, setAttributes: 'width' }
       }
       return change
@@ -208,6 +228,12 @@ function DailyFlow() {
           (item) => item.type === 'dimensions' && item.id === node.id && item.setAttributes === true && item.dimensions,
         )
         if (!change || change.type !== 'dimensions' || !change.dimensions || node.id === 'main-list') return node
+        if (imageIds.has(node.id)) {
+          return {
+            ...node,
+            style: { ...node.style, width: change.dimensions.width, height: change.dimensions.height },
+          }
+        }
         const heightChanged = origin !== null && Math.abs(change.dimensions.height - origin) > 0.5
         return {
           ...node,
@@ -253,6 +279,14 @@ function DailyFlow() {
         onNodeDragStop={(_event, node) => {
           draggingId.current = null
           if (node.id === 'main-list') return
+          const comment = commentsRef.current.find((item) => item.id === node.id)
+          if (comment) {
+            if (comment.x !== node.position.x || comment.y !== node.position.y) {
+              useAiComments.getState().move(node.id, node.position.x, node.position.y)
+              commitLayoutMoves([{ id: node.id, x: node.position.x, y: node.position.y }], node.id)
+            }
+            return
+          }
           const image = imagesRef.current.find((item) => item.id === node.id)
           if (image) {
             const phase = layoutBeforeWrite(node.id)

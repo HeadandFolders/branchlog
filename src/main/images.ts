@@ -1,10 +1,12 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { app, clipboard, nativeImage } from 'electron'
-import type { CanvasImage, ImagePasteInput, ImageRecord } from '@shared/types'
+import type { CanvasImage, ImageDropInput, ImagePasteInput, ImageRecord, ImageSizeInput } from '@shared/types'
 import { getDatabase } from './database'
 
 const MAX_EDGE = 480
+const CLIPBOARD_IMAGE_TYPES = ['image/png', 'image/jpeg'] as const
 
 interface ImageRow {
   id: string
@@ -14,6 +16,10 @@ interface ImageRow {
   y: number
   width: number
   height: number
+  cropLeft: number
+  cropTop: number
+  cropRight: number
+  cropBottom: number
 }
 
 function imagesDir(): string {
@@ -37,7 +43,7 @@ function toImage(row: ImageRow): CanvasImage {
 export function listImages(dateKey: string): CanvasImage[] {
   const rows = getDatabase()
     .prepare(
-      `SELECT id, dateKey, fileName, x, y, width, height
+      `SELECT id, dateKey, fileName, x, y, width, height, cropLeft, cropTop, cropRight, cropBottom
        FROM images WHERE dateKey = ? ORDER BY rowid ASC`,
     )
     .all(dateKey) as ImageRow[]
@@ -52,22 +58,49 @@ export function listImages(dateKey: string): CanvasImage[] {
   return images
 }
 
-async function readClipboardPng(): Promise<Buffer | null> {
+function pathFromUrl(url: string): string | null {
+  try {
+    return fileURLToPath(url.trim())
+  } catch {
+    return null
+  }
+}
+
+async function clipboardFilePath(): Promise<string | null> {
+  // A file copied in Explorer or Finder reaches the clipboard as file: URLs in text/uri-list.
   const items = await clipboard.read()
   for (const item of items) {
-    if (!item.types.includes('image/png')) continue
-    const blob = await item.getType('image/png')
+    if (!item.types.includes('text/uri-list')) continue
+    const blob = await item.getType('text/uri-list')
     if (!(blob instanceof Blob)) continue
-    return Buffer.from(await blob.arrayBuffer())
+    const list = Buffer.from(await blob.arrayBuffer()).toString('utf8')
+    for (const line of list.split(/\r?\n/)) {
+      if (!line.startsWith('file:')) continue
+      const parsed = pathFromUrl(line)
+      if (parsed) return parsed
+    }
   }
   return null
 }
 
-export async function pasteImage(input: ImagePasteInput): Promise<CanvasImage> {
-  const bytes = await readClipboardPng()
-  if (!bytes) throw new Error('Invalid image')
-  const image = nativeImage.createFromBuffer(bytes)
-  if (image.isEmpty()) throw new Error('Invalid image')
+async function readClipboardImage(): Promise<Electron.NativeImage | null> {
+  const items = await clipboard.read()
+  for (const item of items) {
+    for (const type of CLIPBOARD_IMAGE_TYPES) {
+      if (!item.types.includes(type)) continue
+      const blob = await item.getType(type)
+      if (!(blob instanceof Blob)) continue
+      const image = nativeImage.createFromBuffer(Buffer.from(await blob.arrayBuffer()))
+      if (!image.isEmpty()) return image
+    }
+  }
+  const copied = await clipboardFilePath()
+  if (!copied) return null
+  const image = nativeImage.createFromPath(copied)
+  return image.isEmpty() ? null : image
+}
+
+function saveImage(image: Electron.NativeImage, input: ImagePasteInput): CanvasImage {
   const size = image.getSize()
   if (size.width < 1 || size.height < 1) throw new Error('Invalid image')
   const scale = Math.min(1, MAX_EDGE / Math.max(size.width, size.height))
@@ -91,15 +124,52 @@ export async function pasteImage(input: ImagePasteInput): Promise<CanvasImage> {
     y: input.y,
     width,
     height,
+    cropLeft: 0,
+    cropTop: 0,
+    cropRight: 0,
+    cropBottom: 0,
     src: dataUrl(png),
   }
+}
+
+export async function pasteImage(input: ImagePasteInput): Promise<CanvasImage> {
+  const image = await readClipboardImage()
+  if (!image) throw new Error('Invalid image')
+  return saveImage(image, input)
+}
+
+export function dropImage(input: ImageDropInput): CanvasImage {
+  const image = nativeImage.createFromBuffer(Buffer.from(input.bytes))
+  if (image.isEmpty()) throw new Error('Invalid image')
+  return saveImage(image, input)
+}
+
+export function resizeImage(input: ImageSizeInput): void {
+  const result = getDatabase()
+    .prepare(
+      `UPDATE images
+       SET x = ?, y = ?, width = ?, height = ?, cropLeft = ?, cropTop = ?, cropRight = ?, cropBottom = ?
+       WHERE id = ?`,
+    )
+    .run(
+      input.x,
+      input.y,
+      input.width,
+      input.height,
+      input.cropLeft,
+      input.cropTop,
+      input.cropRight,
+      input.cropBottom,
+      input.id,
+    )
+  if (result.changes !== 1) throw new Error('Invalid image')
 }
 
 export function replaceImages(dateKey: string, images: ImageRecord[]): void {
   const db = getDatabase()
   const insert = db.prepare(
-    `INSERT INTO images (id, dateKey, fileName, x, y, width, height)
-     VALUES (@id, @dateKey, @fileName, @x, @y, @width, @height)`,
+    `INSERT INTO images (id, dateKey, fileName, x, y, width, height, cropLeft, cropTop, cropRight, cropBottom)
+     VALUES (@id, @dateKey, @fileName, @x, @y, @width, @height, @cropLeft, @cropTop, @cropRight, @cropBottom)`,
   )
   const run = db.transaction((rows: ImageRecord[]) => {
     db.prepare(`DELETE FROM images WHERE dateKey = ?`).run(dateKey)

@@ -1,6 +1,8 @@
 import { MarkerType, type Edge, type Node } from '@xyflow/react'
+import type { AiComment } from '@shared/ai-comments'
 import { BRANCH_LINE_HEIGHT, BRANCH_MIN_WIDTH, BRANCH_WIDTH } from '@shared/branch-size'
 import type { CanvasImage, Task } from '@shared/types'
+import { commentNode } from './canvas-ai'
 
 const LIST_WIDTH = 560
 
@@ -61,7 +63,12 @@ function imageNode(image: CanvasImage, earlier: Node | undefined): Node {
   return node
 }
 
-export function buildCanvasNodes(tasks: Task[], images: CanvasImage[], previous: Node[] = []): Node[] {
+export function buildCanvasNodes(
+  tasks: Task[],
+  images: CanvasImage[],
+  previous: Node[] = [],
+  comments: AiComment[] = [],
+): Node[] {
   const measured = previous.find((node) => node.id === 'main-list')
   const list = mainListNode()
   if (measured?.measured?.width && measured.measured.height) {
@@ -71,7 +78,8 @@ export function buildCanvasNodes(tasks: Task[], images: CanvasImage[], previous:
   const prior = new Map(previous.map((node) => [node.id, node]))
   const branches = tasks.filter((task) => task.side === 'right').map((task) => branchNode(task, prior.get(task.id)))
   const pictures = images.map((image) => imageNode(image, prior.get(image.id)))
-  return [list, ...branches, ...pictures]
+  const margins = comments.map((comment) => commentNode(comment, prior.get(comment.id)))
+  return [list, ...branches, ...pictures, ...margins]
 }
 
 export function buildCanvasEdges(tasks: Task[]): Edge[] {
@@ -108,7 +116,12 @@ export function taskStructureKey(tasks: Task[]): string {
 }
 
 export function imageStructureKey(images: CanvasImage[]): string {
-  return images.map((image) => `${image.id}|${image.x}|${image.y}|${image.width}|${image.height}`).join(';')
+  return images
+    .map(
+      (image) =>
+        `${image.id}|${image.x}|${image.y}|${image.width}|${image.height}|${image.cropLeft}|${image.cropTop}|${image.cropRight}|${image.cropBottom}`,
+    )
+    .join(';')
 }
 
 export function overlayPositions(nodes: Node[], positions: ReadonlyMap<string, { x: number; y: number }> | null): Node[] {

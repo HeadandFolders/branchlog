@@ -1,3 +1,14 @@
+import type {
+  AiComment,
+  AiCommentDeleteResult,
+  AiCommentResult,
+  AiCommentWriteResult,
+  AiReplyResult,
+  CommentReplyInput,
+  CommentRequest,
+  RemovedComments,
+} from './ai-comments'
+import { isAiComment, isAiCommentList } from './ai-comments'
 import type { AiSettings } from './ai-settings'
 import type { ThemeDocument } from './theme'
 
@@ -108,6 +119,12 @@ export interface RemovedTasks {
   tasks: Task[]
   mapPositions: MapPosition[]
   carryLinks: CarryLink[]
+  comments: AiComment[]
+}
+
+export interface DayLoad {
+  tasks: Task[]
+  comments: AiComment[]
 }
 
 export interface LayoutPoint {
@@ -119,9 +136,17 @@ export interface LayoutPoint {
 export interface LayoutCommit {
   tasks: LayoutPoint[]
   images: LayoutPoint[]
+  comments: LayoutPoint[]
 }
 
-export interface CanvasImage {
+export interface ImageCrop {
+  cropLeft: number
+  cropTop: number
+  cropRight: number
+  cropBottom: number
+}
+
+export interface CanvasImage extends ImageCrop {
   id: string
   dateKey: string
   fileName: string
@@ -139,7 +164,15 @@ export interface ImagePasteInput {
   y: number
 }
 
-export interface ImageSizeInput {
+export interface ImageDropInput {
+  id: string
+  dateKey: string
+  x: number
+  y: number
+  bytes: Uint8Array
+}
+
+export interface ImageSizeInput extends ImageCrop {
   id: string
   x: number
   y: number
@@ -147,7 +180,7 @@ export interface ImageSizeInput {
   height: number
 }
 
-export interface ImageRecord {
+export interface ImageRecord extends ImageCrop {
   id: string
   dateKey: string
   fileName: string
@@ -177,7 +210,7 @@ export type AiConnectionResult = { ok: true; models: string[] } | { ok: false; m
 
 export interface BranchlogApi {
   tasks: {
-    listByDate: (date: string) => Promise<Task[]>
+    listByDate: (date: string) => Promise<DayLoad>
     createSync: (input: CreateTaskInput) => WriteResult
     createBranchSync: (input: CreateBranchInput) => WriteResult
     createContinuationSync: (input: CreateContinuationInput) => ContinuationWriteResult
@@ -193,6 +226,7 @@ export interface BranchlogApi {
   images: {
     listByDate: (date: string) => Promise<CanvasImage[]>
     paste: (input: ImagePasteInput) => Promise<ImageResult>
+    drop: (input: ImageDropInput) => Promise<ImageResult>
     resizeSync: (input: ImageSizeInput) => Ack
     replaceSync: (date: string, images: ImageRecord[]) => Ack
   }
@@ -211,6 +245,12 @@ export interface BranchlogApi {
     settings: () => AiSettings
     setSettings: (settings: AiSettings) => ThemeWriteResult
     testConnection: (baseUrl: string) => Promise<AiConnectionResult>
+    requestComment: (input: CommentRequest) => Promise<AiCommentResult>
+    reply: (input: CommentReplyInput) => Promise<AiReplyResult>
+    setCommentStatusSync: (id: string, status: 'open' | 'resolved') => AiCommentWriteResult
+    deleteCommentSync: (id: string) => AiCommentDeleteResult
+    restoreCommentsSync: (removed: RemovedComments) => Ack
+    replaceCommentsSync: (date: string, comments: AiComment[]) => Ack
   }
   onMenuAction: (callback: (action: MenuAction) => void) => () => void
   onResume: (callback: () => void) => () => void
@@ -314,15 +354,21 @@ export function isRemovedTasks(value: unknown): value is RemovedTasks {
     !isRecord(value) ||
     !Array.isArray(value.tasks) ||
     !Array.isArray(value.mapPositions) ||
-    !Array.isArray(value.carryLinks)
+    !Array.isArray(value.carryLinks) ||
+    !Array.isArray(value.comments)
   ) {
     return false
   }
   return (
     value.tasks.every(isTask) &&
     value.mapPositions.every(isMapPosition) &&
-    value.carryLinks.every(isCarryLink)
+    value.carryLinks.every(isCarryLink) &&
+    value.comments.every(isAiComment)
   )
+}
+
+export function isDayLoad(value: unknown): value is DayLoad {
+  return isRecord(value) && isTaskList(value.tasks) && isAiCommentList(value.comments)
 }
 
 export function isDeleteResult(value: unknown): value is DeleteResult {
@@ -345,6 +391,10 @@ export function isCanvasImage(value: unknown): value is CanvasImage {
     typeof value.y === 'number' &&
     typeof value.width === 'number' &&
     typeof value.height === 'number' &&
+    typeof value.cropLeft === 'number' &&
+    typeof value.cropTop === 'number' &&
+    typeof value.cropRight === 'number' &&
+    typeof value.cropBottom === 'number' &&
     typeof value.src === 'string'
   )
 }

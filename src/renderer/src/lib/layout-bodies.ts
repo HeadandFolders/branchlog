@@ -1,7 +1,9 @@
 import { BRANCH_LINE_HEIGHT, BRANCH_WIDTH } from '@shared/branch-size'
+import type { AiComment } from '@shared/ai-comments'
 import type { SeparateBody } from '@shared/separate'
 import type { Task } from '@shared/types'
 import type { Node } from '@xyflow/react'
+import { AI_COMMENT_WIDTH } from './canvas-ai'
 import { notedSize } from './layout-motion'
 
 export function anchorId(taskId: string): string {
@@ -47,6 +49,7 @@ export function collectBodies(
   tasks: Task[],
   images: { id: string; width: number; height: number }[],
   anchors: SeparateBody[],
+  comments: AiComment[] = [],
 ): SeparateBody[] {
   const taskById = new Map(tasks.map((task) => [task.id, task]))
   const nodeById = new Map(nodes.map((node) => [node.id, node]))
@@ -74,6 +77,21 @@ export function collectBodies(
     const size = nodeSize(node, image.width, image.height)
     bodies.push({
       id: image.id,
+      x: node.position.x,
+      y: node.position.y,
+      width: size.width,
+      height: size.height,
+      fixed: false,
+      pinned: false,
+      parentId: null,
+    })
+  }
+  for (const comment of comments) {
+    const node = nodeById.get(comment.id)
+    if (!node) continue
+    const size = nodeSize(node, AI_COMMENT_WIDTH, 40)
+    bodies.push({
+      id: comment.id,
       x: node.position.x,
       y: node.position.y,
       width: size.width,

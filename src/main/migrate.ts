@@ -1,5 +1,5 @@
-import { BRANCH_WIDTH } from '@shared/branch-size'
-import { tempMark, tempMs } from '@shared/temp-timing'
+import { BRANCH_WIDTH } from '../shared/branch-size.ts'
+import { tempMark, tempMs } from '../shared/temp-timing.ts'
 import type Database from 'better-sqlite3'
 
 interface ForeignKeyRow {
@@ -20,7 +20,10 @@ CREATE TABLE tasks_next (
   width REAL NOT NULL DEFAULT ${BRANCH_WIDTH},
   height REAL NOT NULL DEFAULT 0,
   side TEXT NOT NULL DEFAULT 'main' CHECK (side IN ('main', 'right')),
-  orderIndex INTEGER NOT NULL DEFAULT 0
+  orderIndex INTEGER NOT NULL DEFAULT 0,
+  carriedFromId TEXT,
+  chainId TEXT NOT NULL DEFAULT '',
+  droppedAt TEXT
 );
 `
 
@@ -28,6 +31,17 @@ const TASKS_INDEXES = `
 CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(dateCreated, side, orderIndex);
 CREATE INDEX IF NOT EXISTS idx_tasks_parent ON tasks(parentId);
 CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(dateCompleted);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_chain_date ON tasks(chainId, dateCreated);
+CREATE INDEX IF NOT EXISTS idx_tasks_carried_from ON tasks(carriedFromId);
+`
+
+const FILL_CHAIN = `
+CREATE TRIGGER IF NOT EXISTS tasks_fill_chain
+AFTER INSERT ON tasks
+WHEN NEW.chainId = ''
+BEGIN
+  UPDATE tasks SET chainId = NEW.id WHERE id = NEW.id;
+END;
 `
 
 function parentDeleteAction(db: Database.Database): string | null {
@@ -60,9 +74,11 @@ function rebuildTasks(db: Database.Database): void {
     db.exec(TASKS_NEXT)
     db.exec(
       `INSERT INTO tasks_next (
-         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex
+         id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
+         carriedFromId, chainId, droppedAt
        )
-       SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, ${sizeSql}, side, orderIndex
+       SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, ${sizeSql}, side, orderIndex,
+         NULL, id, NULL
        FROM tasks`,
     )
     db.exec('DROP TABLE tasks')
@@ -74,6 +90,20 @@ function rebuildTasks(db: Database.Database): void {
   } finally {
     db.pragma('foreign_keys = ON')
   }
+}
+
+function ensureCarryColumns(db: Database.Database): void {
+  const columns = taskColumns(db)
+  if (!columns.has('carriedFromId')) db.exec('ALTER TABLE tasks ADD COLUMN carriedFromId TEXT')
+  if (!columns.has('droppedAt')) db.exec('ALTER TABLE tasks ADD COLUMN droppedAt TEXT')
+  if (!columns.has('chainId')) db.exec("ALTER TABLE tasks ADD COLUMN chainId TEXT NOT NULL DEFAULT ''")
+  const flagged = db.prepare(`SELECT 1 AS ok FROM settings WHERE key = 'carryChainBackfill'`).get()
+  if (!flagged) {
+    db.exec(`UPDATE tasks SET chainId = id WHERE chainId IS NULL OR chainId = ''`)
+    db.prepare(`INSERT INTO settings (key, value) VALUES ('carryChainBackfill', '1')`).run()
+  }
+  db.exec(TASKS_INDEXES)
+  db.exec(FILL_CHAIN)
 }
 
 function cleanupOrphans(db: Database.Database): boolean {
@@ -114,6 +144,9 @@ export function migrateTasks(db: Database.Database): void {
   const sizeStart = performance.now()
   ensureTaskSize(db)
   tempMark('migrate-size', { ms: tempMs(sizeStart) })
+  const carryStart = performance.now()
+  ensureCarryColumns(db)
+  tempMark('migrate-carry', { ms: tempMs(carryStart) })
   const orphanStart = performance.now()
   const skipped = cleanupOrphans(db)
   tempMark('migrate-orphan', { ms: tempMs(orphanStart), skipped })

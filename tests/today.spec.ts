@@ -199,17 +199,21 @@ test('a later fake date is Today and earlier tasks stay on their day', async () 
     app = restarted.app
     await expect(dateField(restarted.page)).toHaveValue('2026-01-18')
     await expect(heading(restarted.page)).toHaveText('Today')
-    await expect(restarted.page.locator('[data-task-text]')).toHaveCount(0)
+    await expect(restarted.page.locator('[data-task-text]')).toHaveText('stays on january')
     await dateField(restarted.page).fill('2026-01-15')
     await expect(heading(restarted.page)).toHaveText(titleFor('2026-01-15', '2026-01-18'))
     await expect(restarted.page.locator('[data-task-text]')).toHaveText('stays on january')
     const db = new Database(path.join(userData, 'branchlog.sqlite'))
     db.pragma('busy_timeout = 3000')
-    const row = db.prepare('SELECT dateCreated FROM tasks WHERE text = ?').get('stays on january') as
-      | { dateCreated: string }
-      | undefined
+    const rows = db
+      .prepare(
+        `SELECT dateCreated, carriedFromId FROM tasks WHERE text = ? ORDER BY dateCreated`,
+      )
+      .all('stays on january') as { dateCreated: string; carriedFromId: string | null }[]
     db.close()
-    expect(row?.dateCreated).toBe('2026-01-15')
+    expect(rows.map((row) => row.dateCreated)).toEqual(['2026-01-15', '2026-01-18'])
+    expect(rows[1]?.carriedFromId).toBeTruthy()
+    expect(rows[0]?.carriedFromId).toBeNull()
   } finally {
     await closeApp(app, userData)
   }

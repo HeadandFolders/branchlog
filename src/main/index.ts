@@ -1,10 +1,11 @@
-import { app, BrowserWindow, nativeTheme, powerMonitor } from 'electron'
+import { app, BrowserWindow, nativeTheme } from 'electron'
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { testNowSetting } from '@shared/dates'
 import { defaultTheme, themeBackground } from '@shared/theme'
 import { setTempLog, tempMark, tempMs } from '@shared/temp-timing'
 import { finishBackup, startDailyBackup } from './backup'
+import { installCarrySchedule, stopCarrySchedule } from './carry-schedule'
 import { closeDatabase, initDatabase } from './database'
 import { installIpc } from './ipc'
 import { installMenu } from './menu'
@@ -203,6 +204,7 @@ if (!app.requestSingleInstanceLock()) {
     const ipcStart = performance.now()
     installIpc()
     tempMark('install-ipc', { ms: tempMs(ipcStart) })
+    installCarrySchedule()
     const securityStart = performance.now()
     installSecurityPolicy()
     tempMark('install-security', { ms: tempMs(securityStart) })
@@ -213,11 +215,6 @@ if (!app.requestSingleInstanceLock()) {
       mainWindow?.setBackgroundColor(paperColor())
     })
     mainWindow = createWindow()
-    powerMonitor.on('resume', () => {
-      for (const win of BrowserWindow.getAllWindows()) {
-        if (!win.isDestroyed()) win.webContents.send('clock:resume')
-      }
-    })
     startDailyBackup()
     tempMark('backup-scheduled')
   })
@@ -236,6 +233,7 @@ if (!app.requestSingleInstanceLock()) {
     if (allowQuit) return
     event.preventDefault()
     allowQuit = true
+    stopCarrySchedule()
     void finishBackup().finally(() => {
       closeDatabase()
       app.quit()

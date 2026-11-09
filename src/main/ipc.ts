@@ -3,11 +3,20 @@ import { tempMark, tempMs } from '@shared/temp-timing'
 import { themeBackground, type ThemeDocument } from '@shared/theme'
 import type { ContinuationWriteResult, WriteResult } from '@shared/types'
 import { createContinuation, listContinuations, searchEarlierTasks } from './continuation'
+import { requestComment, replyToComment } from './ai-comment'
 import { readAiSettings, writeAiSettings } from './ai-settings-store'
+import {
+  listCommentsByDate,
+  removeComment,
+  replaceComments,
+  restoreCommentsOn,
+  setCommentStatus,
+} from './ai-store'
+import { getDatabase } from './database'
 import { listModels } from './lm-studio'
 import { createBranch, createTask, listActivityCounts, listTasksByDate, updateTask } from './database'
 import { replaceDay } from './day-sync'
-import { listImages, pasteImage, replaceImages, resizeImage } from './images'
+import { dropImage, listImages, pasteImage, replaceImages, resizeImage } from './images'
 import { commitLayout } from './layout-save'
 import { readAutoSeparate, readSwipeToPan, writeAutoSeparate, writeSwipeToPan } from './settings'
 import { readTheme, writeTheme } from './theme-store'
@@ -16,15 +25,21 @@ import { deleteTask, restoreRemoved } from './task-tree'
 import {
   parseAiBaseUrl,
   parseAiSettingsPayload,
+  parseCommentReplace,
+  parseCommentReply,
+  parseCommentRequest,
+  parseCommentStatus,
   parseCreateBranch,
   parseCreateContinuation,
   parseCreateTask,
   parseEarlierQuery,
+  parseImageDrop,
   parseImagePaste,
   parseImageReplace,
   parseImageSize,
   parseLayoutCommit,
   parseFlag,
+  parseRemovedComments,
   parseRemovedTasks,
   parseTheme,
   parseReplaceDay,
@@ -77,13 +92,14 @@ export function installIpc(): void {
       const validateMs = tempMs(validateStart)
       const queryStart = performance.now()
       const tasks = listTasksByDate(date)
+      const comments = listCommentsByDate(date)
       tempMark('ipc-listByDate', {
         handlerMs: tempMs(handlerStart),
         validateMs,
         queryMs: tempMs(queryStart),
         rows: tasks.length,
       })
-      return tasks
+      return { tasks, comments }
     } catch (error) {
       console.error('tasks:listByDate', error)
       if (error instanceof Error && error.message.startsWith('Invalid')) {
@@ -213,6 +229,14 @@ export function installIpc(): void {
     }
   })
 
+  ipcMain.handle('images:drop', (_event, payload: unknown) => {
+    try {
+      return { ok: true, image: dropImage(parseImageDrop(payload)) }
+    } catch (error) {
+      return failure(error)
+    }
+  })
+
   ipcMain.on('images:resize', (event, payload: unknown) => {
     try {
       resizeImage(parseImageSize(payload))
@@ -328,6 +352,62 @@ export function installIpc(): void {
       return { ok: false, message: error instanceof Error ? error.message : 'Invalid AI address' }
     }
     return listModels(baseUrl)
+  })
+
+  ipcMain.handle('ai:requestComment', async (_event, payload: unknown) => {
+    try {
+      return await requestComment(parseCommentRequest(payload))
+    } catch (error) {
+      console.error('ai:requestComment', error)
+      return { kind: 'none' }
+    }
+  })
+
+  ipcMain.handle('ai:reply', async (_event, payload: unknown) => {
+    try {
+      return await replyToComment(parseCommentReply(payload))
+    } catch (error) {
+      console.error('ai:reply', error)
+      return { kind: 'none' }
+    }
+  })
+
+  ipcMain.on('ai:setCommentStatus', (event, payload: unknown) => {
+    try {
+      const input = parseCommentStatus(payload)
+      event.returnValue = { ok: true, comment: setCommentStatus(input.id, input.status) }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('ai:deleteComment', (event, payload: unknown) => {
+    try {
+      event.returnValue = { ok: true, removed: removeComment(requireId(payload)) }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('ai:restoreComments', (event, payload: unknown) => {
+    try {
+      const removed = parseRemovedComments(payload)
+      const db = getDatabase()
+      db.transaction(() => restoreCommentsOn(db, removed))()
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('ai:replaceComments', (event, payload: unknown) => {
+    try {
+      const input = parseCommentReplace(payload)
+      replaceComments(input.date, input.comments)
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
   })
 
   ipcMain.on('carry:ready', (event) => {

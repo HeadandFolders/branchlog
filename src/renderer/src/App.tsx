@@ -1,5 +1,6 @@
 import { Component, useEffect, useLayoutEffect, type ReactNode } from 'react'
 import { AiSettings } from './components/AiSettings'
+import { AiStatusNote } from './components/AiStatusNote'
 import { CalendarView } from './components/CalendarView'
 import { DailyCanvas } from './components/DailyCanvas'
 import { EarlierSearch } from './components/EarlierSearch'
@@ -8,10 +9,12 @@ import { DeleteNotice } from './components/DeleteNotice'
 import { TopBar } from './components/TopBar'
 import { branchFromShortcut, installBranchShortcut } from './lib/branch-from'
 import { installAiSettingsShortcut } from './lib/ai-settings-keys'
+import { installAiTrigger } from './lib/ai-trigger-install'
 import { installEarlierShortcut, openEarlierSearch } from './lib/earlier-search'
 import { installNewTaskShortcut } from './lib/new-task'
 import { copyFromMenu, cutFromMenu, selectAllFromMenu } from './lib/list-edit'
 import { installImagePaste } from './lib/paste-image'
+import { installImageDrop } from './lib/drop-image'
 import { flushTheme, installThemeShortcut, toggleThemeLab } from './lib/theme-engine'
 import { useCarrySync } from './store/carry-sync'
 import { toggleAiSettings } from './store/ai-settings'
@@ -84,6 +87,8 @@ function Notebook() {
     const removeAiSettingsShortcut = installAiSettingsShortcut()
     const removeImages = installImageLoader()
     const removePaste = installImagePaste()
+    const removeDrop = installImageDrop()
+    const removeAiTrigger = installAiTrigger()
     const onUnload = (): void => {
       useNotebook.getState().flushPendingSync()
       flushTheme()
@@ -99,6 +104,8 @@ function Notebook() {
       removeAiSettingsShortcut()
       removeImages()
       removePaste()
+      removeDrop()
+      removeAiTrigger()
       window.removeEventListener('beforeunload', onUnload)
     }
   }, [goToDate])
@@ -114,6 +121,7 @@ function Notebook() {
       <AiSettings />
       <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex flex-col items-center gap-2">
         <DeleteNotice />
+        <AiStatusNote />
         {error ? (
           <p className="text-center text-[12px] text-[var(--text-muted)]" role="status">
             {error}

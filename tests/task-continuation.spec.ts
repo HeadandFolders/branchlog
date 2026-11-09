@@ -13,6 +13,7 @@ interface SavedTask {
   dateCreated: string
   parentId: string | null
   side: string
+  carriedFromId: string | null
 }
 
 function savedTasks(userData: string): SavedTask[] {
@@ -20,7 +21,7 @@ function savedTasks(userData: string): SavedTask[] {
   db.pragma('busy_timeout = 3000')
   const rows = db
     .prepare(
-      `SELECT id, text, dateCreated, parentId, side
+      `SELECT id, text, dateCreated, parentId, side, carriedFromId
        FROM tasks
        ORDER BY dateCreated, side, orderIndex`,
     )
@@ -69,14 +70,29 @@ test('the branch dot on an earlier day writes today and leaves that day unchange
     await expect(mark).toHaveAttribute('title', `origin\n${parentWhen}`)
     await expect.poll(() => activeTaskId(page)).not.toBe('')
     await page.keyboard.type('next step')
-    await expect(page.locator('[data-task-text]')).toHaveText('next step')
+    await expect(page.locator('[data-task-text]')).toHaveText(['origin', 'next step'])
     await expect.poll(() => savedTasks(userData)).toEqual([
-      expect.objectContaining({ id: originId, text: 'origin', dateCreated: '2026-01-15', parentId: null, side: 'main' }),
+      expect.objectContaining({
+        id: originId,
+        text: 'origin',
+        dateCreated: '2026-01-15',
+        parentId: null,
+        side: 'main',
+        carriedFromId: null,
+      }),
+      expect.objectContaining({
+        text: 'origin',
+        dateCreated: '2026-01-18',
+        parentId: null,
+        side: 'main',
+        carriedFromId: originId,
+      }),
       expect.objectContaining({
         text: 'next step',
         dateCreated: '2026-01-18',
         parentId: originId,
         side: 'main',
+        carriedFromId: null,
       }),
     ])
     await expect(page.locator('.react-flow__node-branch')).toHaveCount(0)
@@ -85,9 +101,13 @@ test('the branch dot on an earlier day writes today and leaves that day unchange
     await expect(page.locator('.react-flow__node-branch')).toHaveCount(0)
     await expect(page.getByRole('img', { name: /Continued from/ })).toHaveCount(0)
     await dateField(page).fill('2026-01-18')
-    await expect(page.locator('[data-task-text]')).toHaveText('next step')
+    await expect(page.locator('[data-task-text]')).toHaveText(['origin', 'next step'])
     await expect(page.getByRole('img', { name: `Continued from origin, ${parentWhen}` })).toBeVisible()
-    await page.getByRole('button', { name: 'Branch from this task' }).click()
+    await page
+      .locator('[data-task-text]', { hasText: /^next step$/ })
+      .locator('xpath=../..')
+      .getByRole('button', { name: 'Branch from this task' })
+      .click()
     await expect(dateField(page)).toHaveValue('2026-01-18')
     await expect(page.locator('.react-flow__node-branch')).toHaveCount(1)
   } finally {
@@ -126,10 +146,13 @@ test('searching earlier tasks writes a continuation on today, and undo removes i
     await page.keyboard.press('Enter')
     await expect(search).toHaveCount(0)
     await expect(page.getByRole('img', { name: `Continued from origin, ${parentWhen}` })).toBeVisible()
-    await expect(page.locator('.task-list [data-task-text]')).toHaveCount(1)
+    await expect(page.locator('.task-list [data-task-text]')).toHaveCount(2)
     await page.keyboard.press(`${modifier}+Z`)
-    await expect(page.locator('[data-task-text]')).toHaveCount(0)
-    await expect.poll(() => savedTasks(userData).map((row) => row.dateCreated)).toEqual(['2026-01-15'])
+    await expect(page.locator('[data-task-text]')).toHaveText('origin')
+    await expect.poll(() => savedTasks(userData).map((row) => row.dateCreated)).toEqual([
+      '2026-01-15',
+      '2026-01-18',
+    ])
     await dateField(page).fill('2026-01-15')
     await expect(page.locator('[data-task-text]')).toHaveText('origin')
   } finally {

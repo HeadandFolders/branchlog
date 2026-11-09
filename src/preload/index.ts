@@ -1,4 +1,18 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import {
+  isAiCommentDeleteResult,
+  isAiCommentResult,
+  isAiCommentWriteResult,
+  isAiReplyResult,
+  type AiComment,
+  type AiCommentDeleteResult,
+  type AiCommentResult,
+  type AiCommentWriteResult,
+  type AiReplyResult,
+  type CommentReplyInput,
+  type CommentRequest,
+  type RemovedComments,
+} from '@shared/ai-comments'
 import { defaultAiSettings, parseAiSettings, type AiSettings } from '@shared/ai-settings'
 import { tempMark, tempMs } from '@shared/temp-timing'
 import { defaultTheme, parseThemeDocument, type ThemeDocument } from '@shared/theme'
@@ -11,12 +25,12 @@ import {
   isCarryRunList,
   isContinuationList,
   isContinuationWriteResult,
+  isDayLoad,
   isDeleteResult,
   isEarlierTaskList,
   isImageResult,
   isMenuAction,
   isTask,
-  isTaskList,
   isWriteResult,
   type Ack,
   type AiConnectionResult,
@@ -27,6 +41,7 @@ import {
   type CreateContinuationInput,
   type CreateTaskInput,
   type DeleteResult,
+  type ImageDropInput,
   type ImagePasteInput,
   type ImageRecord,
   type ImageResult,
@@ -66,7 +81,7 @@ const api: BranchlogApi = {
       const started = performance.now()
       const value: unknown = await ipcRenderer.invoke('tasks:listByDate', date)
       tempMark('ipc-recv', { channel: 'tasks:listByDate', roundTripMs: tempMs(started) })
-      if (!isTaskList(value)) throw new Error('Could not complete that request')
+      if (!isDayLoad(value)) throw new Error('Could not complete that request')
       return value
     },
     createSync: (input: CreateTaskInput) => {
@@ -125,6 +140,10 @@ const api: BranchlogApi = {
     },
     paste: async (input: ImagePasteInput): Promise<ImageResult> => {
       const value: unknown = await ipcRenderer.invoke('images:paste', input)
+      return isImageResult(value) ? value : { ok: false }
+    },
+    drop: async (input: ImageDropInput): Promise<ImageResult> => {
+      const value: unknown = await ipcRenderer.invoke('images:drop', input)
       return isImageResult(value) ? value : { ok: false }
     },
     resizeSync: (input: ImageSizeInput): Ack => {
@@ -195,6 +214,32 @@ const api: BranchlogApi = {
       const value: unknown = await ipcRenderer.invoke('ai:testConnection', baseUrl)
       if (!isAiConnectionResult(value)) return { ok: false, message: 'Could not complete that request' }
       return value
+    },
+    requestComment: async (input: CommentRequest): Promise<AiCommentResult> => {
+      const value: unknown = await ipcRenderer.invoke('ai:requestComment', input)
+      return isAiCommentResult(value) ? value : { kind: 'none' }
+    },
+    reply: async (input: CommentReplyInput): Promise<AiReplyResult> => {
+      const value: unknown = await ipcRenderer.invoke('ai:reply', input)
+      return isAiReplyResult(value) ? value : { kind: 'none' }
+    },
+    setCommentStatusSync: (id: string, status: 'open' | 'resolved'): AiCommentWriteResult => {
+      const value: unknown = ipcRenderer.sendSync('ai:setCommentStatus', { id, status })
+      return isAiCommentWriteResult(value) ? value : { ok: false }
+    },
+    deleteCommentSync: (id: string): AiCommentDeleteResult => {
+      const value: unknown = ipcRenderer.sendSync('ai:deleteComment', id)
+      return isAiCommentDeleteResult(value) ? value : { ok: false }
+    },
+    restoreCommentsSync: (removed: RemovedComments): Ack => {
+      const value: unknown = ipcRenderer.sendSync('ai:restoreComments', removed)
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
+    },
+    replaceCommentsSync: (date: string, comments: AiComment[]): Ack => {
+      const value: unknown = ipcRenderer.sendSync('ai:replaceComments', { date, comments })
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
     },
   },
   onMenuAction: (callback) => {

@@ -1,0 +1,221 @@
+.ai-comment {
+  position: relative;
+  width: 240px;
+  padding: 2px 0 14px;
+  font-family: var(--font-serif);
+  color: var(--ai);
+  text-align: right;
+}
+
+.ai-comment-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+
+.ai-comment-tools {
+  position: absolute;
+  top: calc(100% - 12px);
+  right: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.react-flow__node-aiComment:hover .ai-comment-tools,
+.react-flow__node-aiComment.selected .ai-comment-tools,
+.ai-comment:focus-within .ai-comment-tools {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ai-tool {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.4;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ai-tool:hover,
+.ai-tool:focus-visible {
+  color: var(--text);
+}
+
+.ai-tool:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.ai-reply-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.ai-reply-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-bottom: 1px solid var(--ai-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  padding: 2px 0;
+  text-align: right;
+}
+
+.ai-reply-input::placeholder {
+  color: var(--text-muted);
+}
+
+.ai-reply-input:focus {
+  outline: none;
+  border-bottom-color: var(--ai);
+}
+
+.ai-reply-send {
+  margin: 0;
+  padding: 2px;
+  border: none;
+  background: none;
+  color: var(--ai-line);
+  cursor: pointer;
+  display: inline-flex;
+}
+
+.ai-reply-send:hover:not(:disabled),
+.ai-reply-send:focus-visible {
+  color: var(--ai);
+}
+
+.ai-reply-send:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.ai-reply-send:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.ai-reply-thread {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.ai-reply {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+
+.ai-reply-ai {
+  color: var(--ai);
+}
+
+.ai-reply-user {
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.ai-reply-role {
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 10px;
+}
+
+.ai-resolved-dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin: 2px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--ai-line);
+  background: var(--ai-soft);
+  cursor: pointer;
+}
+
+.ai-resolved-dot:hover {
+  border-color: var(--ai);
+}
+
+.ai-resolved-dot:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.ai-handle {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  opacity: 0;
+  border: none;
+  background: transparent;
+}
+
+.react-flow__edge.ai-edge .react-flow__edge-path {
+  stroke: var(--ai-line);
+  stroke-width: 1;
+}
+
+.ai-thinking {
+  position: absolute;
+  left: -22px;
+  top: 10px;
+  display: inline-flex;
+  gap: 3px;
+  pointer-events: none;
+}
+
+.ai-thinking span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ai-line);
+  animation: ai-thinking-pulse 1.2s ease-in-out infinite;
+}
+
+.ai-thinking span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ai-thinking span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes ai-thinking-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-thinking span {
+    animation: none;
+    opacity: 0.7;
+  }
+}

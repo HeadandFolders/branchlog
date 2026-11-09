@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { addDays, localDateKey } from '@shared/dates'
 import { tempMark, tempMs } from '@shared/temp-timing'
 import type { Continuation, MenuAction, Task } from '@shared/types'
+import { useAiComments } from './ai-comments'
 import { removeDeletedTasks } from './delete-task'
 import { attachHistory, clearHistory } from './history'
 import { layoutAfterWrite, layoutBeforeWrite, prepareHistoryStep } from './layout-bridge'
@@ -149,20 +150,24 @@ export const useNotebook = create<NotebookState>((set, get) => ({
       focusedId: null,
       focusRequest: null,
     })
+    useAiComments.getState().adopt(date, [])
     tempMark('store-cleared', { date })
     try {
-      const tasks = await window.branchlog.tasks.listByDate(date)
+      const day = await window.branchlog.tasks.listByDate(date)
       if (get().currentDate !== date) return
+      const tasks = day.tasks
       const marks = await window.branchlog.tasks.continuations(date)
       if (get().currentDate !== date) return
       const continuations: Record<string, Continuation> = {}
       for (const mark of marks) continuations[mark.taskId] = mark
       set({ tasks, continuations, ready: true })
+      useAiComments.getState().adopt(date, day.comments)
       tempMark('store-filled', { date, rows: tasks.length, ms: tempMs(started) })
     } catch (error) {
       console.error(error)
       if (get().currentDate !== date) return
       set({ tasks: [], continuations: {}, ready: true, error: 'Could not open that day.' })
+      useAiComments.getState().adopt(date, [])
     }
   },
 

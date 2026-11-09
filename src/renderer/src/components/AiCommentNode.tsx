@@ -1,0 +1,99 @@
+import { memo, useState, type FormEvent } from 'react'
+import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Axe, Send } from 'lucide-react'
+import { textDirection } from '../lib/direction'
+import { useAiComments } from '../store/ai-comments'
+
+export const AiCommentNode = memo(function AiCommentNode({ id }: NodeProps) {
+  const comment = useAiComments((state) => state.comments.find((item) => item.id === id))
+  const replying = useAiComments((state) => state.replyingId === id)
+  const setStatus = useAiComments((state) => state.setStatus)
+  const remove = useAiComments((state) => state.remove)
+  const sendReply = useAiComments((state) => state.sendReply)
+  const [showReplies, setShowReplies] = useState(false)
+  const [draft, setDraft] = useState('')
+
+  if (!comment) return null
+
+  if (comment.status === 'resolved') {
+    return (
+      <button
+        type="button"
+        className="ai-resolved-dot nodrag"
+        aria-label="Reopen AI comment"
+        data-ai-resolved={id}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => setStatus(id, 'open')}
+      />
+    )
+  }
+
+  const submit = async (event: FormEvent): Promise<void> => {
+    event.preventDefault()
+    if (replying || draft.trim() === '') return
+    const sent = await sendReply(id, draft)
+    if (sent) {
+      setDraft('')
+      setShowReplies(true)
+    }
+  }
+
+  return (
+    <div className="ai-comment" data-ai-comment={id}>
+      <p className="ai-comment-text" dir={textDirection(comment.text)} data-ai-text="">
+        {comment.text}
+      </p>
+      {showReplies && comment.replies.length > 0 ? (
+        <div className="ai-reply-thread nowheel" data-ai-replies="">
+          {comment.replies.map((reply) => (
+            <p
+              key={reply.id}
+              className={reply.role === 'ai' ? 'ai-reply ai-reply-ai' : 'ai-reply ai-reply-user'}
+              dir={textDirection(reply.text)}
+            >
+              <span className="ai-reply-role">{reply.role === 'ai' ? 'AI' : 'You'}</span> {reply.text}
+            </p>
+          ))}
+        </div>
+      ) : null}
+      <form
+        className="ai-reply-form nodrag nowheel"
+        onSubmit={(event) => {
+          void submit(event)
+        }}
+      >
+        <input
+          className="ai-reply-input"
+          type="text"
+          value={draft}
+          placeholder={replying ? 'Thinking...' : 'Write back...'}
+          aria-label="Write back"
+          disabled={replying}
+          onChange={(event) => setDraft(event.target.value)}
+        />
+        <button
+          type="submit"
+          className="ai-reply-send"
+          aria-label="Send reply"
+          disabled={replying || draft.trim() === ''}
+        >
+          <Send size={12} />
+        </button>
+      </form>
+      <div className="ai-comment-tools nodrag">
+        {comment.replies.length > 0 ? (
+          <button type="button" className="ai-tool" onClick={() => setShowReplies((value) => !value)}>
+            {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+          </button>
+        ) : null}
+        <button type="button" className="ai-tool" aria-label="Resolve comment" onClick={() => setStatus(id, 'resolved')}>
+          Resolve
+        </button>
+        <button type="button" className="ai-tool ai-delete" aria-label="Delete" onClick={() => remove(id)}>
+          <Axe size={12} />
+        </button>
+      </div>
+      <Handle id="out" type="source" position={Position.Right} isConnectable={false} className="ai-handle" />
+    </div>
+  )
+})
