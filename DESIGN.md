@@ -49,9 +49,10 @@ Dark mode (optional, later): invert to `--bg #161614`, `--text #EDEDE8`, lift `-
 | Toolbar and metadata | Sans | 12 to 13px, 400 | `--text-muted` |
 | "N replies" | Sans | 11 to 12px | `--text-muted` |
 | Wordmark ("riddled." style) | Serif | 14px, 600 | Top-left, next to a small solid dot |
+| Shortcut note (top-left) | Handwriting: Caveat, Segoe Print fallback | 16px, 500 / 600 | The one exception below |
 
 Rules:
-- Only two families in the whole app: one sans, one serif.
+- Two families carry the page: one sans for the user, one serif for the AI. The third, a handwriting face (`--font-hand`), is only for the scratchpad shortcut note in the top-left. Never use it for content.
 - Never bold AI text. Emphasis comes from kept-selection highlighting (see section 7).
 - Numbered lists in user text use plain numerals, no custom bullets.
 

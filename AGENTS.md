@@ -369,7 +369,7 @@ Branch `main`. A full `git status` was not repeated for this edit. Confirmed fro
 
 ## 10. Where to start
 
-1. **Let a carried task go.** Landed. `dropTask` / `undropTask` are wired through `types.ts`, `preload/index.ts`, `validate.ts` (`parseTaskDrop`) and `ipc.ts` (`tasks:setDropped`); `LetGoAction.tsx` is the hover and keyboard control, the row is struck through in `--dropped` with a slashed-circle marker and a "Let go on {date}" hover, and one `Ctrl/Cmd+Z` undoes it. `tests/task-let-go.spec.ts` covers it, and a dropped task is not copied the next day.
+1. **Let a carried task go.** Landed. `dropTask` / `undropTask` are wired through `types.ts`, `preload/index.ts`, `validate.ts` (`parseTaskDrop`) and `ipc.ts` (`tasks:setDropped`); `LetGoAction.tsx` is the hover and keyboard control and its hover names only the action ("Let go (won't carry over)", then "Undo drop"), while the struck-through row's slashed-circle marker is the only place carrying the "Let go on {date}" fact, so one phrase is never both a command and a record. One `Ctrl/Cmd+Z` undoes it. `tests/task-let-go.spec.ts` covers it, and a dropped task is not copied the next day.
 
 2. **Finishing the latest copy closes the chain.** Landed, as a derivation rather than a write: `src/main/task-state.ts` answers the visible day's ids in one indexed query, and an earlier copy reads finished-later from the earliest `dateCompleted` on a later row. Earlier copies keep null completion fields, so the calendar still lights only the day actually finished. The look is `CheckCheck` in `--finished-later` with dimmed text, a read-only checkbox whose activation opens and focuses the finishing copy, plus "Finished {date}".
 

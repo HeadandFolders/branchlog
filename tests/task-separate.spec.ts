@@ -71,7 +71,7 @@ async function settle(page: Page): Promise<void> {
 }
 
 async function branchFromParent(page: Page): Promise<void> {
-  await page.locator('.task-list [data-task-text]').click()
+  await page.locator('.task-list [data-task-text]').first().click()
   await page.keyboard.press('Alt+Enter')
 }
 
@@ -162,6 +162,71 @@ test('branches created quickly from one parent do not overlap', async () => {
     for (const branch of await branchBoxes(page)) {
       expect(branch.x).toBeGreaterThanOrEqual(parent.x + parent.width - 2)
     }
+  } finally {
+    await closeApp(launched.app, launched.userData)
+  }
+})
+
+test('a new branch lands level with its row and the next one beside it', async () => {
+  const launched = await launchApp()
+  const { page } = launched
+  try {
+    await writeTask(page, 'Parent')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('Second row')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('Third row')
+    await page.keyboard.press('Escape')
+    await settle(page)
+    const parent = (await listBoxes(page))[0]
+    if (!parent) throw new Error('Parent row is missing')
+    await branchFromParent(page)
+    await settle(page)
+    const one = (await nodeBoxes(page, '.react-flow__node-branch'))[0]
+    if (!one) throw new Error('First branch is missing')
+    expect(Math.abs(one.y - parent.y)).toBeLessThan(2)
+    expect(Math.abs(one.x - parent.x - parent.width - 16)).toBeLessThan(2)
+    await branchFromParent(page)
+    await settle(page)
+    const boxes = (await nodeBoxes(page, '.react-flow__node-branch')).sort((a, b) => a.y - b.y)
+    expect(boxes).toHaveLength(2)
+    const upper = boxes[0]
+    const lower = boxes[1]
+    if (!upper || !lower) throw new Error('Branches are missing')
+    expect(Math.abs(upper.x - lower.x)).toBeLessThan(2)
+    expect(lower.y - upper.y - upper.height).toBeGreaterThanOrEqual(14)
+    expect(lower.y - upper.y - upper.height).toBeLessThan(20)
+  } finally {
+    await closeApp(launched.app, launched.userData)
+  }
+})
+
+test('tidy brings a branch dragged far from its row back beside it, and one undo puts it back', async () => {
+  const launched = await launchApp()
+  const { page } = launched
+  try {
+    await writeTask(page, 'Parent')
+    await branchFromParent(page)
+    await settle(page)
+    const parent = (await listBoxes(page))[0]
+    const branch = page.locator('.react-flow__node-branch')
+    const born = await branch.boundingBox()
+    if (!parent || !born) throw new Error('Parent row or branch is missing')
+    const limit = await page.evaluate(() => document.documentElement.clientHeight)
+    await drag(page, born, { x: born.x, y: limit - 140 })
+    await settle(page)
+    const far = await branch.boundingBox()
+    if (!far) throw new Error('Branch is missing after the drag')
+    expect(far.y).toBeGreaterThan(parent.y + 300)
+    await page.getByRole('button', { name: 'Menu' }).click()
+    await page.getByRole('menuitem', { name: 'Tidy this day' }).click()
+    await settle(page)
+    const tidied = (await nodeBoxes(page, '.react-flow__node-branch'))[0]
+    if (!tidied) throw new Error('Branch is missing after tidy')
+    expect(Math.abs(tidied.y - parent.y)).toBeLessThan(2)
+    expect(Math.abs(tidied.x - parent.x - parent.width - 16)).toBeLessThan(2)
+    await page.keyboard.press(`${modifier}+Z`)
+    await expect.poll(async () => (await branch.boundingBox())?.y ?? 0).toBeGreaterThan(parent.y + 300)
   } finally {
     await closeApp(launched.app, launched.userData)
   }

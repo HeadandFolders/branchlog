@@ -401,6 +401,12 @@ export function armLayoutHistory(): number {
   return causeStamp
 }
 
+// A layout pass nobody caused, such as an explicit tidy, gets its own undo entry
+// instead of folding into the step before it.
+export function startLayoutStep(): void {
+  causeStamp = 0
+}
+
 export function pushImageHistory(before: CanvasImage[], after: CanvasImage[]): void {
   if (!api) return
   const state = api.get()

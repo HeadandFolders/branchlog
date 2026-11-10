@@ -6,6 +6,8 @@ import '@fontsource/inter/latin-400.css'
 import '@fontsource/inter/latin-600.css'
 import '@fontsource/newsreader/latin-400.css'
 import '@fontsource/newsreader/latin-600.css'
+import '@fontsource/caveat/latin-500.css'
+import '@fontsource/caveat/latin-600.css'
 import { App } from './App'
 import './styles/globals.css'
 import './styles/theme-lab.css'
@@ -16,6 +18,7 @@ import './styles/ask-ai.css'
 import './styles/continuation.css'
 import './styles/task-states.css'
 import './styles/task-actions.css'
+import './styles/shortcuts-hint.css'
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Root element missing')

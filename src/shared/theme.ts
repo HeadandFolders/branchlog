@@ -150,11 +150,23 @@ function requireRecord(value: unknown, message: string): Record<string, unknown>
   return value as Record<string, unknown>
 }
 
-export function parsePalette(value: unknown, message = 'Invalid theme JSON'): Palette {
-  const record = requireRecord(value, message)
+/**
+ * A row saved before a token existed carries no key for it, so an absent token takes the default
+ * rather than failing the whole notebook back to the stock palette. A key that is present but not
+ * a hex is still a broken color.
+ */
+export function parsePalette(value: unknown, defaults: Palette): Palette {
+  const record = requireRecord(value, 'Invalid theme JSON')
+  if (!THEME_TOKENS.some((token) => record[token] !== undefined || record[`--${token}`] !== undefined)) {
+    throw new Error('Invalid theme JSON')
+  }
   const palette = {} as Palette
   for (const token of THEME_TOKENS) {
     const raw = record[token] ?? record[`--${token}`]
+    if (raw === undefined) {
+      palette[token] = defaults[token]
+      continue
+    }
     if (typeof raw !== 'string' || !isHex(normalizeHex(raw))) {
       throw new Error(`Invalid color for --${token}`)
     }
@@ -181,7 +193,12 @@ function parsePreset(value: unknown): ThemePreset {
   if (typeof record.name !== 'string') throw new Error('Invalid theme JSON')
   const name = record.name.trim()
   if (name.length < 1 || name.length > 40 || hasControl(name)) throw new Error('Invalid theme JSON')
-  return { id: record.id.toLowerCase(), name, light: parsePalette(record.light), dark: parsePalette(record.dark) }
+  return {
+    id: record.id.toLowerCase(),
+    name,
+    light: parsePalette(record.light, DEFAULT_LIGHT),
+    dark: parsePalette(record.dark, DEFAULT_DARK),
+  }
 }
 
 export function parseThemeDocument(value: unknown): ThemeDocument {
@@ -192,8 +209,8 @@ export function parseThemeDocument(value: unknown): ThemeDocument {
   return {
     followSystem: record.followSystem,
     mode: record.mode,
-    light: parsePalette(record.light),
-    dark: parsePalette(record.dark),
+    light: parsePalette(record.light, DEFAULT_LIGHT),
+    dark: parsePalette(record.dark, DEFAULT_DARK),
     presets: record.presets.map(parsePreset),
   }
 }
@@ -208,7 +225,10 @@ export function parseThemeExchange(value: unknown): { light: Palette; dark: Pale
     }
   }
   const record = requireRecord(parsed, 'Invalid theme JSON')
-  return { light: parsePalette(record.light), dark: parsePalette(record.dark) }
+  return {
+    light: parsePalette(record.light, DEFAULT_LIGHT),
+    dark: parsePalette(record.dark, DEFAULT_DARK),
+  }
 }
 
 export function samePalette(a: Palette, b: Palette): boolean {

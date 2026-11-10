@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { compactNearby } from '../src/shared/compact'
+import { compactNearby, placeBesideParent, tidyToParents } from '../src/shared/compact'
 import { SEPARATE_GAP, type SeparateBody, type SeparateMove } from '../src/shared/separate'
 
 function box(
@@ -199,4 +199,154 @@ test('pre-existing collisions separate a parentless image while the edited branc
   ]
   const { moves } = compact(bodies, 'edited', { width: 100, height: 80 }, true)
   expect(moves).toEqual([{ id: 'image', x: 226, y: 56 }])
+})
+
+function list(rows: number): SeparateBody[] {
+  const bodies: SeparateBody[] = []
+  for (let index = 0; index < rows; index += 1) {
+    bodies.push(box(`row${index}`, 0, 64 + index * 38, 560, 38, { fixed: true }))
+  }
+  return bodies
+}
+
+function place(bodies: readonly SeparateBody[], changedId: string): SeparateBody | null {
+  const before = bodies.map((body) => ({ ...body }))
+  const input = Object.freeze(bodies.map((body) => Object.freeze({ ...body })))
+  const spot = placeBesideParent(input, changedId)
+  expect(input).toEqual(before)
+  if (!spot) return null
+  const next = input.map((body) => (body.id === spot.id ? { ...body, x: spot.x, y: spot.y } : body))
+  const placed = next.find((body) => body.id === spot.id)!
+  for (const other of next) {
+    if (other.id === placed.id) continue
+    const dx = Math.max(placed.x - other.x - other.width, other.x - placed.x - placed.width)
+    const dy = Math.max(placed.y - other.y - other.height, other.y - placed.y - placed.height)
+    expect(Math.max(dx, dy), `${placed.id} / ${other.id}`).toBeGreaterThanOrEqual(SEPARATE_GAP)
+  }
+  return placed
+}
+
+test('a branch born inside the main list lands level with its parent row', () => {
+  const bodies = [...list(20), box('child', 60, 147, 240, 42, { parentId: 'row2' })]
+  expect(place(bodies, 'child')).toMatchObject({ x: 576, y: 140 })
+})
+
+test('a branch born far from its row is pulled back level with it', () => {
+  const bodies = [...list(20), box('child', 60, 1200, 240, 42, { parentId: 'row2' })]
+  expect(place(bodies, 'child')).toMatchObject({ x: 576, y: 140 })
+})
+
+test('the next branch from a row sits at the nearest clear point beside it', () => {
+  const bodies = [
+    ...list(20),
+    box('one', 576, 140, 240, 42, { parentId: 'row2' }),
+    box('two', 60, 147, 240, 42, { parentId: 'row2' }),
+  ]
+  expect(place(bodies, 'two')).toMatchObject({ x: 576, y: 198 })
+})
+
+test('a branch of a branch hugs that branch instead of the list', () => {
+  const bodies = [
+    ...list(20),
+    box('one', 576, 140, 240, 42, { parentId: 'row2' }),
+    box('kid', 600, 150, 240, 42, { parentId: 'one' }),
+  ]
+  expect(place(bodies, 'kid')).toMatchObject({ x: 832, y: 140 })
+})
+
+test('a row fully blocked beside a parent costs a column, not a slide down the list', () => {
+  const bodies = [
+    ...list(20),
+    box('wall', 576, -400, 240, 1600, { parentId: 'row1' }),
+    box('child', 60, 147, 240, 42, { parentId: 'row2' }),
+  ]
+  expect(place(bodies, 'child')).toMatchObject({ x: 832, y: 140 })
+})
+
+test('only a body with a parent body beside it gets a spot', () => {
+  expect(place([...list(3), box('image', 300, 100, 240, 200)], 'image')).toBeNull()
+  expect(place([box('orphan', 60, 100, 240, 42, { parentId: 'gone' })], 'orphan')).toBeNull()
+})
+
+function tidy(bodies: readonly SeparateBody[]): { moves: SeparateMove[]; next: SeparateBody[] } {
+  const before = bodies.map((body) => ({ ...body }))
+  const input = Object.freeze(bodies.map((body) => Object.freeze({ ...body })))
+  const moves = tidyToParents(input)
+  expect(input).toEqual(before)
+  expect(new Set(moves.map((move) => move.id)).size).toBe(moves.length)
+  const byId = new Map(moves.map((move) => [move.id, move]))
+  const next = bodies.map((body) => ({ ...body, ...byId.get(body.id) }))
+  // Two main-list rows touch each other by design, so only a pair with a
+  // movable body in it is expected to keep the gap.
+  for (const body of next.filter((item) => !item.fixed)) {
+    for (const other of next) {
+      if (other.id === body.id) continue
+      const dx = Math.max(body.x - other.x - other.width, other.x - body.x - body.width)
+      const dy = Math.max(body.y - other.y - other.height, other.y - body.y - body.height)
+      expect(Math.max(dx, dy), `${body.id} / ${other.id}`).toBeGreaterThanOrEqual(SEPARATE_GAP)
+    }
+  }
+  return { moves, next }
+}
+
+test('a tidy pass pulls a branch parked below the day back level with its row', () => {
+  const bodies = [...list(20), box('child', 576, 1400, 240, 42, { parentId: 'row2' })]
+  expect(tidy(bodies).moves).toEqual([{ id: 'child', x: 576, y: 140 }])
+})
+
+test('a tidy pass costs nothing on a day that is already tidy', () => {
+  const bodies = [...list(20), box('child', 576, 140, 240, 42, { parentId: 'row2' })]
+  expect(tidy(bodies).moves).toEqual([])
+})
+
+test('a tidy pass moves a subtree with its parent instead of toward the list', () => {
+  const bodies = [
+    ...list(20),
+    box('one', 40, 1500, 240, 42, { parentId: 'row2' }),
+    box('kid', 40, 2600, 240, 42, { parentId: 'one' }),
+  ]
+  expect(tidy(bodies).moves).toEqual([
+    { id: 'kid', x: 832, y: 140 },
+    { id: 'one', x: 576, y: 140 },
+  ])
+})
+
+test('a tidy pass leaves the main list and parentless bodies where they are', () => {
+  const bodies = [
+    ...list(4),
+    box('image', 900, 900, 200, 200),
+    box('child', 40, 1500, 240, 42, { parentId: 'row1' }),
+  ]
+  expect(tidy(bodies).moves.map((move) => move.id)).toEqual(['child'])
+})
+
+test('a tidy pass stacks far siblings in the column beside their row', () => {
+  const bodies = [
+    ...list(20),
+    box('one', 40, 1500, 240, 42, { parentId: 'row2' }),
+    box('two', 40, 2600, 240, 42, { parentId: 'row2' }),
+  ]
+  expect(tidy(bodies).moves).toEqual([
+    { id: 'one', x: 576, y: 140 },
+    { id: 'two', x: 576, y: 198 },
+  ])
+})
+
+test('a day of branches scattered six screens down comes back to its rows', () => {
+  const bodies = list(20)
+  for (let index = 0; index < 120; index += 1) {
+    bodies.push(box(`b${String(index).padStart(3, '0')}`, 40, 3000 + index * 90, 240, 42, { parentId: `row${index % 20}` }))
+  }
+  const started = performance.now()
+  const { moves, next } = tidy(bodies)
+  const elapsed = performance.now() - started
+  expect(moves).toHaveLength(120)
+  const byId = new Map(next.map((body) => [body.id, body]))
+  for (const body of next) {
+    if (body.fixed || !body.parentId) continue
+    const parent = byId.get(body.parentId)!
+    expect(body.x, body.id).toBeGreaterThanOrEqual(parent.x + parent.width + SEPARATE_GAP)
+    expect(Math.abs(body.y - parent.y), body.id).toBeLessThan(1000)
+  }
+  console.log(`tidy-120-branches-ms=${elapsed.toFixed(1)}`)
 })

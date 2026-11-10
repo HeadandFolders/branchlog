@@ -1,10 +1,14 @@
 import { separateNearby, type SeparateBody, type SeparateMove } from '@shared/separate'
-import { compactNearby, type NodeSize } from '@shared/compact'
-import { armLayoutHistory } from '../store/history'
+import { compactNearby, placeBesideParent, tidyToParents, type NodeSize } from '@shared/compact'
+import { armLayoutHistory, startLayoutStep } from '../store/history'
 import { registerLayoutBridge } from '../store/layout-bridge'
 
 const EASE_MS = 280
 const MAX_MS = 1000
+// begin() arms history for the write that caused the glide, so the two share one
+// undo entry. A tidy is caused by nothing but itself, so it carries this instead
+// and keeps causeStamp clear until its commit pushes its own entry.
+const STANDALONE_STEP = -1
 
 interface Point {
   x: number
@@ -101,12 +105,23 @@ function startEase(next: Session): void {
   frame = requestAnimationFrame(play)
 }
 
+function toTargets(moves: readonly SeparateMove[]): Map<string, Point> | null {
+  if (moves.length === 0) return null
+  return new Map(moves.map((move) => [move.id, { x: move.x, y: move.y }]))
+}
+
 function targetsFrom(changedId: string, pinned: boolean, previousSize?: NodeSize): Map<string, Point> | null {
   if (!host) return null
   const bodies = host.bodies(changedId).map((body) => (body.id === changedId ? { ...body, pinned } : body))
-  const moves = previousSize ? compactNearby(bodies, changedId, previousSize) : separateNearby(bodies, changedId)
-  if (moves.length === 0) return null
-  return new Map(moves.map((move) => [move.id, { x: move.x, y: move.y }]))
+  if (previousSize) return toTargets(compactNearby(bodies, changedId, previousSize))
+  const born = pinned ? null : placeBesideParent(bodies, changedId)
+  if (!born) return toTargets(separateNearby(bodies, changedId))
+  const origin = bodies.find((body) => body.id === changedId)
+  // The born node holds its spot, and whatever it lands on gives way instead.
+  const seated = bodies.map((body) => (body.id === changedId ? { ...body, ...born, pinned: true } : body))
+  const targets = toTargets(separateNearby(seated, changedId)) ?? new Map<string, Point>()
+  if (origin && (born.x !== origin.x || born.y !== origin.y)) targets.set(changedId, { x: born.x, y: born.y })
+  return targets.size === 0 ? null : targets
 }
 
 function begin(changedId: string, pinned: boolean, live: boolean, previousSize?: NodeSize): void {
@@ -147,6 +162,25 @@ function finishSession(commit: boolean): void {
 
 export function engageLayout(changedId: string, pinned: boolean): void {
   begin(changedId, pinned, false)
+}
+
+// Called only by the menu. It re-seats the whole day's branches, so unlike every
+// other layout path it ignores auto-separate: asking for it is the consent.
+export function tidyLayout(): void {
+  if (!host) return
+  const targets = toTargets(tidyToParents(host.bodies('')))
+  if (!targets) return
+  startLayoutStep()
+  startEase({
+    changedId: '',
+    live: false,
+    deferred: false,
+    unsaved: false,
+    stamp: STANDALONE_STEP,
+    from: shownPositions(),
+    targets,
+    started: performance.now(),
+  })
 }
 
 export function liveLayout(changedId: string): void {

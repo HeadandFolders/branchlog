@@ -3,6 +3,7 @@
 @theme {
   --font-sans: "Inter", "Geist", system-ui, sans-serif;
   --font-serif: "Newsreader", "Source Serif 4", Georgia, serif;
+  --font-hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
   --color-bg: var(--bg);
   --color-bg-subtle: var(--bg-subtle);
   --color-text: var(--text);
@@ -51,6 +52,7 @@
   --dropped: #91606b;
   --font-sans: "Inter", "Geist", system-ui, sans-serif;
   --font-serif: "Newsreader", "Source Serif 4", Georgia, serif;
+  --font-hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
   --radius-sm: 3px;
   --radius-md: 6px;
   /* One owner for the task line's geometry. The connector handle is derived from

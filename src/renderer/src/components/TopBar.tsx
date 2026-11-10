@@ -1,13 +1,14 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Menu } from 'lucide-react'
+import { shortcutMod } from '../lib/shortcuts'
+import { tidyLayout } from '../lib/layout-motion'
 import { toggleThemeLab } from '../lib/theme-engine'
 import { framePageNow } from '../lib/viewport'
+import { ShortcutsHint } from './ShortcutsHint'
 import { useNotebook } from '../store/notebook'
 import { usePreferences } from '../store/preferences'
 import { useView } from '../store/view'
 import { tempCountRender } from '../temp-first-paint'
-
-const shortcutMod = /Mac/i.test(navigator.userAgent) ? '⌘' : 'Ctrl'
 
 export function TopBar() {
   tempCountRender('TopBar')
@@ -115,6 +116,17 @@ export function TopBar() {
               className="flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
               onClick={() => {
                 setOpen(false)
+                tidyLayout()
+              }}
+            >
+              <span>Tidy this day</span>
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
+              onClick={() => {
+                setOpen(false)
                 showCalendar()
               }}
             >
@@ -170,6 +182,7 @@ export function TopBar() {
         <span aria-hidden="true" className="size-1.5 rounded-full bg-[var(--accent-dot)]" />
         branchlog.
       </button>
+      <ShortcutsHint />
     </header>
   )
 }

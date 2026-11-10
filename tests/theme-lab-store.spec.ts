@@ -1,7 +1,8 @@
 import { spawnSync } from 'node:child_process'
 import path from 'node:path'
+import Database from 'better-sqlite3'
 import { _electron as electron, expect, test, type ElectronApplication, type Page } from '@playwright/test'
-import { DEFAULT_LIGHT, THEME_TOKENS } from '../src/shared/theme'
+import { DEFAULT_DARK, DEFAULT_LIGHT, THEME_TOKENS } from '../src/shared/theme'
 import { closeApp, killProfile, launchApp, modifier, releaseUserData, writeTask } from './launch'
 
 async function openLab(page: Page): Promise<void> {
@@ -20,6 +21,13 @@ async function setToken(page: Page, token: string, hex: string): Promise<void> {
 
 async function background(page: Page): Promise<string> {
   return page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--bg').trim().toLowerCase())
+}
+
+async function token(page: Page, name: string): Promise<string> {
+  return page.evaluate(
+    (tokenName) => getComputedStyle(document.documentElement).getPropertyValue(tokenName).trim().toLowerCase(),
+    name,
+  )
 }
 
 async function launchSaved(userData: string): Promise<{ app: ElectronApplication; page: Page; userData: string }> {
@@ -143,6 +151,38 @@ test('css and json round trip, and a bad import changes nothing', async () => {
     expect(await background(page)).toBe(before)
   } finally {
     await closeApp(app, userData)
+  }
+})
+
+test('a notebook saved before the task-state tokens existed keeps its own colors after restart', async () => {
+  const taskStateTokens = ['carried', 'carried-strong', 'finished-later', 'dropped']
+  const light = { ...DEFAULT_LIGHT } as unknown as Record<string, string>
+  const dark = { ...DEFAULT_DARK } as unknown as Record<string, string>
+  for (const token of taskStateTokens) {
+    delete light[token]
+    delete dark[token]
+  }
+  light.bg = '#123456'
+
+  const { app, userData } = await launchApp()
+  await closeApp(app, userData, true)
+  const db = new Database(path.join(userData, 'branchlog.sqlite'))
+  db
+    .prepare(
+      `INSERT INTO settings (key, value) VALUES (?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+    )
+    .run('theme', JSON.stringify({ followSystem: false, mode: 'light', presets: [], light, dark }))
+  db.close()
+
+  const next = await launchSaved(userData)
+  try {
+    await expect.poll(() => background(next.page)).toBe('#123456')
+    for (const name of taskStateTokens) {
+      await expect.poll(() => token(next.page, `--${name}`)).toBe(DEFAULT_LIGHT[name])
+    }
+  } finally {
+    await closeApp(next.app, next.userData)
   }
 })
 
