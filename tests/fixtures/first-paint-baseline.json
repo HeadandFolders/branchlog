@@ -1,0 +1,8 @@
+{
+  "capturedOn": "2026-11-10",
+  "conditions": "first-paint-results/prod-*.log and packaged-*.log, 20 launches on this machine, empty notebook, BRANCHLOG_MEASURE=1",
+  "source": "computed with scripts/measure-first-paint.mjs before the Concept Map landed",
+  "shellVisiblePerfMs": { "runs": 20, "min": 698.7, "median": 2107.9, "max": 6733.3 },
+  "taskVisiblePerfMs": { "runs": 20, "min": 731.7, "median": 2132.4, "max": 6865.1 },
+  "fcpStartTimeMs": { "runs": 20, "min": 672, "median": 2080, "max": 6676 }
+}

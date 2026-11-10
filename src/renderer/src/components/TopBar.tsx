@@ -24,6 +24,7 @@ export function TopBar() {
   const highlightCarried = usePreferences((state) => state.highlightCarried)
   const setHighlightCarried = usePreferences((state) => state.setHighlightCarried)
   const showCalendar = useView((state) => state.showCalendar)
+  const showMap = useView((state) => state.showMap)
 
   useEffect(() => {
     if (!open) return
@@ -118,6 +119,18 @@ export function TopBar() {
               }}
             >
               <span>Calendar</span>
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] text-[var(--text-muted)] transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
+              onClick={() => {
+                setOpen(false)
+                showMap()
+              }}
+            >
+              <span>Concept Map</span>
+              <span className="text-[12px] text-[var(--text-faint)]">{shortcutMod}+M</span>
             </button>
             <button
               type="button"

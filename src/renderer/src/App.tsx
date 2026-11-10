@@ -1,4 +1,4 @@
-import { Component, useEffect, useLayoutEffect, type ReactNode } from 'react'
+import { Component, lazy, Suspense, useEffect, useLayoutEffect, type ReactNode } from 'react'
 import { AiSettings } from './components/AiSettings'
 import { AiStatusNote } from './components/AiStatusNote'
 import { CalendarView } from './components/CalendarView'
@@ -11,6 +11,7 @@ import { branchFromShortcut, installBranchShortcut } from './lib/branch-from'
 import { installAiSettingsShortcut } from './lib/ai-settings-keys'
 import { installAiTrigger } from './lib/ai-trigger-install'
 import { installEarlierShortcut, openEarlierSearch } from './lib/earlier-search'
+import { installMapShortcut } from './lib/map-shortcut'
 import { installNewTaskShortcut } from './lib/new-task'
 import { copyFromMenu, cutFromMenu, selectAllFromMenu } from './lib/list-edit'
 import { installImagePaste } from './lib/paste-image'
@@ -26,6 +27,8 @@ import { useNotebook } from './store/notebook'
 import { usePreferences } from './store/preferences'
 import { useView } from './store/view'
 import { tempCountRender, tempNoteCommit } from './temp-first-paint'
+
+const ConceptMap = lazy(() => import('./components/ConceptMap').then((module) => ({ default: module.ConceptMap })))
 
 interface BoundaryProps {
   children: ReactNode
@@ -79,12 +82,14 @@ function Notebook() {
       else if (action === 'theme-lab') toggleThemeLab()
       else if (action === 'ai-settings') toggleAiSettings()
       else if (action === 'show-calendar') useView.getState().showCalendar()
+      else if (action === 'show-map') useView.getState().showMap()
       else useNotebook.getState().runMenuAction(action)
     })
     const removeHistoryKeys = installHistoryKeys()
     const removeBranchShortcut = installBranchShortcut()
     const removeEarlierShortcut = installEarlierShortcut()
     const removeNewTaskShortcut = installNewTaskShortcut()
+    const removeMapShortcut = installMapShortcut()
     const removeThemeShortcut = installThemeShortcut()
     const removeAiSettingsShortcut = installAiSettingsShortcut()
     const removeImages = installImageLoader()
@@ -104,6 +109,7 @@ function Notebook() {
       removeBranchShortcut()
       removeEarlierShortcut()
       removeNewTaskShortcut()
+      removeMapShortcut()
       removeThemeShortcut()
       removeAiSettingsShortcut()
       removeImages()
@@ -120,7 +126,21 @@ function Notebook() {
       <TopBar />
       <EarlierSearch />
       <main className="min-h-0 flex-1">
-        {view === 'calendar' ? <CalendarView /> : <DailyCanvas />}
+        {view === 'calendar' ? (
+          <CalendarView />
+        ) : view === 'map' ? (
+          <Suspense
+            fallback={
+              <div className="flex h-full items-center justify-center text-[13px] text-[var(--text-muted)]" role="status">
+                Opening the map…
+              </div>
+            }
+          >
+            <ConceptMap />
+          </Suspense>
+        ) : (
+          <DailyCanvas />
+        )}
       </main>
       <ThemeLab />
       <AiSettings />

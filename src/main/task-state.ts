@@ -3,7 +3,7 @@ import { daysBetween } from '../shared/dates.ts'
 import type { TaskChainState } from '../shared/types.ts'
 import { getDatabase } from './database.ts'
 
-interface ChainRow {
+export interface ChainRow {
   id: string
   chainId: string
   dateCreated: string
@@ -102,9 +102,7 @@ function deriveState(task: ChainRow, chain: ChainRow[]): TaskChainState {
   return { id: task.id, state: 'open', date: null, copyId: null, copyDate: null, ...carry }
 }
 
-export function readTaskChainStates(db: Database.Database, ids: string[]): TaskChainState[] {
-  if (ids.length === 0) return []
-  const rows = db.prepare(taskChainStateSql(ids.length)).all(...ids) as ChainRow[]
+export function deriveChainStates(rows: readonly ChainRow[], ids?: readonly string[]): TaskChainState[] {
   const byId = new Map(rows.map((row) => [row.id, row]))
   const chains = new Map<string, ChainRow[]>()
   for (const row of rows) {
@@ -113,11 +111,17 @@ export function readTaskChainStates(db: Database.Database, ids: string[]): TaskC
     chains.set(row.chainId, chain)
   }
   const states: TaskChainState[] = []
-  for (const id of ids) {
+  for (const id of ids ?? rows.map((row) => row.id)) {
     const task = byId.get(id)
     if (task) states.push(deriveState(task, chains.get(task.chainId) ?? [task]))
   }
   return states
+}
+
+export function readTaskChainStates(db: Database.Database, ids: string[]): TaskChainState[] {
+  if (ids.length === 0) return []
+  const rows = db.prepare(taskChainStateSql(ids.length)).all(...ids) as ChainRow[]
+  return deriveChainStates(rows, ids)
 }
 
 export function listTaskChainStates(ids: string[]): TaskChainState[] {

@@ -66,6 +66,18 @@ export function parseTaskIds(value: unknown): string[] {
   return ids
 }
 
+export function parseMapPositions(value: unknown): MapPosition[] {
+  if (!Array.isArray(value) || value.length === 0 || value.length > 5_000) {
+    throw new Error('Invalid position')
+  }
+  const points = value.map((item: unknown): MapPosition => {
+    const input = requireRecord(item)
+    return { taskId: requireId(input.taskId), x: requireCoordinate(input.x), y: requireCoordinate(input.y) }
+  })
+  if (new Set(points.map((point) => point.taskId)).size !== points.length) throw new Error('Invalid task')
+  return points
+}
+
 export function requireText(value: unknown): string {
   if (typeof value !== 'string' || value.length > MAX_TEXT || value.includes('\0')) {
     throw new Error('Invalid text')

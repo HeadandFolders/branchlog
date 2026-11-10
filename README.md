@@ -2,7 +2,7 @@
 
 A local-first desktop notebook. Each day is a page of checkbox tasks on an infinite canvas.
 
-This repository is in **Phase 3**: the desktop shell, the daily page, same-day branches, and cross-day carry and branch links. Phases 1, 2, 4, 5 and 6 are done — the activity calendar, images (paste, drop, move, resize, crop, delete) and the LM Studio margin comments are built. The concept map is not.
+This repository is in **Phase 3**: the desktop shell, the daily page, same-day branches, and cross-day carry and branch links. Phases 1, 2, 4, 5 and 6 are done — the activity calendar, images (paste, drop, move, resize, crop, delete) and the LM Studio margin comments are built. So is the concept map: `Cmd/Ctrl+M` opens one node per carried task, expandable into its copies.
 
 ## Setup
 

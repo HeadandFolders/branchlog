@@ -73,7 +73,12 @@ export function installMenu(): void {
         { label: 'Previous day', click: () => send('prev-day') },
         { label: 'Next day', click: () => send('next-day') },
         { type: 'separator' },
-        { label: 'Concept Map', accelerator: 'CmdOrCtrl+M', enabled: false },
+        {
+          label: 'Concept Map',
+          accelerator: 'CmdOrCtrl+M',
+          registerAccelerator: false,
+          click: () => send('show-map'),
+        },
         { label: 'Calendar', click: () => send('show-calendar') },
         {
           label: 'Branch from an earlier task',

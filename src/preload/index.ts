@@ -31,6 +31,7 @@ import {
   isDeleteResult,
   isEarlierTaskList,
   isImageResult,
+  isMapData,
   isMenuAction,
   isTask,
   isTaskChainStateList,
@@ -51,6 +52,8 @@ import {
   type ImageResult,
   type ImageSizeInput,
   type LayoutCommit,
+  type MapData,
+  type MapPosition,
   type RemovedTasks,
   type Task,
   type TaskDropInput,
@@ -147,6 +150,18 @@ const api: BranchlogApi = {
       return value
     },
   },
+  map: {
+    load: async (): Promise<MapData> => {
+      const value: unknown = await ipcRenderer.invoke('map:load')
+      if (!isMapData(value)) throw new Error('Could not load the concept map')
+      return value
+    },
+    savePositions: async (points: MapPosition[]): Promise<Ack> => {
+      const value: unknown = await ipcRenderer.invoke('map:savePositions', points)
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
+    },
+  },
   images: {
     listByDate: async (date) => {
       const value: unknown = await ipcRenderer.invoke('images:listByDate', date)
@@ -199,6 +214,12 @@ const api: BranchlogApi = {
     highlightCarried: () => ipcRenderer.sendSync('settings:highlightCarried') === true,
     setHighlightCarried: (on: boolean): Ack => {
       const value: unknown = ipcRenderer.sendSync('settings:setHighlightCarried', on)
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
+    },
+    mapExpandChains: () => ipcRenderer.sendSync('settings:mapExpandChains') === true,
+    setMapExpandChains: (on: boolean): Ack => {
+      const value: unknown = ipcRenderer.sendSync('settings:setMapExpandChains', on)
       if (!isAck(value) || !value.ok) return { ok: false }
       return { ok: true }
     },

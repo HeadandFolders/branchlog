@@ -6,12 +6,14 @@ interface PreferenceState {
   swipeToPan: boolean
   autoCarry: boolean
   highlightCarried: boolean
+  mapExpandChains: boolean
   loaded: boolean
   load: () => void
   setAutoSeparate: (on: boolean) => void
   setSwipeToPan: (on: boolean) => void
   setAutoCarry: (on: boolean) => void
   setHighlightCarried: (on: boolean) => void
+  setMapExpandChains: (on: boolean) => void
 }
 
 export const usePreferences = create<PreferenceState>((set, get) => ({
@@ -19,6 +21,7 @@ export const usePreferences = create<PreferenceState>((set, get) => ({
   swipeToPan: true,
   autoCarry: true,
   highlightCarried: true,
+  mapExpandChains: false,
   loaded: false,
 
   load: () => {
@@ -28,11 +31,12 @@ export const usePreferences = create<PreferenceState>((set, get) => ({
         swipeToPan: window.branchlog.settings.swipeToPan(),
         autoCarry: window.branchlog.settings.autoCarry(),
         highlightCarried: window.branchlog.settings.highlightCarried(),
+        mapExpandChains: window.branchlog.settings.mapExpandChains(),
         loaded: true,
       })
     } catch (error) {
       console.error(error)
-      set({ autoSeparate: true, swipeToPan: true, autoCarry: true, highlightCarried: true, loaded: true })
+      set({ autoSeparate: true, swipeToPan: true, autoCarry: true, highlightCarried: true, mapExpandChains: false, loaded: true })
     }
   },
 
@@ -69,6 +73,15 @@ export const usePreferences = create<PreferenceState>((set, get) => ({
     const wrote = window.branchlog.settings.setHighlightCarried(on)
     if (wrote.ok) return
     set({ highlightCarried: previous })
+    useNotebook.setState({ error: 'Could not save that setting.' })
+  },
+
+  setMapExpandChains: (on) => {
+    const previous = get().mapExpandChains
+    set({ mapExpandChains: on })
+    const wrote = window.branchlog.settings.setMapExpandChains(on)
+    if (wrote.ok) return
+    set({ mapExpandChains: previous })
     useNotebook.setState({ error: 'Could not save that setting.' })
   },
 }))

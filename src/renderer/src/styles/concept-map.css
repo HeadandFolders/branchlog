@@ -1,0 +1,384 @@
+/* Concept Map: borderless pills on a faint dot grid. Every color is a token. */
+
+.map-canvas .react-flow__node-mapTask {
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.map-canvas .react-flow__node-mapTask.dragging {
+  cursor: grabbing;
+}
+
+.map-canvas .react-flow__node-mapTask:focus,
+.map-canvas .react-flow__node-mapTask:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.map-node {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text);
+  transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.map-canvas .react-flow__node-mapTask:hover .map-node {
+  background: color-mix(in srgb, var(--line) 45%, var(--bg-subtle));
+}
+
+.map-node-text {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.map-node[data-state='done'] .map-node-text,
+.map-node[data-state='finished-later'] .map-node-text {
+  color: var(--text-muted);
+  text-decoration-line: line-through;
+  text-decoration-color: var(--text-muted);
+}
+
+.map-node[data-state='dropped'] .map-node-text {
+  color: var(--dropped);
+  text-decoration-line: line-through;
+  text-decoration-color: var(--dropped);
+}
+
+.map-node-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 16px;
+  margin-top: 4px;
+}
+
+.map-node-date {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.map-node-marks {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.map-node-mark {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.map-node-mark svg {
+  display: block;
+}
+
+.map-node-mark[data-mark='carried'] {
+  color: var(--carried-strong);
+}
+
+.map-node-mark[data-mark='finished-later'] {
+  color: var(--finished-later);
+}
+
+.map-node-mark[data-mark='dropped'] {
+  color: var(--dropped);
+}
+
+[data-carried-highlight='0'] .map-node-mark[data-mark='carried'] {
+  color: var(--text-muted);
+}
+
+.map-badge {
+  height: 16px;
+  padding: 0 7px;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--carried) 14%, var(--bg));
+  color: var(--carried-strong);
+  font-size: 10px;
+  line-height: 16px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.map-badge:hover {
+  background: color-mix(in srgb, var(--carried) 24%, var(--bg));
+}
+
+.map-badge:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.map-handle.react-flow__handle {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  border: none;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.map-handle.react-flow__handle-left {
+  left: 0;
+}
+
+.map-handle.react-flow__handle-right {
+  right: 0;
+}
+
+.map-edge-carry:hover .react-flow__edge-path {
+  stroke: var(--carried-strong);
+}
+
+.map-edge-branch:hover .react-flow__edge-path {
+  stroke: var(--edge-hover);
+}
+
+.map-toolbar {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.map-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.map-tool:hover {
+  color: var(--text);
+}
+
+.map-tool:disabled {
+  color: var(--text-faint);
+  cursor: default;
+}
+
+.map-tool:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.map-switch::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--text-faint);
+}
+
+.map-switch[aria-checked='true'] {
+  color: var(--text);
+}
+
+.map-switch[aria-checked='true']::before {
+  background: var(--carried-strong);
+}
+
+.map-tool-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--line);
+}
+
+.map-legend {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 24px 8px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-muted);
+}
+
+.map-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.map-legend-line {
+  stroke: var(--edge);
+  stroke-width: 1.25;
+}
+
+.map-legend-head {
+  fill: var(--edge);
+}
+
+.map-legend-line.map-legend-carry {
+  stroke: var(--carried);
+}
+
+.map-legend-head.map-legend-carry {
+  fill: var(--carried);
+}
+
+.map-legend-hide {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  display: flex;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.map-legend-hide:hover {
+  color: var(--text-muted);
+}
+
+.map-legend-chip {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 6;
+  padding: 3px 10px;
+  border: none;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.map-legend-chip:hover {
+  color: var(--text);
+}
+
+.map-date-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.map-date-label {
+  position: absolute;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.map-controls.react-flow__controls {
+  box-shadow: none;
+  border: none;
+  opacity: 0.7;
+}
+
+.map-controls .react-flow__controls-button {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.map-controls .react-flow__controls-button:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+.map-controls .react-flow__controls-button svg {
+  fill: currentColor;
+  max-width: 12px;
+  max-height: 12px;
+}
+
+.map-minimap.react-flow__minimap {
+  background: var(--bg-subtle);
+  border-radius: 6px;
+  opacity: 0.6;
+}
+
+.map-minimap .react-flow__minimap-mask {
+  fill: color-mix(in srgb, var(--bg) 70%, transparent);
+  stroke: none;
+}
+
+.map-note {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.map-note-title {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  color: var(--text);
+}
+
+.map-note-action {
+  pointer-events: auto;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.map-note-action:hover {
+  color: var(--text);
+}
+
+.map-save-error {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  z-index: 6;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}

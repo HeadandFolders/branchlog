@@ -109,33 +109,25 @@ function createWindow(): BrowserWindow {
     },
   })
   tempMark('window-constructed', { ms: tempMs(constructStart) })
-  void win.webContents.setVisualZoomLevelLimits(1, 1).catch((error: unknown) => {
-    console.error(error)
-  })
 
   win.webContents.on('preload-error', (_event, preloadPath, error) => {
     console.error('Preload failed', preloadPath, error)
   })
-  win.webContents.on('console-message', (event, _level, message) => {
-    const fromEvent = (event as { message?: string }).message
-    const text =
-      typeof message === 'string' && message.includes('TEMP_MARK')
-        ? message
-        : typeof fromEvent === 'string'
-          ? fromEvent
-          : ''
+  win.webContents.on('console-message', (event) => {
+    const text = event.message
     if (!text.includes('TEMP_MARK')) return
     recordMark(text)
     if (text.includes('"label":"measure-done"')) void collectAndQuit(win)
   })
   win.webContents.on('did-start-loading', () => tempMark('did-start-loading'))
-  win.webContents.on('dom-ready', () => tempMark('dom-ready'))
-  win.webContents.on('did-finish-load', () => {
-    tempMark('did-finish-load')
+  win.webContents.on('dom-ready', () => {
+    tempMark('dom-ready')
+    // Zoom limits need a live main frame; at construction they reject with a disposed-frame error.
     void win.webContents.setVisualZoomLevelLimits(1, 1).catch((error: unknown) => {
       console.error(error)
     })
   })
+  win.webContents.on('did-finish-load', () => tempMark('did-finish-load'))
   win.webContents.on('before-input-event', (event, input) => {
     if (input.type !== 'keyDown' || input.isAutoRepeat) return
     if (!(input.control || input.meta) || !input.shift || input.alt) return

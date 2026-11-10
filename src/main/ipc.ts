@@ -21,12 +21,15 @@ import { dropTask, readAutoCarry, undropTask, writeAutoCarry } from './carry'
 import { replaceDay } from './day-sync'
 import { deleteImages, dropImage, listImages, pasteImage, replaceImages, resizeImage } from './images'
 import { commitLayout } from './layout-save'
+import { loadMapData, saveMapPositions } from './map-data'
 import {
   readAutoSeparate,
   readHighlightCarried,
+  readMapExpandChains,
   readSwipeToPan,
   writeAutoSeparate,
   writeHighlightCarried,
+  writeMapExpandChains,
   writeSwipeToPan,
 } from './settings'
 import { readTheme, writeTheme } from './theme-store'
@@ -50,6 +53,7 @@ import {
   parseKeptRangesInput,
   parseLayoutCommit,
   parseFlag,
+  parseMapPositions,
   parseRemovedComments,
   parseRemovedTasks,
   parseTaskDrop,
@@ -190,6 +194,26 @@ export function installIpc(): void {
       console.error('tasks:chainStates', error)
       if (error instanceof Error && error.message.startsWith('Invalid')) throw new Error(error.message)
       throw new Error('Could not complete that request')
+    }
+  })
+
+  ipcMain.handle('map:load', () => {
+    try {
+      return loadMapData()
+    } catch (error) {
+      console.error('map:load', error)
+      throw new Error(error instanceof Error ? error.message : 'Could not load the concept map')
+    }
+  })
+
+  ipcMain.handle('map:savePositions', (_event, payload: unknown) => {
+    try {
+      saveMapPositions(parseMapPositions(payload))
+      return { ok: true }
+    } catch (error) {
+      console.error('map:savePositions', error)
+      if (error instanceof Error && error.message.startsWith('Invalid')) throw new Error(error.message)
+      return { ok: false }
     }
   })
 
@@ -398,6 +422,24 @@ export function installIpc(): void {
   ipcMain.on('settings:setHighlightCarried', (event, payload: unknown) => {
     try {
       writeHighlightCarried(parseFlag(payload))
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.on('settings:mapExpandChains', (event) => {
+    try {
+      event.returnValue = readMapExpandChains()
+    } catch (error) {
+      console.error(error)
+      event.returnValue = false
+    }
+  })
+
+  ipcMain.on('settings:setMapExpandChains', (event, payload: unknown) => {
+    try {
+      writeMapExpandChains(parseFlag(payload))
       event.returnValue = { ok: true }
     } catch (error) {
       event.returnValue = failure(error)

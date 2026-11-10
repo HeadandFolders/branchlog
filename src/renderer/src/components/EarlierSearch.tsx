@@ -6,19 +6,23 @@ import {
   setEarlierSearchOpen,
   watchEarlierSearch,
 } from '../lib/earlier-search'
+import { mapSearch } from '../lib/map-search-bridge'
 import { useTodayKey } from '../lib/today'
 import { continueOntoToday } from '../store/continuation'
+import { useView } from '../store/view'
 
 export function EarlierSearch() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
-  const [rows, setRows] = useState<EarlierTask[]>([])
+  const [ipcRows, setIpcRows] = useState<EarlierTask[]>([])
   const [active, setActive] = useState(0)
   const [problem, setProblem] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const request = useRef(0)
   const todayKey = useTodayKey()
+  const mapMode = useView((state) => state.view === 'map')
+  const rows = mapMode ? (mapSearch()?.search(query) ?? []) : ipcRows
 
   useEffect(() => {
     return watchEarlierSearch((next) => {
@@ -37,27 +41,27 @@ export function EarlierSearch() {
   }, [open])
 
   useEffect(() => {
-    if (!open) return
+    if (!open || mapMode) return
     const token = ++request.current
     let stale = false
     void window.branchlog.tasks.searchEarlier(query).then(
       (found) => {
         if (stale || token !== request.current) return
-        setRows(found)
+        setIpcRows(found)
         setActive(0)
         setProblem(null)
       },
       (error: unknown) => {
         console.error(error)
         if (stale || token !== request.current) return
-        setRows([])
+        setIpcRows([])
         setProblem('Could not search earlier tasks.')
       },
     )
     return () => {
       stale = true
     }
-  }, [open, query])
+  }, [open, query, mapMode])
 
   useLayoutEffect(() => {
     if (!open) return
@@ -84,6 +88,10 @@ export function EarlierSearch() {
 
   const choose = (id: string): void => {
     closeEarlierSearch()
+    if (mapMode) {
+      mapSearch()?.choose(id)
+      return
+    }
     void continueOntoToday(id)
   }
 
@@ -109,21 +117,24 @@ export function EarlierSearch() {
     <div
       ref={rootRef}
       role="dialog"
-      aria-label="Branch from an earlier task"
+      aria-label={mapMode ? 'Find a task on the map' : 'Branch from an earlier task'}
       className="absolute inset-x-0 top-10 z-30 bg-[var(--bg)] px-4 pt-3 pb-4"
     >
       <div className="mx-auto w-full max-w-[560px]">
         <input
           ref={inputRef}
           className="w-full border-0 border-b border-[var(--line)] bg-transparent pb-1 text-[16px] text-[var(--text)] outline-none placeholder:text-[var(--text-muted)] focus:border-[var(--text)]"
-          aria-label="Search earlier tasks"
+          aria-label={mapMode ? 'Search tasks on the map' : 'Search earlier tasks'}
           aria-controls="earlier-task-list"
           aria-activedescendant={rows[active] ? `earlier-task-${rows[active].id}` : undefined}
-          placeholder="Search earlier tasks"
+          placeholder={mapMode ? 'Search tasks on the map' : 'Search earlier tasks'}
           value={query}
           spellCheck={false}
           autoComplete="off"
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value)
+            setActive(0)
+          }}
           onKeyDown={onKeyDown}
         />
         {problem ? (
@@ -131,9 +142,9 @@ export function EarlierSearch() {
             {problem}
           </p>
         ) : (
-          <ul id="earlier-task-list" role="listbox" aria-label="Earlier tasks" className="mt-2 max-h-80 overflow-y-auto">
+          <ul id="earlier-task-list" role="listbox" aria-label={mapMode ? 'Tasks on the map' : 'Earlier tasks'} className="mt-2 max-h-80 overflow-y-auto">
             {rows.length === 0 ? (
-              <li className="px-2 py-2 text-[13px] text-[var(--text-muted)]">No earlier tasks</li>
+              <li className="px-2 py-2 text-[13px] text-[var(--text-muted)]">{mapMode ? 'No matching tasks' : 'No earlier tasks'}</li>
             ) : (
               rows.map((row, index) => {
                 const text = row.text.trim() === '' ? 'Empty task' : row.text

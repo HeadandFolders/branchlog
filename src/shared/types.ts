@@ -116,11 +116,31 @@ export type MenuAction =
   | 'theme-lab'
   | 'ai-settings'
   | 'show-calendar'
+  | 'show-map'
 
 export interface MapPosition {
   taskId: string
   x: number
   y: number
+}
+
+export interface MapTask {
+  id: string
+  text: string
+  dateCreated: string
+  dateCompleted: string | null
+  droppedAt: string | null
+  parentId: string | null
+  carriedFromId: string | null
+  chainId: string
+  orderIndex: number
+  mapX: number | null
+  mapY: number | null
+}
+
+export interface MapData {
+  tasks: MapTask[]
+  states: TaskChainState[]
 }
 
 export interface CarryLink {
@@ -254,6 +274,10 @@ export interface BranchlogApi {
     activityCounts: () => Promise<ActivityCount[]>
     chainStates: (ids: string[]) => Promise<TaskChainState[]>
   }
+  map: {
+    load: () => Promise<MapData>
+    savePositions: (points: MapPosition[]) => Promise<Ack>
+  }
   images: {
     listByDate: (date: string) => Promise<CanvasImage[]>
     paste: (input: ImagePasteInput) => Promise<ImageResult>
@@ -271,6 +295,8 @@ export interface BranchlogApi {
     setAutoCarry: (on: boolean) => Ack
     highlightCarried: () => boolean
     setHighlightCarried: (on: boolean) => Ack
+    mapExpandChains: () => boolean
+    setMapExpandChains: (on: boolean) => Ack
     theme: () => ThemeDocument
     setTheme: (theme: ThemeDocument) => ThemeWriteResult
   }
@@ -392,6 +418,33 @@ export function isMapPosition(value: unknown): value is MapPosition {
   return typeof value.taskId === 'string' && typeof value.x === 'number' && typeof value.y === 'number'
 }
 
+export function isMapTask(value: unknown): value is MapTask {
+  if (!isRecord(value)) return false
+  return (
+    typeof value.id === 'string' &&
+    typeof value.text === 'string' &&
+    typeof value.dateCreated === 'string' &&
+    (value.dateCompleted === null || typeof value.dateCompleted === 'string') &&
+    (value.droppedAt === null || typeof value.droppedAt === 'string') &&
+    (value.parentId === null || typeof value.parentId === 'string') &&
+    (value.carriedFromId === null || typeof value.carriedFromId === 'string') &&
+    typeof value.chainId === 'string' &&
+    value.chainId.length > 0 &&
+    typeof value.orderIndex === 'number' &&
+    (value.mapX === null || typeof value.mapX === 'number') &&
+    (value.mapY === null || typeof value.mapY === 'number')
+  )
+}
+
+export function isMapData(value: unknown): value is MapData {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.tasks) &&
+    value.tasks.every(isMapTask) &&
+    isTaskChainStateList(value.states)
+  )
+}
+
 export function isRemovedTasks(value: unknown): value is RemovedTasks {
   if (
     !isRecord(value) ||
@@ -505,6 +558,7 @@ export function isMenuAction(value: unknown): value is MenuAction {
     value === 'earlier-task' ||
     value === 'theme-lab' ||
     value === 'ai-settings' ||
-    value === 'show-calendar'
+    value === 'show-calendar' ||
+    value === 'show-map'
   )
 }

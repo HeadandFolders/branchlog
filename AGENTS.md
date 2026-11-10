@@ -6,7 +6,7 @@ Facts below are from the working tree on 2026-11-09 (code, tests, `package.json`
 
 Branchlog is a local-first desktop notebook (Electron + React + TypeScript). Each day is checkbox tasks on an infinite canvas; a branch dot grows same-day work to the right, with arrows.
 
-Two different cross-day links are in progress. **Carry** copies the same unfinished task onto a later day (`carriedFromId`, same `chainId`). **Branch** creates a new task on today from an earlier one (`parentId`). LM Studio margin comments are built (Phase 6 / Stage 6), and so is the activity calendar. The concept map is specified in `BRANCHLOG.md` and `DESIGN.md` and is not built. Pasted images are built (Phase 5).
+Two different cross-day links are in progress. **Carry** copies the same unfinished task onto a later day (`carriedFromId`, same `chainId`). **Branch** creates a new task on today from an earlier one (`parentId`). LM Studio margin comments are built (Phase 6 / Stage 6), and so is the activity calendar. The Concept Map is built too: a third view (`Cmd/Ctrl+M`) that draws one node per chain with an "N days" badge, expands into the per-day copies, and draws the two links differently — solid branch arrow, dashed carry line. Pasted images are built (Phase 5).
 
 The AI talks to LM Studio at the address the user configures (`http://localhost:1234/v1` by default), comments in the left margin, answers an explicit Ask AI in a right-side branch, and never edits the user's text. `src/main/lm-studio.ts` is the only code that opens a socket; the renderer never fetches. Comments are off until the user turns them on in the AI settings panel (Ctrl/Cmd+comma).
 
@@ -31,6 +31,7 @@ App version `0.1.0`. Versions are the lockfile, not the `^` ranges.
 | oxlint | 1.92.0 |
 | date-fns | 4.4.0 |
 | lucide-react | 1.70.0 |
+| @dagrejs/dagre | 3.1.3 (pulls @dagrejs/graphlib 4.0.6) |
 
 | Command | What it does |
 |---|---|
@@ -69,8 +70,9 @@ src/main/                 Electron main. Only process that opens SQLite.
   carry-link.ts           Keep carriedFromId valid when a copy is deleted
   continuation.ts         New task on today from an earlier parent
   images.ts               Paste PNG, list the day's images
+  map-data.ts             One read: every task with its map position and derived state. One transactional write of mapPositions
   layout-save.ts          Positions after separation settles
-  settings.ts             autoSeparate, swipeToPan, highlightCarried
+  settings.ts             autoSeparate, swipeToPan, highlightCarried, mapExpandChains
   theme-store.ts          settings.theme JSON
   menu.ts                 System menu. Several items are disabled
   context-menu.ts         Edit + spelling context menu
@@ -97,13 +99,18 @@ src/renderer/src/         React page. Talks to the notebook only via window.bran
   temp-first-paint.ts     Startup probes. Still in the tree
   components/             One component per file. Daily canvas is DailyCanvas.tsx
                           Also EarlierSearch.tsx, ContinuationMark.tsx
+                          Concept Map: ConceptMap.tsx, MapNode.tsx, MapToolbar.tsx, MapLegend.tsx,
+                          MapDateLabels.tsx
                           AI: AiCommentNode.tsx, AiCommentBody.tsx, KeepHideText.tsx, AiThinkingDots.tsx,
                           AiResolvedMarks.tsx, AiStatusNote.tsx, AiSettings.tsx, BranchAi.tsx
-  lib/                    Non-component helpers. AI: ai-trigger.ts, ai-trigger-install.ts, canvas-ai.ts,
+  lib/                    Non-component helpers. Map: map-shortcut.ts, map-keyboard.ts, map-search-bridge.ts
+                          AI: ai-trigger.ts, ai-trigger-install.ts, canvas-ai.ts,
                           keep-ranges.ts, keep-selection.ts, ai-settings-keys.ts
-  store/                  useNotebook and the write queue. AI: ai-comments.ts, ai-settings.ts, ask-ai.ts
+  store/                  useNotebook and the write queue. Map: map.ts (graph, expansion set, drag, undo).
+                          AI: ai-comments.ts, ai-settings.ts, ask-ai.ts
   styles/globals.css      Color tokens actually painted
   styles/theme-lab.css    Theme Lab panel
+  styles/concept-map.css  The map canvas, pills, badges, links, legend, date labels
   styles/ai-comments.css  The left comment node
   styles/ai-chat.css      Selectable chat text, keep highlighting, the resolved dots
   styles/ask-ai.css       The right-side Ask AI control and its answer
@@ -115,6 +122,8 @@ src/shared/               Types and dates. No Electron, no React
   clock-off.ts            Production now()
   task-life.ts            open / done / dropped / carried / superseded. The page does not render it yet
   separate.ts             Rectangle separation. No React, no SQL
+  map-graph.ts            Tasks in, collapsed chains + typed links out. No React, no SQL
+  map-layout.ts           dagre columns, chain expansion, place-near-parent, settle without moving placed nodes
   theme.ts                Token list, default palettes, theme-row checks
   ai-comments.ts          AiComment shape, guards, kept-range helpers, the right-side answer types
   ai-settings.ts          AiSettings shape, defaults, parseBaseUrl, isPrivateAddress
@@ -123,9 +132,9 @@ scripts/rebuild-native.cjs
 scripts/measure-first-paint.mjs
 ```
 
-Renderer components: `DailyCanvas.tsx` (React Flow), `MainListNode.tsx`, `BranchNode.tsx`, `TaskBullet.tsx`, `ImageNode.tsx`, `DateHeader.tsx`, `TopBar.tsx`, `DeleteNotice.tsx`, `ThemeLab.tsx`, `ThemeLabTools.tsx`, `ThemeTokenList.tsx`, `AiCommentNode.tsx`, `AiCommentBody.tsx`, `KeepHideText.tsx`, `AiThinkingDots.tsx`, `AiResolvedMarks.tsx`, `AiStatusNote.tsx`, `AiSettings.tsx`, `BranchAi.tsx`.
+Renderer components: `DailyCanvas.tsx` (React Flow), `MainListNode.tsx`, `BranchNode.tsx`, `TaskBullet.tsx`, `ImageNode.tsx`, `DateHeader.tsx`, `TopBar.tsx`, `DeleteNotice.tsx`, `ThemeLab.tsx`, `ThemeLabTools.tsx`, `ThemeTokenList.tsx`, `CalendarView.tsx`, `ConceptMap.tsx` (React Flow, lazy), `MapNode.tsx`, `MapToolbar.tsx`, `MapLegend.tsx`, `MapDateLabels.tsx`, `AiCommentNode.tsx`, `AiCommentBody.tsx`, `KeepHideText.tsx`, `AiThinkingDots.tsx`, `AiResolvedMarks.tsx`, `AiStatusNote.tsx`, `AiSettings.tsx`, `BranchAi.tsx`.
 
-Store: `notebook.ts` (open day, plus `continuations`), `history.ts` (undo, `recordCarry`), `carry-sync.ts`, `continuation.ts`, `images.ts`, `task-size.ts`, `preferences.ts`, `layout-commit.ts`, `layout-bridge.ts`, `delete-task.ts`, `delete-notice.ts`, `removed.ts`, `ai-comments.ts` (saved comments, answers, replies, kept ranges), `ai-settings.ts` (the settings row plus the panel), `ask-ai.ts` (the transient explicit request only). Styles: `continuation.css`.
+Store: `notebook.ts` (open day, plus `continuations`), `history.ts` (undo, `recordCarry`, `pushMapHistory`), `carry-sync.ts`, `continuation.ts`, `images.ts`, `task-size.ts`, `preferences.ts` (also `mapExpandChains`), `layout-commit.ts`, `layout-bridge.ts`, `delete-task.ts`, `delete-notice.ts`, `removed.ts`, `view.ts` (`daily` | `calendar` | `map`), `map.ts` (the map graph, the per-chain expansion set, drag, re-arrange, undo restore), `ai-comments.ts` (saved comments, answers, replies, kept ranges), `ai-settings.ts` (the settings row plus the panel), `ask-ai.ts` (the transient explicit request only). Styles: `continuation.css`.
 
 | Cross-cutting thing | Where it lives |
 |---|---|
@@ -136,16 +145,19 @@ Store: `notebook.ts` (open day, plus `continuations`), `history.ts` (undo, `reco
 | Color tokens | Painted defaults in `styles/globals.css`. Saved theme and the token list in `src/shared/theme.ts`. Hex outside `globals.css`, `theme-lab.css`, and `theme.ts` fails `tests/theme-source.spec.ts`. |
 | AI requests | Main owns every LM Studio call. `src/main/lm-studio.ts` is the only `fetch` in the app. `src/main/ai-flight.ts` holds one `auto` slot and one shared `user` slot, so a newer request aborts the older and a reused id cannot revive it. Prompts are in `ai-prompts.ts`, JSON parsing in `ai-parse.ts`. The page never fetches and never re-implements any of it. |
 | AI text selection and Keep | `KeepHideText.tsx` with `lib/keep-ranges.ts` (merge, clamp, UTF-16 offsets) and `lib/keep-selection.ts` (offsets to a DOM range and back). Saved as `aiComments.keptRanges`; only the debounced write in `store/ai-comments.ts`. Nothing else the AI does may move focus or the caret. |
+| The Concept Map | `components/ConceptMap.tsx` (lazy import in `App.tsx`) over `store/map.ts`, which is the only reader of `map:load` and the only writer of `map:savePositions`. Chains and links come from `src/shared/map-graph.ts`, positions from `src/shared/map-layout.ts`. Pan and zoom reuse `lib/canvas-navigation.ts` with the same `swipeToPan` setting; zoom stays inside React Flow's viewport transform, so `webContents.getZoomFactor()` never moves. The shortcut is `lib/map-shortcut.ts`, the node keys `lib/map-keyboard.ts`, the Ctrl/Cmd+K bridge `lib/map-search-bridge.ts`. Opening a day reuses `goToDate` + `focusAt`; the map reads no task rows from `useNotebook`. |
 
-`nodeTypes` is a module-level constant in `DailyCanvas.tsx`. Node `data` is `{}`. Nodes read the task from the store.
+`nodeTypes` is a module-level constant in `DailyCanvas.tsx`, and the same in `ConceptMap.tsx`. Node `data` is `{}`. Daily nodes read the task from the store; map nodes read their node from `useMap`.
 
-Several files are already past the ~300-line guide: `notebook.ts`, `history.ts`, `globals.css`, `MainListNode.tsx`, `DailyCanvas.tsx`. Put new behavior in a new file.
+Several files are already past the ~300-line guide: `notebook.ts`, `history.ts`, `globals.css`, `MainListNode.tsx`, `DailyCanvas.tsx`, `concept-map.css` (383), `ConceptMap.tsx` (329), `tests/map.spec.ts` (870). Put new behavior in a new file.
 
 ## 4. Architecture
 
 Renderer → `useNotebook` (or `useImages`) → `window.branchlog` (preload type-checks the reply) → `ipc.ts` → `validate.ts` → `database.ts` / `images.ts` / `task-tree.ts` → SQLite. The row comes back the same way. Creates wait for SQLite and show the row the database returned. Text, position, and branch size update the store immediately and write after 200ms. A failed text save is tried once more (800ms), then the store shows an error. Checking a box waits for IPC and rolls the store back on failure. Closing the window calls `flushPendingSync`.
 
-Dragging does not write. `onNodeDrag` does not call `window.branchlog`. `onNodeDragStop` calls `updatePosition` once. Resize of a branch is the same: size is recorded on pointer-up, then the 200ms write in `task-size.ts`.
+Dragging does not write. `onNodeDrag` does not call `window.branchlog`. `onNodeDragStop` calls `updatePosition` once. Resize of a branch is the same: size is recorded on pointer-up, then the 200ms write in `task-size.ts`. The Concept Map is the same shape on its own table: `onNodeDragStop` calls `useMap.moveNode` once, and `moveNode` is the only drag-path writer of `mapPositions`. Pan, zoom and expand write nothing.
+
+The map is the third view and the only lazy chunk in the renderer: `App.tsx` imports `ConceptMap.tsx` with `lazy()` and mounts it only when `useView` says `map`, so a startup run never parses dagre. One `map:load` round trip brings back every task with its saved position and its derived chain state (`src/main/map-data.ts`, one `SELECT … LEFT JOIN mapPositions` plus `deriveChainStates`); the page does not ask per node. `buildMapGraph` collapses each `chainId` to one node with an "N days" badge, and `layoutMapGraph` puts the chains it has never seen into date columns. `store/map.ts` owns the expansion set for the session, the points, and the one write per drag or "Re-arrange"; undo goes through the same `history.ts` stack as tasks, via `pushMapHistory` and `setMapRestorer`. The map takes no task rows from `useNotebook` and writes nothing to `tasks`. Its one shared path is leaving the map: clicking a node calls `goToDate` plus `focusAt`, the same day-opening the calendar uses. The daily canvas never reads `mapPositions`.
 
 AI is the same shape with one addition: `window.branchlog.ai` → `ipc.ts` / `ai-request-ipc.ts` → `validate.ts` + `ai-validate.ts` → `ai-store.ts` / `ai-comment.ts` / `ai-ask.ts` → SQLite, and `lm-studio.ts` for the network. A comment or answer comes back on an async reply, so the page paints without waiting for the model. Nothing at boot touches the network: main does no AI work until the page asks, and the page asks only when `enabled` is on and typing has paused (`lib/ai-trigger.ts`, 12 characters minimum, `pauseDelayMs` default 2500, `maxCommentsPerDay` default 30 counted on `side = 'left'` only). The trigger comments on main-list rows only, and never on a done or let-go task. Closing the window flushes pending kept-range writes.
 
@@ -155,8 +167,8 @@ AI is the same shape with one addition: `window.branchlog.ai` → `ipc.ts` / `ai
 |---|---|---|
 | `tasks` | id, text, done, dateCreated, dateCompleted, parentId (cascade), x, y, width, height, side (`main` \| `right`), orderIndex, carriedFromId, chainId, droppedAt | Yes. `x`/`y`/`width`/`height` are the daily canvas. Main list ignores size. Unique `(chainId, dateCreated)`. `chainId` defaults to the row id via trigger `tasks_fill_chain`. |
 | `images` | id, dateKey, fileName, x, y, width, height, cropLeft, cropTop, cropRight, cropBottom | Yes. File is `userData/images/<id>.png`. Crop columns are trimmed fractions; the file is never rewritten. |
-| `settings` | key, value | Yes: `autoSeparate`, `swipeToPan`, `theme`, `autoCarry` (on unless the value is `0`), `highlightCarried` (on unless the value is `0`), `carryWindowDays` (default 14, else 0–3660). The TopBar menu switches `autoCarry` and `highlightCarried`; `carryWindowDays` still has no UI. `ai` holds one JSON row, the AI settings, owned by `src/main/ai-settings-store.ts`. |
-| `mapPositions` | taskId, x, y | Table only. No map UI reads it. Delete/restore keeps the rows. |
+| `settings` | key, value | Yes: `autoSeparate`, `swipeToPan`, `theme`, `autoCarry` (on unless the value is `0`), `highlightCarried` (on unless the value is `0`), `mapExpandChains` (off unless the value is `1` — the map's "Show carried copies" switch), `carryWindowDays` (default 14, else 0–3660). The TopBar menu switches `autoCarry` and `highlightCarried`; the map toolbar switches `mapExpandChains`; `carryWindowDays` still has no UI. `ai` holds one JSON row, the AI settings, owned by `src/main/ai-settings-store.ts`. |
+| `mapPositions` | taskId, x, y | Yes, by the Concept Map only. `src/main/map-data.ts` reads it with every task in one `LEFT JOIN`, and writes it through `map:savePositions` in one transaction — one row per drag, one per node on "Re-arrange". The daily canvas ignores it; `tasks.x`/`y` are a separate position for the same task. `taskId` is `ON DELETE CASCADE`, so a deleted task's position goes with it. |
 | `aiComments` | id, taskId, side, type (`question` \| `remark` \| `correction`), text, status (`open` \| `resolved`), keptRanges, x, y, createdAt | Yes. `side` is `left` for the AI's own margin comment and `right` for an answer to an explicit ask. `src/main/ai-store.ts` owns every query; the per-day cap counts `left` only. `keptRanges` is a JSON array of UTF-16 `[start, end]` pairs, merged on write and clamped on read |
 | `aiReplies` | id, commentId, role (`user` \| `ai`), text, keptRanges, createdAt | Yes. The chat thread under one comment. `keptRanges` trims a reply the same way a comment is trimmed |
 
@@ -165,7 +177,9 @@ Do not break:
 - The renderer never opens the database, and never imports `electron`, `better-sqlite3`, `node:fs`, or `src/main`.
 - The preload never runs SQL. The main process never draws the page.
 - Every IPC input is validated in `validate.ts` before it reaches SQLite.
-- Positions save once at the end of a drag, never per frame. Do not rebuild nodes or edges while `draggingId` is set.
+- Positions save once at the end of a drag, never per frame. Do not rebuild nodes or edges while `draggingId` is set. The same holds on the map: `moveNode` writes `mapPositions` on drag stop only.
+- The Concept Map has its own data path — `map:load` / `map:savePositions` — and no task store in common with the daily page: `ConceptMap.tsx` imports `useNotebook` only for `goToDate` and `focusAt` when a node opens its day, and reads no rows from it. `Map*.tsx` never import `dagre`; the layout lives in `src/shared/map-layout.ts`, which pulls in no React and no Electron.
+- The map chunk is lazy. Nothing in the startup path may import `ConceptMap.tsx` statically; `tests/map-perf.spec.ts` fails if the map's code appears in the index chunk or the first-paint band moves.
 - Deleting a task deletes all descendants on every day, in one transaction, and is undoable (`task-tree.ts`, `DeleteNotice.tsx`). Images are not attached to a task, so a delete does not remove them. AI rows and `mapPositions` go away by foreign key.
 - Edges are derived from `parentId`. They are not saved.
 - A same-day branch is `side: 'right'` plus `parentId`, stored on the parent's `dateCreated` (`createBranch` in `database.ts`).
@@ -197,7 +211,7 @@ Do not break:
 | **Phase 3. Cross-day links and Concept Map** | **Partial** | Carry and branch are different. See the rules under this table |
 | Branch: a new task from an earlier one | Done | `continuation.ts`, `EarlierSearch.tsx` (Cmd/Ctrl+K), branch dot on an earlier day (`branch-from.ts`), `ContinuationMark.tsx`, `tests/task-continuation.spec.ts`. Menu item is enabled. Same-day `createBranch` is unchanged |
 | Carry: the same unfinished task onto a later day | Done | `carry.ts`, `carry-schedule.ts`, `carry-sync.ts`. Automatic copy at startup, focus, resume, and midnight. Let-go is wired (`tasks:setDropped`, `LetGoAction.tsx`). Specs: `task-carry.spec.ts`, `task-carry-marks.spec.ts`, `task-let-go.spec.ts`, `task-carry-delete.spec.ts` |
-| Concept Map | Not started | Menu item disabled (`CmdOrCtrl+M`). `mapPositions` is never drawn |
+| Concept Map | Built, not yet re-run | Menu `Concept Map` (`CmdOrCtrl+M`, `registerAccelerator: false`) and the toolbar both open it. `src/main/map-data.ts` + `map:load` read every task with its `mapPositions` row in one query; `src/shared/map-graph.ts` collapses chains, `src/shared/map-layout.ts` lays them out with dagre; `ConceptMap.tsx` (lazy) draws it. Specs: `tests/map-graph.spec.ts` (11), `tests/map-layout.spec.ts` (9), `tests/map.spec.ts` (13 E2E), `tests/map-perf.spec.ts` (4). **The four specs have not been run since the last round of fixes — see section 6.** |
 | **Phase 4. Activity calendar** | **Done** | `CalendarView.tsx` behind `view === 'calendar'` in `App.tsx`, the menu item (`show-calendar`) is enabled, and `tasks:activityCounts` in `ipc.ts` feeds it. `dateCompleted` is the local date when a box is checked. Spec: `tests/calendar.spec.ts`. Not covered here: the calendar on a database that also has carried and finished-later copies |
 | **Phase 5. Images** | **Done** | |
 | Paste anywhere on the canvas | Done | `lib/paste-image.ts`, `images.ts`, `ImageNode.tsx`. Accepts PNG/JPEG bitmaps, browser "copy image" (html alongside), and copied image files (via `text/uri-list`). A rejected paste shows an error. Longest edge capped at 480. `task-separate.spec.ts` ("a pasted image separates"), `image-paste.spec.ts` |
@@ -225,7 +239,7 @@ Extras, outside the phases:
 | Startup performance work | Partial | `temp-first-paint.ts`, `src/shared/temp-timing.ts`, `scripts/measure-first-paint.mjs`, `first-paint-results/*.json`. Probes are still compiled in. `tempCountRender` increments a counter even when not measuring. No written report. The `db-*` step marks now come from `applySchema`, so `db-migrate-ai` appears in a fresh run without further wiring; `tests/ai-perf.spec.ts` prints the same steps without a window |
 | Test suite | Done | Playwright only. See Testing. Carry and AI both have specs now |
 
-**We are currently in Phase 3. The carry let-go state, its marks, and its settings are built; the next step is refusing a branch from a finished task, then the Concept Map.**
+**We are currently in Phase 3, and Phase 3 is now code-complete.** The carry let-go state, its marks and its settings are built, and so is the Concept Map. The two open steps are refusing a branch from a finished task (not enforced), and running the four map specs once green — they are written and the code typechecks and lints, but no map run has been recorded since the last round of fixes.
 
 ### Phase 3 rules in force
 
@@ -244,7 +258,7 @@ These are the decisions for the work underway. The code only partly matches them
 | The calendar counts only the day the work was actually completed | When Phase 4 is built, one `dateCompleted` lights one day | `dateCompleted` is the local date of that single checkbox write. Calendar UI is not started |
 | No branch from a finished task | Refuse in `branch-from.ts`, `createContinuation`, and `EarlierSearch` | Not enforced. Search still lists done tasks, struck through, and a click still continues them |
 | Carried tasks: a small marker and "carried N days" on hover. Age tint is optional and a setting. Do not add another required color (AI teal, done, finished-later, and carried is too many) | Marker like the continuation dot. Tint only if the setting is on | Done. `CarriedMark.tsx` (curved arrow, `--carried-strong`), hover "Carried from Nov 7 · day 3", row tint in three `color-mix` steps by days carried, capped at 3 (`data-tint`). `highlightCarried` switch removes the tint and the marker color only — the shape, the tooltips and the data stay |
-| Concept Map: one node per chain, badge "N days", expand on click | New view. Do not grow `DailyCanvas.tsx` | Not started |
+| Concept Map: one node per chain, badge "N days", expand on click | New view. Do not grow `DailyCanvas.tsx` | Done. `ConceptMap.tsx` is its own React Flow canvas, lazy-loaded, and `DailyCanvas.tsx` is untouched. A collapsed chain is one node keyed by `chainId` with a "N days" badge and the date range; the badge (click or Enter) expands into the copies in date order joined by carry lines, with each branch arrow still on its own copy. The expansion is remembered per chain for the session and, behind the toolbar's "Show carried copies" (`settings.mapExpandChains`, off when the row is missing), for every chain at once. |
 | Task state is one of: open, done, finished later, carried, dropped | Derive it. Do not store a second copy of the same fact | Stored facts are `dateCompleted`, `droppedAt`, `carriedFromId`, and "a later row shares `chainId`". `src/main/task-state.ts` derives them for the visible day in one query; `src/renderer/src/store/chain-states.ts` holds that map and `src/shared/task-life.ts` is the classifier carry uses. The page paints `data-state`, `data-carried` and `data-tint` from that map and stores nothing new |
 
 Carry runs in the main process (`installCarrySchedule` from `index.ts`) and the page adopts the rows in `useCarrySync` / `recordCarry`. `tests/task-carry.spec.ts`, `task-carry-marks.spec.ts`, `task-let-go.spec.ts` and `task-carry-delete.spec.ts` now cover that path.
@@ -257,6 +271,8 @@ No `TODO` or `FIXME` in source. No `test.skip` or `test.fixme`. The suite was no
 |---|---|---|
 | High, unverified | First word on a blank day sometimes comes back shortened or scrambled (`origin` → `gino`). The spec is fully commented out, so Playwright never runs it. | `tests/task-first-word.spec.ts`. Caret logic that may be involved: `lib/focus-field.ts` |
 | Medium | E2E launch hardcodes `node_modules/electron/dist/electron.exe`. macOS and Linux launches will not find that file. | `tests/launch.ts` |
+| Medium, unverified | The Concept Map ships with 37 tests and none of them has been run since the last round of fixes. The previous run was red for six causes, all since addressed in the specs: a stale `map-arrow-branch` marker, a frame recorder that reset `globalThis.__panFrames` so the sampler measured an orphaned array (fps 0), a first-paint log read after the temp folder was deleted, a 250ms layout ceiling under a measured 310ms, `.react-flow__node` probes that the daily canvas also satisfies, and `data-state` assertions aimed at the React Flow wrapper instead of the inner `.map-node`. Treat the map as built-but-unmeasured until these four files are run. | `tests/map.spec.ts`, `map-graph.spec.ts`, `map-layout.spec.ts`, `map-perf.spec.ts` |
+| Low | `map-perf.spec.ts` budgets are ceilings, not measurements: `LAYOUT_BUDGET_MS = 700` sits above the 310.0ms the 2,301-node dagre pass printed on this machine on 2026-11-09, and `FIRST_PAINT_MARGIN_MS = 1500` is added to a machine band whose own max is 6733ms. It catches a regime change, not a regression. | `tests/map-perf.spec.ts`, `tests/fixtures/first-paint-baseline.json` |
 | Low | `EDITOR_AUDIT.md` is stale. Undo, Up/Down, Escape, context menu, direction, and focus rings now have specs (`task-undo`, `task-navigation`, `task-a11y`). The audit still says those are missing. Multi-line paste still does not split into bullets; the clipboard spec locks that | `EDITOR_AUDIT.md` vs those specs |
 | Low | Startup probes were meant to be removed after a report. There is no `FIRST_PAINT_REPORT.md`. JSON runs live in `first-paint-results/` | `temp-first-paint.ts`, `temp-timing.ts` |
 | Low | A failed `autoSeparate` or `swipeToPan` read is returned as `true`, so a broken settings read looks like the feature is on | `src/main/ipc.ts` |
@@ -301,6 +317,10 @@ No AI spec ever touches a real model. `tests/mock-lm-studio.ts` is a local HTTP 
 | `task-chain-state.spec.ts`, `task-chain-state-ui.spec.ts` | Derived chain states on the rows themselves (finished-later and dropped read backward without rewriting an earlier copy, a finished copy is not carried, one indexed per-day query inside its budget), and the page side: the read-only checkbox that navigates to the finishing copy and the calendar lighting the real completion day |
 | `task-carry-marks.spec.ts` | Finished-later look (color from `--finished-later`, the double tick, the hover date), the carried marker with its day count, the three tint steps and the cap, `highlightCarried` off, and the same marks on branch nodes |
 | `task-let-go.spec.ts` | Let-go hover persistence, its size and keyboard path, one undo step, the strike-through and the "Let go on" date, and no copy the next day. `autoCarry` off stops carrying and on brings the copies forward live |
+| `map-graph.spec.ts` | No window. Chains collapse to one node keyed by `chainId`, copies order by date, the latest copy wins, `parentId` is a branch link and `carriedFromId` a carry link, links that collapse onto one pair draw once and separate when the chain opens, links inside a collapsed chain are skipped, a missing link target is skipped not crashed, and the collapsed node takes its latest copy's state |
+| `map-layout.spec.ts` | No window. One ascending column per date, a column stacks from `MAP_TOP` with the row gap and the estimated height, no overlap even with branches feeding one column, a fresh node beside a placed parent (branch first, then carry, then its own column), expansion keeps the representative copy exactly where the chain sat, settling moves only the new node, estimated height grows with each wrapped line |
+| `map.spec.ts` | 13 windowed tests: opens from menu / `Ctrl+M` / toolbar and closes back; the calm empty state; the legend chip; both link kinds with their own arrow and token color; the "N days" badge expands into date columns; one position row per drag, restored after restart, undone in one step; Re-arrange as one undo for the whole batch; expansion that leaves placed nodes alone; "Show carried copies" persisting across a restart; the derived states collapsed and expanded; a click that opens the day and focuses the copy; pan, ctrl+wheel zoom and `getZoomFactor() === 1`; `Ctrl+K` centering a node plus arrow and Enter navigation |
+| `map-perf.spec.ts` | 4 tests: the map ships in its own chunk and never loads at startup; first paint stays inside the recorded baseline band from `tests/fixtures/first-paint-baseline.json`; a 2,000-task + 300-branch notebook opens, pans and drags inside budget; graph build and dagre layout stay inside budget. Every measured number prints to the test log — `map:load` round trip, open ms, node/edge counts, pan and drag fps, the layout pass |
 | `task-separate.spec.ts` | Auto-separate for create, drop, resize, text growth, images; undo; setting off |
 | `image-paste.spec.ts`, `image-drop.spec.ts`, `image-resize.spec.ts`, `image-crop.spec.ts`, `image-persist.spec.ts`, `image-migrate.spec.ts`, `image-delete.spec.ts` | Paste from clipboard flavors and copied files, file drop with its error, corner resize with undo and restart, crop of two sides with undo, redo, and restart, a dropped image surviving a close and reopen, an old database without the crop columns loading and cropping after the startup migration, and delete by Backspace or the axe button with undo, redo, the typing guard, and restart |
 | `canvas-pan.spec.ts` | Swipe-to-pan, pinch zoom, setting survives restart |
@@ -355,6 +375,6 @@ Branch `main`. A full `git status` was not repeated for this edit. Confirmed fro
 
 3. **Refuse a branch from a finished task.** `lib/branch-from.ts`, `createContinuation` in `continuation.ts`, and `EarlierSearch.tsx` (`choose` still runs for a struck-through done row). Cover it in `tests/task-continuation.spec.ts`.
 
-After that: the Concept Map as one node per `chainId` with an "N days" badge. The carried-days marker is built (`CarriedMark.tsx`, "Carried from {date} · day N", tint only behind `highlightCarried`). Image resize (Phase 5) is done: corners with the aspect kept, saved through `images:resize`.
+After that: the Concept Map. **Landed** — one node per `chainId` with an "N days" badge (`MapNode.tsx`), expand and collapse in the session, "Show carried copies" behind `settings.mapExpandChains`, dagre date columns (`src/shared/map-layout.ts`), one position write per drag, undo through the task history stack, `Cmd/Ctrl+M` to open, `Cmd/Ctrl+K` to center a node, Enter to open that day. What is left is evidence: run `tests/map-graph.spec.ts`, `map-layout.spec.ts`, `map.spec.ts` and `map-perf.spec.ts` and record the printed timings. The carried-days marker is built (`CarriedMark.tsx`, "Carried from {date} · day N", tint only behind `highlightCarried`). Image resize (Phase 5) is done: corners with the aspect kept, saved through `images:resize`.
 
 **Stage 6 (Phase 6, the LM Studio margin) is built and evidenced.** `tests/ai-perf.spec.ts` holds the startup and read numbers (section 5), so a run of `scripts/measure-first-paint.mjs` is only needed for the whole-window first-paint report, not for the AI. Typing cost is proven by behavior, not milliseconds, in `ai-comments-safety.spec.ts` and `ai-ask-safety.spec.ts`. The four AI limits in section 6 are the open list. Two rules for anyone continuing it: the only `fetch` in the app is `src/main/lm-studio.ts`, and no AI code may call `focus()` or write `tasks.text`.
