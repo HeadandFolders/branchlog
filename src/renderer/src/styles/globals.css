@@ -53,6 +53,12 @@
   --font-serif: "Newsreader", "Source Serif 4", Georgia, serif;
   --radius-sm: 3px;
   --radius-md: 6px;
+  /* One owner for the task line's geometry. The connector handle is derived from
+     these, so the arrow stays on the checkbox when the padding changes. */
+  --task-pad-x: 8px;
+  --task-pad-y: 6px;
+  --check-size: 16px;
+  --check-offset: 5px;
   color-scheme: light;
 }
 
@@ -195,11 +201,15 @@ button.task-check:focus-visible {
   user-select: none;
 }
 
+.task-line {
+  padding: var(--task-pad-y) var(--task-pad-x);
+}
+
 .task-check {
   box-sizing: border-box;
-  width: 16px;
-  height: 16px;
-  margin-top: 5px;
+  width: var(--check-size);
+  height: var(--check-size);
+  margin-top: var(--check-offset);
   flex-shrink: 0;
   border: 1.5px solid var(--check-border);
   background: var(--bg);
@@ -253,7 +263,9 @@ button.branch-dot:focus-visible {
   background: var(--active-1);
 }
 
-.branch-handle {
+.react-flow__handle.branch-handle {
+  /* Substituted here, not on :root, so the branch's own padding reaches the calc. */
+  top: calc(var(--task-pad-y) + var(--check-offset) + var(--check-size) / 2);
   width: 1px;
   height: 1px;
   min-width: 0;
@@ -264,7 +276,14 @@ button.branch-dot:focus-visible {
   pointer-events: none;
 }
 
+/* The arrow lands on the checkbox's left edge, not on the node's padding. */
+.branch-node > .react-flow__handle.branch-handle-in {
+  left: var(--task-pad-x);
+}
+
 .branch-node {
+  --task-pad-x: 12px;
+  --task-pad-y: 8px;
   position: relative;
   width: 100%;
   box-sizing: border-box;
@@ -280,7 +299,6 @@ button.branch-dot:focus-visible {
 .branch-node .task-line {
   box-sizing: border-box;
   width: 100%;
-  padding: 8px 12px;
 }
 
 .canvas-image {
@@ -352,31 +370,9 @@ button.branch-dot:focus-visible {
 
 .image-delete {
   position: absolute;
-  top: -26px;
+  top: -28px;
   right: 0;
   z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border: 1px solid var(--text-muted);
-  border-radius: 2px;
-  background: var(--bg);
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.image-delete:hover,
-.image-delete:focus-visible {
-  color: var(--text);
-  border-color: var(--text);
-}
-
-button.image-delete:focus-visible {
-  outline: 1px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 .react-flow__node-image {
@@ -455,10 +451,6 @@ button.image-delete:focus-visible {
   outline-offset: 0;
 }
 
-.react-flow__node-branch.selected:hover {
-  background: var(--bg-subtle);
-}
-
 .react-flow__node-branch .bullet-text {
   cursor: text;
   font-size: 16px;
@@ -470,11 +462,19 @@ button.image-delete:focus-visible {
 }
 
 .react-flow__node-branch .react-flow__resize-control.handle {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 1px;
   background-color: var(--bg);
-  border: 1px solid var(--text-faint);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+/* A 16px grab area around an 8px mark, without growing the drawn box. */
+.react-flow__node-branch .react-flow__resize-control.handle::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
 }
 
 .react-flow__node-branch .react-flow__resize-control.line {
@@ -488,39 +488,6 @@ button.image-delete:focus-visible {
 
 .react-flow .react-flow__nodesselection-rect {
   pointer-events: none;
-}
-
-.branch-delete {
-  position: absolute;
-  top: calc(100% + 2px);
-  left: 12px;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--text-muted);
-  font-size: 12px;
-  line-height: 1.4;
-  cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.react-flow__node-branch:hover .branch-delete,
-.react-flow__node-branch.selected .branch-delete,
-.branch-node:focus-within .branch-delete {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.branch-delete:hover,
-.branch-delete:focus-visible {
-  color: var(--text);
-}
-
-button.branch-delete:focus-visible {
-  outline: 1px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 .react-flow__edge.branch-edge .react-flow__edge-path {

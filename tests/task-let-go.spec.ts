@@ -131,6 +131,8 @@ test('letting go is reachable by hover and keyboard, is one undo step, and stops
     ).toBe(await tokenColor(page, '--dropped'))
     await expect.poll(() => saved(userData)[0]?.droppedAt).toBe('2026-11-01')
     await expect(row.getByRole('button', { name: 'Undo drop' })).toHaveAttribute('data-action', 'undrop')
+    // The date belongs to the marker alone, so the button cannot read as a second, dated action.
+    await expect(row.getByRole('button', { name: 'Undo drop' })).toHaveAttribute('title', 'Undo drop')
 
     await heading(page).click()
     await page.keyboard.press(`${modifier}+Z`)

@@ -1,0 +1,86 @@
+/* One action row for every task line. A float keeps the right end of the first
+   line free and the row paints there, so revealing it never reflows, the pointer
+   never leaves the hover area on its way to a control, and a long branch still
+   gets the whole column on every line after the first. */
+.task-text-wrap::before {
+  content: '';
+  float: right;
+  width: var(--task-action-space, 0px);
+  height: 1.6em;
+}
+
+.task-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  height: 1.6em;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.task-line:hover .task-actions,
+.task-line:focus-within .task-actions,
+.task-line[data-editing='true'] .task-actions,
+.react-flow__node-branch:hover .task-actions,
+.react-flow__node-branch.selected .task-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* An inapplicable control keeps its slot so checking a task never re-wraps its text. */
+.task-action-slot {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.task-action {
+  box-sizing: border-box;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.task-action svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.task-action:hover {
+  color: var(--text);
+}
+
+.task-action:disabled {
+  color: var(--text-faint);
+  cursor: default;
+}
+
+/* Letting go is not destructive. Only a task already let go wears that color. */
+.task-line[data-state='dropped'] .task-action[data-action='undrop'] {
+  color: var(--dropped);
+}
+
+.task-line[data-state='dropped'] .task-action[data-action='undrop']:hover {
+  color: var(--text);
+}
+
+button.task-action:focus-visible {
+  color: var(--text);
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 1px;
+}

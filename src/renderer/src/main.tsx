@@ -15,6 +15,7 @@ import './styles/ai-chat.css'
 import './styles/ask-ai.css'
 import './styles/continuation.css'
 import './styles/task-states.css'
+import './styles/task-actions.css'
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Root element missing')

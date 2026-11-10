@@ -7,6 +7,7 @@ import { useImages } from '../store/images'
 import { useNotebook } from '../store/notebook'
 import { tempCountRender } from '../temp-first-paint'
 import { ImageCrop } from './ImageCrop'
+import { TASK_ACTION_ICON, TaskActionButton } from './TaskActionButton'
 
 const MIN_IMAGE_SIZE = 16
 
@@ -45,14 +46,15 @@ export const ImageNode = memo(function ImageNode({ id, selected }: NodeProps) {
       />
       <ImageCrop image={image} active={selected === true} />
       {selected === true && (
-        <button
-          type="button"
-          className="image-delete nodrag nopan"
-          aria-label="Delete image"
-          onClick={() => useImages.getState().remove([id])}
+        <TaskActionButton
+          targetId={id}
+          action="delete-image"
+          label="Delete image"
+          className="image-delete"
+          onActivate={(imageId) => useImages.getState().remove([imageId])}
         >
-          <Axe size={13} />
-        </button>
+          <Axe {...TASK_ACTION_ICON} />
+        </TaskActionButton>
       )}
     </div>
   )

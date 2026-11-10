@@ -1,32 +1,26 @@
 import { memo } from 'react'
 import { Undo2, Wind } from 'lucide-react'
-import { droppedLabel } from '../lib/state-label'
 import { useNotebook } from '../store/notebook'
+import { TASK_ACTION_ICON, TaskActionButton } from './TaskActionButton'
 
 interface LetGoActionProps {
   taskId: string
   dropped: boolean
-  dropDay: string | null
 }
 
-export const LetGoAction = memo(function LetGoAction({ taskId, dropped, dropDay }: LetGoActionProps) {
+// The button says only what clicking does; the day it was let go is the marker's fact.
+export const LetGoAction = memo(function LetGoAction({ taskId, dropped }: LetGoActionProps) {
   const setDropped = useNotebook((state) => state.setDropped)
   const label = dropped ? 'Undo drop' : "Let go (won't carry over)"
-  const tip = dropped && dropDay ? droppedLabel(dropDay) : label
 
   return (
-    <span className="task-actions nopan nodrag">
-      <button
-        type="button"
-        className="task-action nodrag nopan"
-        data-action={dropped ? 'undrop' : 'let-go'}
-        aria-label={label}
-        title={tip}
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={() => void setDropped(taskId, !dropped)}
-      >
-        {dropped ? <Undo2 size={13} strokeWidth={1.5} /> : <Wind size={13} strokeWidth={1.5} />}
-      </button>
-    </span>
+    <TaskActionButton
+      targetId={taskId}
+      action={dropped ? 'undrop' : 'let-go'}
+      label={label}
+      onActivate={(id) => void setDropped(id, !dropped)}
+    >
+      {dropped ? <Undo2 {...TASK_ACTION_ICON} /> : <Wind {...TASK_ACTION_ICON} />}
+    </TaskActionButton>
   )
 })

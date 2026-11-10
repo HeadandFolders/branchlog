@@ -7,23 +7,11 @@ import { tempCountRender } from '../temp-first-paint'
 import { TaskBullet } from './TaskBullet'
 import { BranchAi } from './BranchAi'
 
-const BRANCH_HANDLE = {
-  top: 21,
-  width: 1,
-  height: 1,
-  minWidth: 0,
-  minHeight: 0,
-  opacity: 0,
-  border: 'none',
-  background: 'transparent',
-}
-
 export const BranchNode = memo(function BranchNode({ id, selected }: NodeProps) {
   tempCountRender('BranchNode')
   const rootRef = useRef<HTMLDivElement>(null)
   const heightDrag = useRef(false)
   const task = useNotebook((state) => state.tasks.find((item) => item.id === id))
-  const deleteTask = useNotebook((state) => state.deleteTask)
   const updateSize = useNotebook((state) => state.updateSize)
 
   useEffect(() => {
@@ -87,29 +75,16 @@ export const BranchNode = memo(function BranchNode({ id, selected }: NodeProps) 
         type="target"
         position={Position.Left}
         isConnectable={false}
-        className="branch-handle"
-        style={BRANCH_HANDLE}
+        className="branch-handle branch-handle-in"
       />
       <TaskBullet task={task} />
       <BranchAi taskId={id} />
-      <button
-        type="button"
-        className="branch-delete nopan nodrag"
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={(event) => {
-          event.stopPropagation()
-          void deleteTask(task.id)
-        }}
-      >
-        Delete
-      </button>
       <Handle
         id="out"
         type="source"
         position={Position.Right}
         isConnectable={false}
-        className="branch-handle"
-        style={BRANCH_HANDLE}
+        className="branch-handle branch-handle-out"
       />
     </div>
   )

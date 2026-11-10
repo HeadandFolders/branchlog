@@ -3,6 +3,7 @@ import {
   useLayoutEffect,
   useRef,
   type ClipboardEvent as ReactClipboardEvent,
+  type CSSProperties,
   type FormEvent,
   type KeyboardEvent,
   type MouseEvent,
@@ -18,7 +19,7 @@ import { AiResolvedMarks } from './AiResolvedMarks'
 import { CarriedMark } from './CarriedMark'
 import { ContinuationMark } from './ContinuationMark'
 import { DroppedMark } from './DroppedMark'
-import { LetGoAction } from './LetGoAction'
+import { TaskActions, useTaskActionSpace } from './TaskActions'
 import { caretOffsets, insertPlainText } from '../lib/caret'
 import { useTaskFieldFocus } from '../lib/field-focus'
 import { textDirection } from '../lib/direction'
@@ -144,6 +145,7 @@ export function TaskBullet({ task }: TaskBulletProps) {
   const isCarriedCopy = derivedState === 'open' && carriedFromDay !== null && carriedDays > 0
   const droppedOn = derivedState === 'dropped' ? (chainState?.date ?? task.droppedAt) : null
   const canLetGo = derivedState === 'open' && !task.done
+  const actionSpace = useTaskActionSpace(task.side === 'right')
   const finishedLabel = chainState?.date
     ? `${finishedLaterLabel(chainState.date)}. Activate to open.`
     : 'Finished later. Activate to open.'
@@ -191,7 +193,7 @@ export function TaskBullet({ task }: TaskBulletProps) {
       data-editing={editing ? 'true' : 'false'}
       data-carried={isCarriedCopy ? carriedDays : undefined}
       data-tint={isCarriedCopy ? Math.min(3, carriedDays) : undefined}
-      className="task-line nopan relative flex items-start gap-3 rounded-[3px] px-2 py-1.5"
+      className="task-line nopan relative flex items-start gap-3 rounded-[3px]"
     >
       <AiThinkingDots taskId={task.id} />
       {task.side === 'main' ? <AiResolvedMarks taskId={task.id} /> : null}
@@ -214,7 +216,10 @@ export function TaskBullet({ task }: TaskBulletProps) {
       >
         {shownDone ? (finishedLater ? <CheckCheck size={12} strokeWidth={2.5} /> : <Check size={12} strokeWidth={2.5} />) : null}
       </button>
-      <div className="relative min-w-0 flex-1">
+      <div
+        className="task-text-wrap relative min-w-0 flex-1"
+        style={{ '--task-action-space': `${actionSpace}px` } as CSSProperties}
+      >
         {task.text === '' ? (
           <span className="task-placeholder" aria-hidden="true">
             Write a task
@@ -250,10 +255,13 @@ export function TaskBullet({ task }: TaskBulletProps) {
           onBeforeInput={(event) => handleTaskBeforeInput(event, splitLock, splitAtCaret)}
           onKeyDown={(event) => handleTaskKey(event, task, splitLock, splitAtCaret)}
         />
+        <TaskActions
+          taskId={task.id}
+          branch={task.side === 'right'}
+          canLetGo={canLetGo}
+          dropped={task.droppedAt !== null}
+        />
       </div>
-      {canLetGo || task.droppedAt ? (
-        <LetGoAction taskId={task.id} dropped={task.droppedAt !== null} dropDay={task.droppedAt} />
-      ) : null}
       <button
         type="button"
         className="branch-dot nopan nodrag"
@@ -269,16 +277,14 @@ export function TaskBullet({ task }: TaskBulletProps) {
             type="target"
             position={Position.Left}
             isConnectable={false}
-            className="branch-handle"
-            style={{ top: 19, width: 1, height: 1, minWidth: 0, minHeight: 0, opacity: 0, border: 'none', background: 'transparent' }}
+            className="branch-handle branch-handle-in"
           />
           <Handle
             id={`out-${task.id}`}
             type="source"
             position={Position.Right}
             isConnectable={false}
-            className="branch-handle"
-            style={{ top: 19, width: 1, height: 1, minWidth: 0, minHeight: 0, opacity: 0, border: 'none', background: 'transparent' }}
+            className="branch-handle branch-handle-out"
           />
         </>
       ) : null}
