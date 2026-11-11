@@ -53,7 +53,7 @@ export async function continueOntoToday(parentId: string): Promise<void> {
           ? state.continuations
           : { ...state.continuations, [task.id]: mark },
         focusedId: task.id,
-        focusRequest: { id: task.id, offset: 0 },
+        focusRequest: { id: task.id, offset: 0, anchor: true },
         error: null,
       }
     })

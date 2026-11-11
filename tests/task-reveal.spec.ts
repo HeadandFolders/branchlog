@@ -10,6 +10,7 @@ import {
   mainIds,
   overflow,
   readMotionTrack,
+  revealAnchor,
   revealArea,
   revealBusy,
   rowBox,
@@ -56,6 +57,9 @@ test.describe('the canvas reveals the task you are typing', () => {
     const box = await rowBox(page, created)
     const area = await revealArea(page)
     expect(overflow(box, area)).toBeLessThanOrEqual(1)
+    // Not just inside the screen: the new line sits on the writing line, with the
+    // rows it follows above it and clear canvas below.
+    expect(Math.abs(box.top - (await revealAnchor(page)))).toBeLessThanOrEqual(2)
     expect(before.y - after.y).toBeGreaterThan(200)
     expect(after.x).toBeCloseTo(before.x, 1)
     expect(after.zoom).toBeCloseTo(before.zoom, 3)
@@ -65,24 +69,63 @@ test.describe('the canvas reveals the task you are typing', () => {
     expect((stops.at(-1)?.at ?? 0) - (stops[0]?.at ?? 0)).toBeGreaterThan(150)
   })
 
-  test('a new task that is already visible leaves the canvas exactly where it was', async () => {
+  test('a new task already above the writing line leaves the canvas exactly where it was', async () => {
     await openWithRows(20)
-    const before = await mainIds(page)
-    const parent = before[9]
-    if (!parent) throw new Error('Middle row is missing')
+    const ids = await mainIds(page)
+    const anchor = await revealAnchor(page)
+    // A row with room to spare under it: the new row lands one line lower and is
+    // still above the writing line, so nothing should move.
+    let parent = ''
+    for (const id of ids) {
+      const box = await rowBox(page, id)
+      if (box.bottom > anchor - 100) break
+      parent = id
+    }
+    if (!parent) throw new Error('No row sits well above the writing line')
     await page.locator(`.task-list [data-task-text][data-task-id="${parent}"]`).click()
     const framed = await viewport(page)
-    const area = await revealArea(page)
-    expect(overflow(await rowBox(page, parent), area)).toBe(0)
+    expect(overflow(await rowBox(page, parent), await revealArea(page))).toBe(0)
 
     await page.keyboard.press(`${modifier}+N`)
-    const created = (await mainIds(page)).find((id) => !before.includes(id))
+    const created = (await mainIds(page)).find((id) => !ids.includes(id))
     if (!created) throw new Error('New task is missing')
     await expect.poll(() => activeTaskId(page)).toBe(created)
     await settleReveal(page)
 
     expect(await viewport(page)).toEqual(framed)
     expect(overflow(await rowBox(page, created), await revealArea(page))).toBe(0)
+  })
+
+  test('a new task you can already see, but low on the screen, comes up to the writing line', async () => {
+    await openWithRows(20)
+    const ids = await mainIds(page)
+    const anchor = await revealAnchor(page)
+    const area = await revealArea(page)
+    // The last row that is still fully on screen: the new row goes under it, visible
+    // and below the line, so the paper has to lift it onto the writing line.
+    let parent = ''
+    for (let step = 0; step < ids.length - 1; step += 1) {
+      const box = await rowBox(page, ids[step] ?? '')
+      const next = await rowBox(page, ids[step + 1] ?? '')
+      if (box.top > anchor && overflow(next, area) === 0) parent = ids[step] ?? ''
+    }
+    if (!parent) throw new Error('No fully visible row sits below the writing line')
+    await page.locator(`.task-list [data-task-text][data-task-id="${parent}"]`).click()
+    const framed = await viewport(page)
+
+    await page.keyboard.press(`${modifier}+N`)
+    const created = (await mainIds(page)).find((id) => !ids.includes(id))
+    if (!created) throw new Error('New task is missing')
+    await expect.poll(() => activeTaskId(page)).toBe(created)
+    await settleReveal(page)
+
+    const after = await viewport(page)
+    const box = await rowBox(page, created)
+    expect(Math.abs(box.top - (await revealAnchor(page)))).toBeLessThanOrEqual(2)
+    // The paper slides the row up to the line, and never further than that row needs.
+    expect(framed.y - after.y).toBeGreaterThan(20)
+    expect(after.x).toBeCloseTo(framed.x, 1)
+    expect(after.zoom).toBeCloseTo(framed.zoom, 3)
   })
 
   test('every character typed during the pan lands in the new task', async () => {
@@ -220,6 +263,7 @@ test.describe('the canvas reveals the task you are typing', () => {
     expect(before.y - (stops[1]?.y ?? 0)).toBeGreaterThan(200)
     expect((stops[1]?.at ?? 0) - (stops[0]?.at ?? 0)).toBeLessThan(150)
     expect(overflow(await rowBox(page, created), await revealArea(page))).toBeLessThanOrEqual(1)
+    expect(Math.abs((await rowBox(page, created)).top - (await revealAnchor(page)))).toBeLessThanOrEqual(2)
   })
 
   test('a restart frames the day again and nothing moves on its own', async () => {

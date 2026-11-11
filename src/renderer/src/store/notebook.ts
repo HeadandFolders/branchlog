@@ -12,6 +12,10 @@ import { cancelPendingSizes, clearPendingSize, flushSizesSync, scheduleSize, shi
 interface FocusRequest {
   id: string
   offset?: number
+  // A row that did not exist a moment ago. The reveal takes these to the writing
+  // line instead of only pulling them inside the screen; a focus that re-reads a
+  // row the day already had (a day opening, undo, a jump from the map) just fits.
+  anchor?: boolean
 }
 
 interface NotebookState {
@@ -216,7 +220,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
         task,
       ].sort(byListOrder),
       focusedId: task.id,
-      focusRequest: { id: task.id, offset: caretAtStart ? 0 : task.text.length },
+      focusRequest: { id: task.id, offset: caretAtStart ? 0 : task.text.length, anchor: true },
       error: null,
     }))
     return task.id
@@ -252,7 +256,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
     set((state) => ({
       tasks: [...state.tasks, task].sort(byListOrder),
       focusedId: task.id,
-      focusRequest: { id: task.id, offset: caretAtStart ? 0 : task.text.length },
+      focusRequest: { id: task.id, offset: caretAtStart ? 0 : task.text.length, anchor: true },
       error: null,
     }))
     return task.id

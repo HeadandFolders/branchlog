@@ -10,6 +10,11 @@ const PAN_MS = 250
 // a brand-new node. Both always land within a frame or two; this only bounds the
 // loop so a row that disappears mid-flight cannot keep it alive.
 const MAX_WAIT_MS = 1000
+// A brand-new row is parked here: 40% of the pane above its bottom edge, so the
+// typing line has the rows it follows above it and clear canvas below. Only rows
+// that sit lower than this are pulled up to it, so a short day never scrolls into
+// the blank space under its own last row.
+const ANCHOR_TOP = 0.6
 const KEEP_OUT = '.theme-lab, .ai-settings'
 
 interface Viewport {
@@ -38,7 +43,7 @@ interface Tween {
 }
 
 let host: RevealHost | null = null
-let waiting: { id: string; since: number } | null = null
+let waiting: { id: string; since: number; anchor: boolean } | null = null
 let tween: Tween | null = null
 let frame = 0
 
@@ -90,10 +95,21 @@ function visibleArea(pane: DOMRect): Box {
 // How far the paper must slide so the whole row lands inside the area. The canvas
 // moves with the viewport, so a row below the area needs a negative shift. Zero on
 // an axis the row already fits, so a visible row never moves the canvas.
-function shiftFor(box: Box, area: Box): { x: number; y: number } | null {
+// A creation does not stop at the edge. The new line comes up to the writing line,
+// 40% of the pane above its bottom, so the rows it follows stay readable above it and
+// the empty canvas it will grow into stays below. Two things keep that from going
+// wrong: a row too tall for that spot is placed by its bottom edge instead, because
+// losing the end of the line you are typing on is the worse failure; and a row that
+// already sits above the writing line never pushes the paper the other way, which
+// would drag blank space in under the day's last row.
+function shiftFor(box: Box, area: Box, anchorLine: number, anchor: boolean): { x: number; y: number } | null {
   let y = 0
   if (box.bottom > area.bottom) y = area.bottom - box.bottom
   else if (box.top < area.top) y = area.top - box.top
+  if (anchor && box.top > anchorLine) {
+    const raised = anchorLine - box.top
+    if (box.bottom + raised <= area.bottom) y = raised
+  }
   let x = 0
   if (box.right > area.right) x = area.right - box.right
   else if (box.left < area.left) x = area.left - box.left
@@ -149,7 +165,7 @@ function settle(): void {
     return
   }
   waiting = null
-  const shift = shiftFor(box, visibleArea(pane))
+  const shift = shiftFor(box, visibleArea(pane), pane.top + pane.height * ANCHOR_TOP, request.anchor)
   if (!shift) return
   const target = { x: viewport.x + shift.x, y: viewport.y + shift.y, zoom: viewport.zoom }
   if (reducedMotion()) {
@@ -169,9 +185,9 @@ function tick(): void {
   settle()
 }
 
-export function requestReveal(id: string): void {
+export function requestReveal(id: string, anchor = false): void {
   if (!host) return
-  waiting = { id, since: performance.now() }
+  waiting = { id, since: performance.now(), anchor }
   // A newer reveal takes over from a pan still in flight, from wherever it is.
   tween = null
   schedule()

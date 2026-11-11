@@ -125,8 +125,9 @@ export function applyFocusRequest(element: HTMLElement, id: string): boolean {
   if (already && heldTyping) {
     if (pending) {
       armFocusSettle(id, offset)
+      const anchor = request?.anchor === true
       if (useNotebook.getState().focusRequest?.id === id) useNotebook.getState().clearFocusRequest()
-      requestReveal(id)
+      requestReveal(id, anchor)
     }
     return true
   }
@@ -141,8 +142,9 @@ export function applyFocusRequest(element: HTMLElement, id: string): boolean {
 
   if (pending) {
     armFocusSettle(id, offset)
+    const anchor = request?.anchor === true
     if (useNotebook.getState().focusRequest?.id === id) useNotebook.getState().clearFocusRequest()
-    requestReveal(id)
+    requestReveal(id, anchor)
   }
   return true
 }

@@ -6,9 +6,11 @@ import { applySchema } from '../src/main/schema'
 import { localDateKey } from '../src/shared/dates'
 
 // Mirrors the insets in src/renderer/src/lib/reveal-viewport.ts: the far edges keep
-// 80px of air, the near edges only a small clear zone.
+// 80px of air, the near edges only a small clear zone, and a new row lands 40% of
+// the pane above its bottom.
 const MARGIN_PX = 80
 const NEAR_PX = 24
+const ANCHOR_TOP = 0.6
 
 export interface Box {
   left: number
@@ -117,6 +119,13 @@ export async function revealArea(page: Page): Promise<Box> {
   const far = Math.min(MARGIN_PX, (pane.right - pane.left) / 4, (pane.bottom - pane.top) / 4)
   const near = Math.min(NEAR_PX, (pane.right - pane.left) / 8, (pane.bottom - pane.top) / 8)
   return { left: pane.left + near, right: pane.right - far, top: pane.top + near, bottom: pane.bottom - far }
+}
+
+// The writing line a new row is parked on: 60% of the pane below its top, which is
+// the same place reveal-viewport's ANCHOR_TOP puts it.
+export async function revealAnchor(page: Page): Promise<number> {
+  const pane = await paneBox(page)
+  return pane.top + (pane.bottom - pane.top) * ANCHOR_TOP
 }
 
 export async function rowBox(page: Page, id: string): Promise<Box> {
