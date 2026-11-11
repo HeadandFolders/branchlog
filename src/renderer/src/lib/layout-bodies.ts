@@ -5,6 +5,8 @@ import type { Task } from '@shared/types'
 import type { Node } from '@xyflow/react'
 import { AI_COMMENT_WIDTH } from './canvas-ai'
 import { notedSize } from './layout-motion'
+import { marginCollapsed } from './margin-layout'
+import { estimateCommentHeight } from './margin-stack'
 
 export function anchorId(taskId: string): string {
   return `anchor:${taskId}`
@@ -90,15 +92,17 @@ export function collectBodies(
     if (comment.side !== 'left' || comment.status !== 'open') continue
     const node = nodeById.get(comment.id)
     if (!node) continue
-    const size = nodeSize(node, AI_COMMENT_WIDTH, 40)
+    const size = nodeSize(node, AI_COMMENT_WIDTH, estimateCommentHeight(comment, marginCollapsed().has(comment.id)))
     bodies.push({
       id: comment.id,
       x: node.position.x,
       y: node.position.y,
       width: size.width,
       height: size.height,
+      // The margin is the AI's home and the column pass owns its position: to the
+      // pairwise engine below a comment is an obstacle, never something to shove.
       fixed: false,
-      pinned: false,
+      pinned: true,
       parentId: null,
     })
   }

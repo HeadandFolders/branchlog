@@ -5,12 +5,16 @@ import { pushCommentHistory, setCommentRemovalHandler, setCommentRestorer, setHi
 interface AiCommentsState {
   date: string
   comments: AiComment[]
+  // Comments the reader opened out of the dot row for this session. Overflow past the
+  // two newest on a task shows as a dot until it is asked for, and nothing else.
+  marginShown: ReadonlySet<string>
   ready: boolean
   thinkingTaskId: string | null
   replyingId: string | null
   offline: boolean
   error: string | null
   adopt: (date: string, comments: AiComment[]) => void
+  showMargin: (id: string) => void
   move: (id: string, x: number, y: number) => void
   place: (moves: readonly { id: string; x: number; y: number }[]) => void
   forgetTasks: (taskIds: ReadonlySet<string>) => void
@@ -84,6 +88,7 @@ function scheduleKeptWrite(commentId: string, replyId: string | null, keptRanges
 export const useAiComments = create<AiCommentsState>((set, get) => ({
   date: '',
   comments: [],
+  marginShown: new Set<string>(),
   ready: false,
   thinkingTaskId: null,
   replyingId: null,
@@ -96,6 +101,7 @@ export const useAiComments = create<AiCommentsState>((set, get) => ({
     set({
       date,
       comments,
+      marginShown: new Set(),
       ready: true,
       thinkingTaskId: null,
       replyingId: null,
@@ -103,6 +109,14 @@ export const useAiComments = create<AiCommentsState>((set, get) => ({
       error: null,
     })
   },
+
+  showMargin: (id) =>
+    set((state) => {
+      if (state.marginShown.has(id)) return state
+      const marginShown = new Set(state.marginShown)
+      marginShown.add(id)
+      return { marginShown }
+    }),
 
   move: (id, x, y) => {
     set((state) => ({

@@ -18,6 +18,7 @@ import { registerFlowPoint } from '../lib/branch-from'
 import { buildCanvasEdges, buildCanvasNodes, imageStructureKey, overlayPositions, taskStructureKey } from '../lib/canvas-graph'
 import { buildCommentEdges, commentStructureKey } from '../lib/canvas-ai'
 import { collectBodies, measureAnchors } from '../lib/layout-bodies'
+import { isMarginComment, settleMarginColumn } from '../lib/margin-layout'
 import {
   engageLayout,
   heldPositions,
@@ -146,6 +147,12 @@ function DailyFlow() {
     setEdges([...buildCanvasEdges(current), ...buildCommentEdges(commentsNow, current)])
     tempMark('canvas-rebuild', { tasks: current.length })
     if (!ready) return
+    // The margin has its own pass: one column, real heights, and a box that only
+    // moves when it truly overlaps the one above it. It runs whatever else changed,
+    // because a comment arriving, a chat opening, a task line growing or a delete is
+    // a margin change too — and on a day that has just loaded or been restored, it is
+    // how positions saved before this fix stop painting on top of each other.
+    const settle = (): void => settleMarginColumn()
     const epoch = layoutRestoreEpoch()
     if (epoch !== restoreSeen.current) {
       restoreSeen.current = epoch
@@ -155,6 +162,7 @@ function DailyFlow() {
         ...commentsNow.map((comment) => comment.id),
       ])
       resetLayoutBaseline()
+      settle()
       return
     }
     if (bootedDate.current !== currentDate) {
@@ -165,6 +173,7 @@ function DailyFlow() {
         ...commentsNow.map((comment) => comment.id),
       ])
       resetLayoutBaseline()
+      settle()
       return
     }
     if (imagesReady && imageBoot.current !== currentDate) {
@@ -174,9 +183,9 @@ function DailyFlow() {
     const fresh = [
       ...current.filter((task) => task.side === 'right' && !seenIds.current.has(task.id)).map((task) => task.id),
       ...picturesNow.filter((image) => !seenIds.current.has(image.id)).map((image) => image.id),
-      ...commentsNow.filter((comment) => !seenIds.current.has(comment.id)).map((comment) => comment.id),
     ]
-    for (const id of fresh) seenIds.current.add(id)
+    for (const comment of commentsNow) seenIds.current.add(comment.id)
+    settle()
     const newest = fresh.at(-1)
     if (!newest || !autoSeparateEnabled()) return
     const element = document.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(newest)}"]`)
@@ -250,10 +259,20 @@ function DailyFlow() {
       nodesRef.current = sized
       return sized
     })
+    let marginSized = false
     for (const change of changes) {
       if (change.type !== 'dimensions' || change.id === 'main-list' || !change.dimensions) continue
+      // A comment box grows as its chat opens and shrinks as it closes. The margin
+      // pass takes that measurement straight away, instead of recording it quietly and
+      // leaving the neighbours painted over until something else moves.
+      if (isMarginComment(change.id)) {
+        rememberNodeSize(change.id, change.dimensions.width, change.dimensions.height)
+        marginSized = true
+        continue
+      }
       noteNodeSize(change.id, change.dimensions.width, change.dimensions.height, change.resizing === true)
     }
+    if (marginSized) settleMarginColumn()
     if (changes.some((change) => change.type === 'dimensions' && change.resizing === false)) {
       resizingId.current = null
       resizeBaseline.current = null
@@ -288,6 +307,9 @@ function DailyFlow() {
             if (comment.x !== node.position.x || comment.y !== node.position.y) {
               useAiComments.getState().move(node.id, node.position.x, node.position.y)
               commitLayoutMoves([{ id: node.id, x: node.position.x, y: node.position.y }], node.id)
+              // The dropped box keeps the spot the reader chose. Only what it now
+              // covers gives way.
+              settleMarginColumn()
             }
             return
           }

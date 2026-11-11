@@ -27,12 +27,8 @@
 }
 
 .ai-comment[data-ai-selecting] .ai-comment-tools {
-  opacity: 1;
+  visibility: visible;
   pointer-events: auto;
-}
-
-.ai-comment[data-ai-expanded='false'] {
-  padding-bottom: 2px;
 }
 
 .ai-comment[data-ai-expanded='false'] .ai-reply-form,

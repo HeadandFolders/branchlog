@@ -4,6 +4,10 @@ import type { Task } from '@shared/types'
 
 export const AI_COMMENT_WIDTH = 240
 export const AI_COMMENT_GAP = 32
+// A comment is placed with its own first line level with the task line it belongs to:
+// the checkbox centre sits 19px into a task row, the first text line 12px into a
+// comment box. Level lines are what keep the arrow a short straight run.
+export const AI_COMMENT_LINE_OFFSET = 7
 
 export function commentNode(comment: AiComment, earlier: Node | undefined): Node {
   const width = AI_COMMENT_WIDTH
@@ -35,7 +39,10 @@ export function buildCommentEdges(comments: AiComment[], tasks: Task[]): Edge[] 
       sourceHandle: 'out',
       target: 'main-list',
       targetHandle: `in-${comment.taskId}`,
-      type: 'default',
+      // A step, not a swing: the vertical run lands in the 32px gutter between the
+      // margin and the list, so a comment pushed away from its line still never draws
+      // its arrow over anybody's text.
+      type: 'smoothstep',
       className: 'ai-edge',
       interactionWidth: 0,
       markerEnd: { type: MarkerType.ArrowClosed, width: 10, height: 10, color: 'var(--ai-line)' },

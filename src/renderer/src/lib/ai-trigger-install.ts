@@ -3,7 +3,7 @@ import { useAiSettings } from '../store/ai-settings'
 import { useNotebook } from '../store/notebook'
 import { createAiTrigger } from './ai-trigger'
 import { flowPoint } from './branch-from'
-import { AI_COMMENT_GAP, AI_COMMENT_WIDTH } from './canvas-ai'
+import { AI_COMMENT_GAP, AI_COMMENT_LINE_OFFSET, AI_COMMENT_WIDTH } from './canvas-ai'
 
 function commentSpot(taskId: string): { x: number; y: number } | null {
   const field = document.querySelector(`[data-task-id="${CSS.escape(taskId)}"]`)
@@ -12,7 +12,9 @@ function commentSpot(taskId: string): { x: number; y: number } | null {
   const rect = line.getBoundingClientRect()
   const point = flowPoint({ x: rect.left, y: rect.top })
   if (!point) return null
-  return { x: point.x - AI_COMMENT_WIDTH - AI_COMMENT_GAP, y: point.y }
+  // Level with the bullet, not with the top of the row: a comment reads as a note
+  // written against that line, and the arrow between them stays a short straight run.
+  return { x: point.x - AI_COMMENT_WIDTH - AI_COMMENT_GAP, y: point.y + AI_COMMENT_LINE_OFFSET }
 }
 
 export function installAiTrigger(): () => void {

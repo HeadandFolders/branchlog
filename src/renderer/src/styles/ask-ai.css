@@ -2,7 +2,6 @@
   box-sizing: border-box;
   width: auto;
   margin: 6px 12px 8px 40px;
-  padding-bottom: 18px;
   text-align: start;
 }
 
@@ -10,13 +9,15 @@
   text-align: start;
 }
 
+/* The tool row sits in the answer's own flow, so it reserves its height and an expanded
+   answer never overlaps the branch it belongs to. It starts at the left, the way the
+   answer reads. */
 .ai-answer .ai-comment-tools {
-  left: 0;
-  right: auto;
+  justify-content: flex-start;
 }
 
 .ai-answer:hover .ai-comment-tools {
-  opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 

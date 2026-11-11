@@ -344,3 +344,31 @@ export function separateNearby(bodies: readonly SeparateBody[], changedId: strin
   }
   return latest
 }
+
+export interface MarginSlot {
+  id: string
+  x: number
+  y: number
+  height: number
+  // Order within the task line this comment belongs to: 0 for the one that should
+  // sit on the line, 1 for the next. Comments born on one line share a y, so this
+  // breaks that tie by age instead of by id.
+  hold: number
+}
+
+// The left margin is one column: every comment sits at the same x, so the pairwise
+// shove above would push the later one sideways out of it. Walking down in order and
+// only lifting a floor keeps the column intact, holds a comment on its own task line
+// whenever there is room, and moves a box only when it truly overlaps the one above.
+// Nothing moves up, so a comment never jumps over the text the reader is on.
+export function settleMargin(slots: readonly MarginSlot[], gap: number): SeparateMove[] {
+  const ordered = [...slots].sort((a, b) => a.y - b.y || a.hold - b.hold || (a.id < b.id ? -1 : 1))
+  const moves: SeparateMove[] = []
+  let floor = Number.NEGATIVE_INFINITY
+  for (const slot of ordered) {
+    const y = slot.y < floor ? Math.round(floor) : slot.y
+    floor = y + slot.height + gap
+    if (Math.abs(y - slot.y) > 0.5) moves.push({ id: slot.id, x: slot.x, y })
+  }
+  return moves
+}

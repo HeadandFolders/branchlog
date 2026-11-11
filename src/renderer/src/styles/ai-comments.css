@@ -1,7 +1,7 @@
 .ai-comment {
   position: relative;
   width: 240px;
-  padding: 2px 0 14px;
+  padding: 2px 0;
   font-family: var(--font-serif);
   color: var(--ai);
   text-align: right;
@@ -14,21 +14,22 @@
   overflow-wrap: break-word;
 }
 
+/* In flow, with its height always reserved: the links appear on hover without
+   growing the box, so a neighbour never has to move because the pointer arrived. */
 .ai-comment-tools {
-  position: absolute;
-  top: calc(100% - 12px);
-  right: 0;
   display: flex;
   gap: 8px;
   align-items: center;
-  opacity: 0;
+  justify-content: flex-end;
+  margin-top: 4px;
+  visibility: hidden;
   pointer-events: none;
 }
 
 .react-flow__node-aiComment:hover .ai-comment-tools,
 .react-flow__node-aiComment.selected .ai-comment-tools,
 .ai-comment:focus-within .ai-comment-tools {
-  opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 
@@ -180,6 +181,44 @@
   opacity: 0;
   border: none;
   background: transparent;
+}
+
+/* The arrow leaves from the first line of the box, at the same height whether the
+   comment is showing as text or waiting as a dot, so it never runs down through the
+   note above it and lands level with the bullet it belongs to. */
+.react-flow__node-aiComment > .react-flow__handle-right {
+  top: 12px;
+  transform: translate(50%, -50%);
+}
+
+.ai-dot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.ai-dot-mark {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--ai-line);
+  background: var(--ai-soft);
+}
+
+.ai-dot:hover .ai-dot-mark,
+.ai-dot:focus-visible .ai-dot-mark {
+  border-color: var(--ai);
+}
+
+.ai-dot:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .react-flow__edge.ai-edge .react-flow__edge-path {

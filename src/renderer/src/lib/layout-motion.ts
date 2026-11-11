@@ -187,6 +187,28 @@ export function liveLayout(changedId: string): void {
   begin(changedId, true, true)
 }
 
+// The left margin settles with settleMargin instead of the pairwise shove: one
+// column, down only. It shares this module's glide, history arming and commit, so a
+// comment move undoes and saves exactly like any other layout move.
+export function engageMargin(moves: readonly SeparateMove[]): void {
+  if (!host || !host.enabled()) return
+  const targets = toTargets(moves)
+  if (!targets) return
+  // A glide already in flight owns its own write. Land it before taking the frame,
+  // or replacing the session would drop the moves it had not committed yet.
+  if (session) finishLayoutNow()
+  startEase({
+    changedId: '',
+    live: false,
+    deferred: false,
+    unsaved: false,
+    stamp: armLayoutHistory(),
+    from: shownPositions(),
+    targets,
+    started: performance.now(),
+  })
+}
+
 export function heldPositions(): ReadonlyMap<string, Point> | null {
   return session ? applied : null
 }
