@@ -140,7 +140,7 @@ Store: `notebook.ts` (open day, plus `continuations`), `history.ts` (undo, `reco
 
 | Cross-cutting thing | Where it lives |
 |---|---|
-| Focus a new field | `focusRequest` / `focusAt` on `useNotebook`. `useTaskFieldFocus` in `lib/field-focus.ts` applies it via `lib/focus-field.ts`. Creates set the request inside `createTask` / `createBranch`. |
+| Focus a new field | `focusRequest` / `focusAt` on `useNotebook`. `useTaskFieldFocus` in `lib/field-focus.ts` applies it via `lib/focus-field.ts`. Creates set the request inside `createTask` / `createBranch`. A pending request also asks `lib/reveal-viewport.ts` to pan the focused node into view at the current zoom; that is the only call site, and no create path pans by itself. |
 | Create a task | Not one function. Main-list rows: `useNotebook.createTask` → `tasks.createSync`. Same-day branches: `useNotebook.createBranch` → `tasks.createBranchSync`. A new task from an earlier day: `store/continuation.ts` → `tasks:createContinuation`. Callers: `lib/task-keys.ts` (Enter), `lib/new-task.ts` (Ctrl/Cmd+N), `lib/branch-from.ts` (dot and Alt+Enter; an earlier day calls the continuation path). The renderer mints ids with `crypto.randomUUID()`. Carry copies are minted in `src/main/carry.ts`, not in the renderer. |
 | Today's date | `now()` in `src/shared/clock.ts`, `localDateKey()` in `src/shared/dates.ts`. The header uses `lib/today.ts` (midnight, focus, wake on `clock:resume`). |
 | Undo / redo | `src/renderer/src/store/history.ts`. Dropped when the day changes. Theme Lab undo is separate, in `lib/theme-engine.ts`. |

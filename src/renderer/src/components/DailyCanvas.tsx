@@ -30,6 +30,7 @@ import {
   resetLayoutBaseline,
 } from '../lib/layout-motion'
 import { canvasNavigation, keepOwnScroll } from '../lib/canvas-navigation'
+import { cancelReveal, installReveal } from '../lib/reveal-viewport'
 import { registerFramePage } from '../lib/viewport'
 import { tempMark } from '@shared/temp-timing'
 import { pushImageHistory } from '../store/history'
@@ -92,6 +93,7 @@ function DailyFlow() {
   const highlightCarried = usePreferences((state) => state.highlightCarried)
 
   const frame = useCallback(() => {
+    cancelReveal()
     const instance = instanceRef.current
     const width = wrapperRef.current?.clientWidth ?? 0
     if (!instance || width === 0) return
@@ -100,6 +102,17 @@ function DailyFlow() {
 
   useEffect(() => registerFramePage(frame), [frame])
   useEffect(() => registerFlowPoint(screenToFlowPosition), [screenToFlowPosition])
+  useEffect(
+    () =>
+      installReveal({
+        viewport: () => instanceRef.current?.getViewport() ?? null,
+        apply: (viewport) => {
+          void instanceRef.current?.setViewport(viewport, { duration: 0 })
+        },
+        pane: () => wrapperRef.current,
+      }),
+    [],
+  )
   useEffect(() => {
     frame()
   }, [currentDate, frame])

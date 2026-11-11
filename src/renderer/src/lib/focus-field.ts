@@ -1,4 +1,5 @@
 import { placeCaret } from './caret'
+import { requestReveal } from './reveal-viewport'
 import { useNotebook } from '../store/notebook'
 
 let armed: { id: string; offset: number } | null = null
@@ -125,6 +126,7 @@ export function applyFocusRequest(element: HTMLElement, id: string): boolean {
     if (pending) {
       armFocusSettle(id, offset)
       if (useNotebook.getState().focusRequest?.id === id) useNotebook.getState().clearFocusRequest()
+      requestReveal(id)
     }
     return true
   }
@@ -140,6 +142,7 @@ export function applyFocusRequest(element: HTMLElement, id: string): boolean {
   if (pending) {
     armFocusSettle(id, offset)
     if (useNotebook.getState().focusRequest?.id === id) useNotebook.getState().clearFocusRequest()
+    requestReveal(id)
   }
   return true
 }

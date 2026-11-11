@@ -46,7 +46,7 @@ const sizeSeen = new Map<string, number>()
 const sizes = new Map<string, { width: number; height: number }>()
 const resizeStarts = new Map<string, NodeSize>()
 
-function reducedMotion(): boolean {
+export function reducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
