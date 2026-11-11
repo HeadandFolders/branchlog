@@ -208,7 +208,7 @@ test('deleting and restoring the finishing copy changes the derived earlier stat
   const third = carried(db, '2026-11-03')
   finish(db, third, '2026-11-03')
 
-  const removed = removeTask(db, third)
+  const { removed } = removeTask(db, third)
   expect(readTaskChainStates(db, [first, second]).map((row) => row.state)).toEqual(['open', 'open'])
 
   restoreRemovedOn(db, removed)

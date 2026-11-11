@@ -1,6 +1,7 @@
 import type Database from 'better-sqlite3'
-import type { MapPosition, ParentLink, RemovedTasks } from '../shared/types.ts'
+import type { MapPosition, ParentLink, RemovedTasks, TaskRemoval } from '../shared/types.ts'
 import { listCommentsForTasks, restoreCommentsOn } from './ai-store.ts'
+import { chainCarriesOn, clearSkipsForRestored, recordSkipsForDeleted } from './carry-skips.ts'
 import { relinkAround, type SavedCarryLink } from './carry-link.ts'
 import { mapTask, TASK_COLUMNS, type TaskRow } from './task-row.ts'
 
@@ -14,11 +15,11 @@ function isConstraint(error: unknown): boolean {
   )
 }
 
-export function removeTask(db: Database.Database, id: string): RemovedTasks {
+export function removeTask(db: Database.Database, id: string): TaskRemoval {
   if (db.pragma('foreign_keys', { simple: true }) !== 1) {
     throw new Error('Could not delete that task.')
   }
-  const remove = db.transaction((taskId: string): RemovedTasks => {
+  const remove = db.transaction((taskId: string): TaskRemoval => {
     const rows = db
       .prepare(
         `WITH RECURSIVE branch(id, dateCreated) AS (
@@ -58,7 +59,14 @@ export function removeTask(db: Database.Database, id: string): RemovedTasks {
       n: number
     }
     if (left.n !== 0) throw new Error('Could not delete that task.')
-    return { tasks: rows.map(mapTask), mapPositions, carryLinks, parentLinks, comments }
+    const keys = recordSkipsForDeleted(db, rows)
+    const root = rows.find((row) => row.id === taskId)
+    const rootKey = root ? keys.get(root.chainId) : null
+    const willCarry = Boolean(root?.carriedFromId && rootKey && chainCarriesOn(db, rootKey))
+    return {
+      removed: { tasks: rows.map(mapTask), mapPositions, carryLinks, parentLinks, comments },
+      willCarry,
+    }
   })
   return remove(id)
 }
@@ -109,6 +117,7 @@ export function restoreRemovedOn(db: Database.Database, removed: RemovedTasks): 
       insertPosition.run(position.taskId, position.x, position.y)
     }
     restoreCommentsOn(db, { comments: removed.comments })
+    clearSkipsForRestored(db, removed.tasks)
   })
   try {
     write()

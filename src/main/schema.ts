@@ -69,6 +69,15 @@ CREATE TABLE IF NOT EXISTS images (
 
 CREATE INDEX IF NOT EXISTS idx_images_date ON images(dateKey);
 
+CREATE TABLE IF NOT EXISTS carrySkips (
+  chainId TEXT NOT NULL,
+  dateKey TEXT NOT NULL,
+  createdAt TEXT NOT NULL,
+  UNIQUE (chainId, dateKey)
+);
+
+CREATE INDEX IF NOT EXISTS idx_carry_skips_chain ON carrySkips(chainId);
+
 CREATE TABLE IF NOT EXISTS mapPositions (
   taskId TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,
   x REAL NOT NULL,

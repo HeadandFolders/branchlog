@@ -1,12 +1,17 @@
 import type { RemovedTasks } from '@shared/types'
 
-let staged: RemovedTasks | null = null
-
-export function stageRemoval(removed: RemovedTasks): void {
-  staged = removed
+export interface StagedRemoval {
+  removed: RemovedTasks
+  willCarry: boolean
 }
 
-export function takeRemoval(): RemovedTasks | null {
+let staged: StagedRemoval | null = null
+
+export function stageRemoval(removed: RemovedTasks, willCarry: boolean): void {
+  staged = { removed, willCarry }
+}
+
+export function takeRemoval(): StagedRemoval | null {
   const value = staged
   staged = null
   return value

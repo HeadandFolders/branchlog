@@ -272,7 +272,8 @@ export function installIpc(): void {
   ipcMain.on('tasks:deleteSync', (event, payload: unknown) => {
     tempMark('ipc-call', { channel: 'tasks:deleteSync' })
     try {
-      event.returnValue = { ok: true, removed: deleteTask(requireId(payload)) }
+      const removal = deleteTask(requireId(payload))
+      event.returnValue = { ok: true, removed: removal.removed, willCarry: removal.willCarry }
     } catch (error) {
       event.returnValue = failure(error)
     }

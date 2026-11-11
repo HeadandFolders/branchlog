@@ -35,6 +35,7 @@ interface Entry {
   textId: string | null
   open: boolean
   removed: RemovedTasks | null
+  willCarry: boolean
   images: { before: CanvasImage[]; after: CanvasImage[] } | null
   comments: { before: AiComment[]; after: AiComment[] } | null
   map: { before: MapPosition[]; after: MapPosition[] } | null
@@ -175,7 +176,9 @@ function pushChange(
   afterFocus: string | null,
   inputType: string,
 ): void {
-  const removed = takeRemoval()
+  const staged = takeRemoval()
+  const removed = staged?.removed ?? null
+  const willCarry = staged?.willCarry ?? false
   if (sameTasks(beforeTasks, afterTasks) && !removed) return
   const last = undoStack.at(-1)
   if (!removed && last && sameTasks(last.before, afterTasks) && sameTasks(last.after, beforeTasks)) {
@@ -198,13 +201,14 @@ function pushChange(
     textId,
     open: textId !== null && BURST.has(inputType),
     removed,
+    willCarry,
     images: null,
     comments: null,
     map: null,
   })
   if (undoStack.length > 200) undoStack.shift()
   redoStack.length = 0
-  if (removed) showDeleteNotice(removed.tasks.length)
+  if (removed) showDeleteNotice(removed.tasks.length, willCarry)
   else hideDeleteNotice()
 }
 
@@ -275,7 +279,7 @@ export function redoEditing(): void {
   entry.open = false
   redoStack.pop()
   undoStack.push(entry)
-  if (entry.removed) showDeleteNotice(entry.removed.tasks.length)
+  if (entry.removed) showDeleteNotice(entry.removed.tasks.length, entry.willCarry)
 }
 
 export function clearHistory(): void {
@@ -360,6 +364,7 @@ export function pushMapHistory(before: MapPosition[], after: MapPosition[]): voi
     textId: null,
     open: false,
     removed: null,
+    willCarry: false,
     images: null,
     comments: null,
     map: { before: clonePoints(before), after: clonePoints(after) },
@@ -387,6 +392,7 @@ export function pushCommentHistory(before: AiComment[], after: AiComment[]): voi
     textId: null,
     open: false,
     removed: null,
+    willCarry: false,
     images: null,
     comments: { before: cloneComments(before), after: cloneComments(after) },
     map: null,
@@ -418,6 +424,7 @@ export function pushImageHistory(before: CanvasImage[], after: CanvasImage[]): v
     textId: null,
     open: false,
     removed: null,
+    willCarry: false,
     images: { before: cloneImages(before), after: cloneImages(after) },
     comments: null,
     map: null,
@@ -456,6 +463,7 @@ export function foldMovedTasks(moves: readonly { id: string; x: number; y: numbe
     textId: null,
     open: false,
     removed: null,
+    willCarry: false,
     images: null,
     comments: null,
     map: null,
@@ -503,6 +511,7 @@ export function recordCarry(date: string, created: Task[]): boolean {
     textId: null,
     open: false,
     removed: null,
+    willCarry: false,
     images: null,
     comments: null,
     map: null,

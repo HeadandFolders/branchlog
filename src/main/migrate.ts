@@ -84,6 +84,9 @@ function rebuildTasks(db: Database.Database): void {
     db.exec('DROP TABLE tasks')
     db.exec('ALTER TABLE tasks_next RENAME TO tasks')
     db.exec(TASKS_INDEXES)
+    // This rebuild rewrites every chain key, so a skip recorded against an old key
+    // would block the wrong day.
+    db.exec('DELETE FROM carrySkips')
   })
   try {
     rebuild()

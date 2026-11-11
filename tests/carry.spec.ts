@@ -5,7 +5,14 @@ import path from 'node:path'
 import Database from 'better-sqlite3'
 import { expect, test } from '@playwright/test'
 import { addDays } from '../src/shared/dates.ts'
-import { carryCandidateSql, carryForward, dropTask, readTaskLife, undropTask } from '../src/main/carry.ts'
+import {
+  carryCandidateSql,
+  carryForward,
+  countCarryInput,
+  dropTask,
+  readTaskLife,
+  undropTask,
+} from '../src/main/carry.ts'
 import { migrateTasks } from '../src/main/migrate.ts'
 import { applySchema } from '../src/main/schema.ts'
 import { removeTask, restoreRemovedOn } from '../src/main/task-delete.ts'
@@ -180,6 +187,19 @@ test('finished, dropped, and old tasks stay where they are', () => {
   expect(on(db, '2026-11-15').filter((row) => row.text === 'dropped')).toHaveLength(1)
 })
 
+test('empty tasks stay where they are', () => {
+  const db = openDb()
+  at('2026-11-02T12:00:00')
+  insert(db, { text: '', dateCreated: '2026-11-01' })
+  insert(db, { text: '   ', dateCreated: '2026-11-01' })
+  insert(db, { text: 'kept', dateCreated: '2026-11-01' })
+
+  expect(countCarryInput(db)).toBe(1)
+  expect(carryForward(db).tasks.map((task) => task.text)).toEqual(['kept'])
+  expect(on(db, '2026-11-01')).toHaveLength(3)
+  expect(on(db, '2026-11-02').map((row) => row.text)).toEqual(['kept'])
+})
+
 test('running the engine twice creates one copy', () => {
   const db = openDb()
   at('2026-11-01T12:00:00')
@@ -324,7 +344,7 @@ test('deleting a middle copy relinks the chain and undo restores it', () => {
   const day3Branch = on(db, '2026-11-03', 'branch')[0]
   if (!day2Parent || !day2Branch || !day3Parent || !day3Branch) throw new Error('chain missing')
 
-  const removed = removeTask(db, day2Parent.id)
+  const { removed } = removeTask(db, day2Parent.id)
   expect(rows(db).map((row) => row.id).sort()).toEqual([parent, branch, day3Parent.id, day3Branch.id].sort())
   expect(on(db, '2026-11-03', 'parent')[0]?.carriedFromId).toBe(parent)
   expect(on(db, '2026-11-03', 'branch')[0]?.carriedFromId).toBe(branch)

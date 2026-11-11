@@ -4,12 +4,14 @@ import { tempCountRender } from '../temp-first-paint'
 
 export function DeleteNotice() {
   tempCountRender('DeleteNotice')
-  const count = useDeleteNotice()
-  if (count === null) return null
-  const label = count === 1 ? '1 task' : `${count} tasks`
+  const notice = useDeleteNotice()
+  if (notice === null) return null
+  const label = notice.willCarry
+    ? 'Removed for today. It will carry over again tomorrow.'
+    : `Deleted ${notice.count === 1 ? '1 task' : `${notice.count} tasks`}.`
   return (
     <p className="pointer-events-auto text-center text-[12px] text-[var(--text-muted)]" role="status">
-      Deleted {label}.{' '}
+      {label}{' '}
       <button
         type="button"
         className="transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:text-[var(--text)]"

@@ -167,6 +167,12 @@ export interface RemovedTasks {
   comments: AiComment[]
 }
 
+/** A delete plus the answer the undo message needs: does this chain come back tomorrow? */
+export interface TaskRemoval {
+  removed: RemovedTasks
+  willCarry: boolean
+}
+
 export interface DayLoad {
   tasks: Task[]
   comments: AiComment[]
@@ -251,7 +257,9 @@ export type ContinuationWriteResult =
   | { ok: true; task: Task; continuation: Continuation }
   | { ok: false }
 
-export type DeleteResult = { ok: true; removed: RemovedTasks } | { ok: false }
+export type DeleteResult =
+  | { ok: true; removed: RemovedTasks; willCarry: boolean }
+  | { ok: false }
 
 export type ImageResult = { ok: true; image: CanvasImage } | { ok: false }
 
@@ -472,7 +480,7 @@ export function isDayLoad(value: unknown): value is DayLoad {
 export function isDeleteResult(value: unknown): value is DeleteResult {
   if (!isRecord(value) || typeof value.ok !== 'boolean') return false
   if (value.ok === false) return true
-  return isRemovedTasks(value.removed)
+  return typeof value.willCarry === 'boolean' && isRemovedTasks(value.removed)
 }
 
 export function isAck(value: unknown): value is Ack {

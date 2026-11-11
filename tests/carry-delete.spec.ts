@@ -82,7 +82,7 @@ test('deleting a finished parent preserves later carried branch subtrees and und
   const positions = db.prepare('SELECT * FROM mapPositions').all()
   const comments = db.prepare('SELECT * FROM aiComments').all()
 
-  const removed = removeTask(db, parent)
+  const { removed } = removeTask(db, parent)
   expect(removed.tasks.map((task) => task.id).sort()).toEqual([parent, branch, child, ordinary, ordinaryChild].sort())
   expect(removed.parentLinks).toEqual(expect.arrayContaining([
     { id: branch2.id, parentId: parent }, { id: branch3.id, parentId: parent },
@@ -102,7 +102,7 @@ test('deleting a finished parent preserves later carried branch subtrees and und
   restoreRemovedOn(db, removed)
   expect(snapshot()).toEqual(before)
   expect(db.pragma('foreign_key_check')).toEqual([])
-  const redone = removeTask(db, parent)
+  const { removed: redone } = removeTask(db, parent)
   expect(snapshot()).toEqual(deleted)
   restoreRemovedOn(db, redone)
   expect(snapshot()).toEqual(before)
@@ -121,7 +121,7 @@ test('explicitly deleting a middle carried copy removes its same-day carried bra
   const branch3 = day3.find((task) => task.chainId === branch)!
   const before = snapshot()
 
-  const removed = removeTask(db, parent2.id)
+  const { removed } = removeTask(db, parent2.id)
   expect(removed.tasks.map((task) => task.id).sort()).toEqual([parent2.id, branch2.id].sort())
   expect(removed.parentLinks).toEqual([])
   expect(links(parent3.id)).toEqual({ parentId: null, carriedFromId: parent })
@@ -138,7 +138,7 @@ test('a carry whose predecessor was deleted remains protected by its chain ident
   const copy = insert('surviving head', '2026-11-02', { parentId: parent, chainId, carriedFromId: null })
   const child = insert('subtree', '2026-11-02', { parentId: copy, side: 'right' })
   const before = snapshot()
-  const removed = removeTask(db, parent)
+  const { removed } = removeTask(db, parent)
   expect(removed.tasks.map((task) => task.id)).toEqual([parent])
   expect(links(copy)).toEqual({ parentId: null, carriedFromId: null })
   expect(links(child)?.parentId).toBe(copy)
@@ -149,7 +149,7 @@ test('a carry whose predecessor was deleted remains protected by its chain ident
 test('deletion reply guards require saved parent links with string identities', () => {
   const parent = insert('parent', '2026-11-01')
   const copy = insert('copy', '2026-11-02', { parentId: parent, chainId: randomUUID() })
-  const removed = removeTask(db, parent)
+  const { removed } = removeTask(db, parent)
   expect(removed.parentLinks).toEqual([{ id: copy, parentId: parent }])
   expect(isRemovedTasks(removed)).toBe(true)
   expect(isRemovedTasks({ ...removed, parentLinks: undefined })).toBe(false)

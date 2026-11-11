@@ -21,22 +21,36 @@ export interface CarryResult {
   ms: number
 }
 
+// A chain never gets a copy on a date the user deleted one (carrySkips), and the carry
+// window is measured from the later of its newest copy and its newest skip, so a task the
+// user keeps deferring does not age out of the engine.
 const CANDIDATE_SQL = `
 WITH latest AS (
   SELECT chainId, MAX(dateCreated) AS dateCreated
   FROM tasks
   GROUP BY chainId
+),
+paused AS (
+  SELECT chainId, MAX(dateKey) AS dateKey
+  FROM carrySkips
+  GROUP BY chainId
 )
 SELECT t.rowid AS rowid, ${TASK_COLUMNS.split(', ').map((column) => `t.${column}`).join(', ')}
 FROM tasks AS t
 JOIN latest AS l ON l.chainId = t.chainId AND l.dateCreated = t.dateCreated
+LEFT JOIN paused AS p ON p.chainId = t.chainId
 WHERE t.dateCreated < @today
-  AND t.dateCreated >= @start
+  AND COALESCE(MAX(l.dateCreated, p.dateKey), l.dateCreated) >= @start
   AND t.dateCompleted IS NULL
   AND t.droppedAt IS NULL
+  AND TRIM(t.text) <> ''
   AND NOT EXISTS (
     SELECT 1 FROM tasks AS taken
     WHERE taken.chainId = t.chainId AND taken.dateCreated = @today
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM carrySkips AS skipped
+    WHERE skipped.chainId = t.chainId AND skipped.dateKey = @today
   )
 `
 
@@ -76,7 +90,8 @@ export function countCarryInput(db: Database.Database): number {
     .prepare(
       `SELECT COUNT(*) AS n FROM tasks
        WHERE dateCreated < ? AND dateCreated >= ?
-         AND dateCompleted IS NULL AND droppedAt IS NULL`,
+         AND dateCompleted IS NULL AND droppedAt IS NULL
+         AND TRIM(text) <> ''`,
     )
     .get(today, start) as { n: number }
   return row.n
