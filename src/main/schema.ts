@@ -20,7 +20,9 @@ CREATE TABLE IF NOT EXISTS tasks (
   orderIndex INTEGER NOT NULL DEFAULT 0,
   carriedFromId TEXT,
   chainId TEXT NOT NULL DEFAULT '',
-  droppedAt TEXT
+  droppedAt TEXT,
+  projectId TEXT REFERENCES aiBriefs(id) ON DELETE SET NULL,
+  projectHoldDismissed INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(dateCreated, side, orderIndex);
@@ -37,7 +39,9 @@ CREATE TABLE IF NOT EXISTS aiComments (
   keptRanges TEXT NOT NULL DEFAULT '[]',
   x REAL NOT NULL DEFAULT 0,
   y REAL NOT NULL DEFAULT 0,
-  createdAt TEXT NOT NULL
+  createdAt TEXT NOT NULL,
+  projectId TEXT,
+  projectPinned INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_ai_comments_task ON aiComments(taskId);
@@ -52,6 +56,27 @@ CREATE TABLE IF NOT EXISTS aiReplies (
 );
 
 CREATE INDEX IF NOT EXISTS idx_ai_replies_comment ON aiReplies(commentId);
+
+CREATE TABLE IF NOT EXISTS aiBriefs (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+  filePath TEXT NOT NULL UNIQUE COLLATE NOCASE,
+  summary TEXT NOT NULL DEFAULT '',
+  contentHash TEXT NOT NULL,
+  mtimeMs REAL NOT NULL DEFAULT 0,
+  enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
+  alwaysInclude INTEGER NOT NULL DEFAULT 0 CHECK (alwaysInclude IN (0, 1)),
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_briefs_include ON aiBriefs(enabled, alwaysInclude);
+
+CREATE TABLE IF NOT EXISTS dayNotes (
+  dateKey TEXT PRIMARY KEY,
+  text TEXT NOT NULL DEFAULT '',
+  updatedAt TEXT NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS images (
   id TEXT PRIMARY KEY,

@@ -8,10 +8,13 @@ import type {
   CommentRequest,
 } from '@shared/ai-comments'
 import type { Task } from '@shared/types'
+import { splitRequestPrefix } from '@shared/ai-request'
+import { refsForTask, withBriefContext } from './ai-brief-context'
 import { ancestorsOf } from './ai-context'
 import { finishAiFlight, isCurrentAiFlight, startAiFlight } from './ai-flight'
 import { readAiSettings } from './ai-settings-store'
 import { parseCommentJson, parseReplyJson } from './ai-parse'
+import { briefIdsForProject, projectForComment } from './ai-project'
 import { buildCommentMessages, buildReplyMessages, COMMENT_SCHEMA, REPLY_SCHEMA } from './ai-prompts'
 import { addReplies, countCommentsOn, getComment, insertComment } from './ai-store'
 import { getTask, listTasksByDate } from './database'
@@ -28,16 +31,32 @@ export async function requestComment(input: CommentRequest): Promise<AiCommentRe
   if (!settings.enabled) return { kind: 'none' }
   const task = getTask(input.taskId)
   if (!eligible(task, input.text)) return { kind: 'none' }
+  // A request row is answered, not remarked, unless the person asked for both.
+  if (splitRequestPrefix(task.text).isRequest && !settings.remarkOnRequests) return { kind: 'none' }
   if (countCommentsOn(task.dateCreated) >= settings.maxCommentsPerDay) return { kind: 'none' }
 
   const flight = startAiFlight('auto', input.requestId)
   try {
-    const messages = buildCommentMessages(task, ancestorsOf(task), listTasksByDate(task.dateCreated))
+    const refs = refsForTask(task)
+    const project = projectForComment(task)
+    const messages = withBriefContext({
+      messages: buildCommentMessages(
+        task,
+        ancestorsOf(task),
+        listTasksByDate(task.dateCreated),
+        settings.requestClarify,
+      ),
+      briefIds: briefIdsForProject(refs.briefIds, project.projectId),
+      dayNote: refs.dayNote,
+      modelContextTokens: settings.modelContextTokens,
+      answerMaxChars: settings.answerMaxChars,
+    })
     const reply = await requestChat({
       baseUrl: settings.baseUrl,
       model: settings.model,
       messages,
       schema: COMMENT_SCHEMA,
+      timeoutMs: settings.chatTimeoutMs,
       signal: flight.controller.signal,
     })
     if (!isCurrentAiFlight(flight)) return { kind: 'none' }
@@ -58,6 +77,8 @@ export async function requestComment(input: CommentRequest): Promise<AiCommentRe
       x: input.x,
       y: input.y,
       createdAt: new Date().toISOString(),
+      projectId: project.projectId,
+      projectPinned: project.projectPinned,
       replies: [],
     }
     insertComment(comment)
@@ -80,8 +101,14 @@ export async function replyToComment(input: CommentReplyInput): Promise<AiReplyR
     const reply = await requestChat({
       baseUrl: settings.baseUrl,
       model: settings.model,
-      messages: buildReplyMessages(task, comment, input.text),
+      messages: withBriefContext({
+        messages: buildReplyMessages(task, comment, input.text, settings.requestClarify),
+        ...refsForTask(task),
+        modelContextTokens: settings.modelContextTokens,
+        answerMaxChars: settings.answerMaxChars,
+      }),
       schema: REPLY_SCHEMA,
+      timeoutMs: settings.chatTimeoutMs,
       signal: flight.controller.signal,
     })
     if (!isCurrentAiFlight(flight)) return { kind: 'none' }

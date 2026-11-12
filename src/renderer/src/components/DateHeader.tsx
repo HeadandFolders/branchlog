@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { parseDateKey } from '@shared/dates'
 import { useNotebook } from '../store/notebook'
 import { useTodayKey } from '../lib/today'
+import { DayNote } from './DayNote'
 import { tempCountRender } from '../temp-first-paint'
 
 function dayLabel(dateKey: string, todayKey: string): string {
@@ -54,6 +55,7 @@ export function DateHeader() {
       <h1 className="mt-8 text-[32px] font-semibold tracking-[-0.02em] text-[var(--text)]" aria-live="polite">
         {dayLabel(currentDate, todayKey)}
       </h1>
+      <DayNote />
     </div>
   )
 }

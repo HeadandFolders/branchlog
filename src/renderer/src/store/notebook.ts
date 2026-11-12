@@ -4,7 +4,9 @@ import { tempMark, tempMs } from '@shared/temp-timing'
 import type { Continuation, MenuAction, Task, TaskChainState } from '@shared/types'
 import { useAiComments } from './ai-comments'
 import { attachChainStates, refreshChainStates } from './chain-states'
+import { projectRefForText, refreshBriefs } from './briefs'
 import { removeDeletedTasks } from './delete-task'
+import { flushDayNote } from './day-note'
 import { attachHistory, clearHistory } from './history'
 import { layoutAfterWrite, layoutBeforeWrite, prepareHistoryStep } from './layout-bridge'
 import { cancelPendingSizes, clearPendingSize, flushSizesSync, scheduleSize, shiftPendingSize, updateSizedTaskText } from './task-size'
@@ -44,12 +46,14 @@ interface NotebookState {
   flushPendingSync: () => void
   toggleDone: (id: string) => Promise<void>
   setDropped: (id: string, dropped: boolean) => Promise<void>
+  dismissHold: (id: string) => Promise<void>
   deleteTask: (id: string) => void
   runMenuAction: (action: MenuAction) => void
 }
 
 interface PendingText {
   text: string
+  projectId: string | null
   timer: number
   attempts: number
 }
@@ -88,10 +92,14 @@ async function persistText(id: string): Promise<void> {
   pendingText.delete(id)
   const text = pending.text
   try {
-    await window.branchlog.tasks.update({ id, text })
+    await window.branchlog.tasks.update({ id, text, projectId: pending.projectId })
     const current = useNotebook.getState().tasks.find((task) => task.id === id)
     if (current && current.text !== text) {
-      window.branchlog.tasks.updateSync({ id, text: current.text })
+      window.branchlog.tasks.updateSync({
+        id,
+        text: current.text,
+        projectId: current.projectId,
+      })
     }
   } catch (error) {
     console.error(error)
@@ -99,6 +107,7 @@ async function persistText(id: string): Promise<void> {
     if (pending.attempts < 1) {
       pendingText.set(id, {
         text,
+        projectId: pending.projectId,
         attempts: pending.attempts + 1,
         timer: window.setTimeout(() => {
           void persistText(id)
@@ -141,6 +150,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
 
   goToDate: async (date) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
+    void refreshBriefs()
     layoutBeforeWrite('')
     const started = performance.now()
     clearHistory()
@@ -199,6 +209,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
         dateCreated: currentDate,
         text,
         afterId: after ? after.id : null,
+        projectId: projectRefForText(text),
       })
     } catch (error) {
       console.error(error)
@@ -241,6 +252,7 @@ export const useNotebook = create<NotebookState>((set, get) => ({
         text,
         x,
         y,
+        projectId: projectRefForText(text),
       })
     } catch (error) {
       console.error(error)
@@ -270,16 +282,21 @@ export const useNotebook = create<NotebookState>((set, get) => ({
 
   updateText: (id, text) => {
     layoutBeforeWrite('')
+    const projectId = projectRefForText(text)
     set((state) => ({
       tasks: state.tasks.map((task) => task.id === id
-        ? updateSizedTaskText(task, text, () => get().tasks.find((item) => item.id === id),
-          (message) => set({ error: message }))
+        ? {
+            ...updateSizedTaskText(task, text, () => get().tasks.find((item) => item.id === id),
+              (message) => set({ error: message })),
+            projectId,
+          }
         : task),
     }))
     const existing = pendingText.get(id)
     if (existing) clearTimeout(existing.timer)
     pendingText.set(id, {
       text,
+      projectId,
       attempts: 0,
       timer: window.setTimeout(() => {
         void persistText(id)
@@ -296,12 +313,13 @@ export const useNotebook = create<NotebookState>((set, get) => ({
     for (const [id, pending] of pendingText) {
       clearTimeout(pending.timer)
       try {
-        window.branchlog.tasks.updateSync({ id, text: pending.text })
+        window.branchlog.tasks.updateSync({ id, text: pending.text, projectId: pending.projectId })
       } catch (error) {
         console.error(error)
       }
     }
     pendingText.clear()
+    flushDayNote()
     flushPositionsSync()
     flushSizesSync()
   },
@@ -426,6 +444,26 @@ export const useNotebook = create<NotebookState>((set, get) => ({
       console.error(error)
       set((state) => ({
         tasks: state.tasks.map((task) => (task.id === id ? { ...task, droppedAt: previous } : task)),
+        error: 'Could not update that task.',
+      }))
+    }
+  },
+
+  // "Not this row again" is a fact about the row, so it is written on the row. It is the one field a
+  // person sets from the margin without editing the task, so nothing else rides along with it.
+  dismissHold: async (id) => {
+    const current = get().tasks.find((task) => task.id === id)
+    if (!current || current.projectHoldDismissed) return
+    set((state) => ({
+      tasks: state.tasks.map((task) => (task.id === id ? { ...task, projectHoldDismissed: true } : task)),
+      error: null,
+    }))
+    try {
+      await window.branchlog.tasks.update({ id, projectHoldDismissed: true })
+    } catch (error) {
+      console.error(error)
+      set((state) => ({
+        tasks: state.tasks.map((task) => (task.id === id ? { ...task, projectHoldDismissed: false } : task)),
         error: 'Could not update that task.',
       }))
     }

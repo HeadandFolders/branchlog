@@ -1,19 +1,26 @@
-import { BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
 import { tempMark, tempMs } from '@shared/temp-timing'
 import { themeBackground, type ThemeDocument } from '@shared/theme'
-import type { ContinuationWriteResult, WriteResult } from '@shared/types'
+import { DEFAULT_BRIEFS_MAX_CHARS, type BriefResult } from '@shared/ai-briefs'
+import type { Ack, ContinuationWriteResult, WriteResult } from '@shared/types'
 import { createContinuation, listContinuations, searchEarlierTasks } from './continuation'
 import { installAiRequestIpc } from './ai-request-ipc'
 import { cancelAiFlights } from './ai-flight'
 import { readAiSettings, writeAiSettings } from './ai-settings-store'
 import {
+  deleteBrief,
   listCommentsByDate,
   removeComment,
   replaceComments,
   restoreCommentsOn,
+  setBriefAlwaysInclude,
+  setBriefEnabled,
+  setCommentProject,
   setCommentStatus,
   setKeptRanges,
 } from './ai-store'
+import { briefErrorMessage, linkFiles, linkFolder, listBriefViews, refreshBrief } from './briefs'
+import { readDayNote, writeDayNote } from './day-note'
 import { getDatabase } from './database'
 import { listModels } from './lm-studio'
 import { createBranch, createTask, getTask, listActivityCounts, listTasksByDate, updateTask } from './database'
@@ -24,10 +31,12 @@ import { commitLayout } from './layout-save'
 import { loadMapData, saveMapPositions } from './map-data'
 import {
   readAutoSeparate,
+  readBriefsMaxChars,
   readHighlightCarried,
   readMapExpandChains,
   readSwipeToPan,
   writeAutoSeparate,
+  writeBriefsMaxChars,
   writeHighlightCarried,
   writeMapExpandChains,
   writeSwipeToPan,
@@ -39,11 +48,16 @@ import { deleteTask, restoreRemoved } from './task-tree'
 import {
   parseAiBaseUrl,
   parseAiSettingsPayload,
+  parseBriefFlag,
+  parseBriefId,
+  parseBriefsMaxChars,
   parseCommentReplace,
+  parseCommentProject,
   parseCommentStatus,
   parseCreateBranch,
   parseCreateContinuation,
   parseCreateTask,
+  parseDayNoteWrite,
   parseEarlierQuery,
   parseImageDelete,
   parseImageDrop,
@@ -73,6 +87,25 @@ function paintWindow(theme: ThemeDocument): void {
 function failure(error: unknown): WriteResult {
   console.error(error)
   return { ok: false }
+}
+
+function writeBriefResult(run: () => void): BriefResult {
+  try {
+    run()
+    return { ok: true }
+  } catch (error) {
+    console.error(error)
+    return { ok: false, message: briefErrorMessage(error) }
+  }
+}
+
+async function openBriefsDialog(
+  event: Electron.IpcMainInvokeEvent,
+  options: Electron.OpenDialogOptions,
+): Promise<string[]> {
+  const parent = BrowserWindow.fromWebContents(event.sender)
+  const result = parent ? await dialog.showOpenDialog(parent, options) : await dialog.showOpenDialog(options)
+  return result.canceled ? [] : result.filePaths
 }
 
 let ipcCalls = 0
@@ -500,6 +533,15 @@ export function installIpc(): void {
     }
   })
 
+  ipcMain.on('ai:setCommentProject', (event, payload: unknown) => {
+    try {
+      const input = parseCommentProject(payload)
+      event.returnValue = { ok: true, comment: setCommentProject(input.commentId, input.projectId) }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
   ipcMain.on('ai:setKeptRanges', (event, payload: unknown) => {
     try {
       const input = parseKeptRangesInput(payload)
@@ -533,6 +575,100 @@ export function installIpc(): void {
       const input = parseCommentReplace(payload)
       replaceComments(input.date, input.comments)
       event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.handle('briefs:list', () => {
+    try {
+      return listBriefViews()
+    } catch (error) {
+      console.error('briefs:list', error)
+      throw new Error('Could not load the briefs')
+    }
+  })
+
+  ipcMain.handle('briefs:linkFolder', async (event) => {
+    try {
+      const picked = await openBriefsDialog(event, {
+        title: 'Link a folder of briefs',
+        buttonLabel: 'Link folder',
+        properties: ['openDirectory'],
+      })
+      if (picked.length === 0) return { ok: true, briefs: [] } satisfies BriefResult
+      return { ok: true, briefs: linkFolder(picked[0]) } satisfies BriefResult
+    } catch (error) {
+      return { ok: false, message: briefErrorMessage(error) } satisfies BriefResult
+    }
+  })
+
+  ipcMain.handle('briefs:linkFiles', async (event) => {
+    try {
+      const picked = await openBriefsDialog(event, {
+        title: 'Link brief files',
+        buttonLabel: 'Link briefs',
+        properties: ['openFile', 'multiSelections'],
+        filters: [{ name: 'Markdown', extensions: ['md', 'markdown'] }],
+      })
+      if (picked.length === 0) return { ok: true, briefs: [] } satisfies BriefResult
+      return { ok: true, briefs: linkFiles(picked) } satisfies BriefResult
+    } catch (error) {
+      return { ok: false, message: briefErrorMessage(error) } satisfies BriefResult
+    }
+  })
+
+  ipcMain.handle('briefs:refresh', (_event, payload: unknown) => {
+    return writeBriefResult(() => refreshBrief(parseBriefId(payload)))
+  })
+
+  ipcMain.handle('briefs:setEnabled', (_event, payload: unknown) => {
+    const input = parseBriefFlag(payload)
+    return writeBriefResult(() => setBriefEnabled(input.id, input.on))
+  })
+
+  ipcMain.handle('briefs:setAlwaysInclude', (_event, payload: unknown) => {
+    const input = parseBriefFlag(payload)
+    return writeBriefResult(() => setBriefAlwaysInclude(input.id, input.on))
+  })
+
+  ipcMain.handle('briefs:remove', (_event, payload: unknown) => {
+    return writeBriefResult(() => deleteBrief(parseBriefId(payload)))
+  })
+
+  ipcMain.on('briefs:maxChars', (event) => {
+    try {
+      event.returnValue = readBriefsMaxChars()
+    } catch (error) {
+      console.error(error)
+      event.returnValue = DEFAULT_BRIEFS_MAX_CHARS
+    }
+  })
+
+  ipcMain.on('briefs:setMaxChars', (event, payload: unknown) => {
+    try {
+      writeBriefsMaxChars(parseBriefsMaxChars(payload))
+      event.returnValue = { ok: true }
+    } catch (error) {
+      event.returnValue = failure(error)
+    }
+  })
+
+  ipcMain.handle('dayNote:get', (_event, payload: unknown) => {
+    try {
+      return readDayNote(requireDateKey(payload))
+    } catch (error) {
+      console.error('dayNote:get', error)
+      if (error instanceof Error && error.message.startsWith('Invalid')) throw new Error(error.message)
+      throw new Error('Could not complete that request')
+    }
+  })
+
+  ipcMain.on('dayNote:set', (event, payload: unknown) => {
+    try {
+      const input = parseDayNoteWrite(payload)
+      writeDayNote(input.dateKey, input.text)
+      event.returnValue = { ok: true } satisfies Ack
     } catch (error) {
       event.returnValue = failure(error)
     }

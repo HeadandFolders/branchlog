@@ -6,6 +6,7 @@ import {
   type AiReply,
   type AskAiInput,
   type CommentReplyInput,
+  type CommentProjectInput,
   type CommentRequest,
   type KeptRangesInput,
   type RemovedComments,
@@ -27,10 +28,12 @@ export function parseAskAiInput(value: unknown): AskAiInput {
   const input = requireRecord(value)
   const text = requireText(input.text)
   if (text.trim() === '') throw new Error('Invalid text')
+  if (input.request !== undefined && typeof input.request !== 'boolean') throw new Error('Invalid text')
   return {
     taskId: requireId(input.taskId),
     requestId: requireId(input.requestId),
     text,
+    ...(input.request === true ? { request: true } : {}),
   }
 }
 
@@ -53,6 +56,13 @@ export function parseCommentStatus(value: unknown): { id: string; status: AiComm
   const input = requireRecord(value)
   if (input.status !== 'open' && input.status !== 'resolved') throw new Error('Invalid comment')
   return { id: requireId(input.id), status: input.status }
+}
+
+// A chip is re-labelled with a brief that is still linked, or with no project at all.
+export function parseCommentProject(value: unknown): CommentProjectInput {
+  const input = requireRecord(value)
+  const projectId = input.projectId === null || input.projectId === undefined ? null : requireId(input.projectId)
+  return { commentId: requireId(input.commentId), projectId }
 }
 
 export function parseKeptRangesInput(value: unknown): KeptRangesInput {
@@ -110,6 +120,9 @@ function parseComment(value: unknown): AiComment {
     x: requireCoordinate(input.x),
     y: requireCoordinate(input.y),
     createdAt: parseCreatedAt(input.createdAt),
+    // A comment carries its own project label, so an undo that writes the row back keeps it.
+    projectId: input.projectId === null || input.projectId === undefined ? null : requireId(input.projectId),
+    projectPinned: input.projectPinned === true,
     replies,
   }
 }

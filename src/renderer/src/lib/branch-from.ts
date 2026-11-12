@@ -23,7 +23,7 @@ export function branchShortcutLabel(): string {
   return /Mac/i.test(navigator.userAgent) ? 'Branch (Option+Enter)' : 'Branch (Alt+Enter)'
 }
 
-export function branchFromTask(taskId: string): string | null {
+export function branchFromTask(taskId: string, branchText = ''): string | null {
   const tasks = useNotebook.getState().tasks
   const task = tasks.find((item) => item.id === taskId)
   if (!task) return null
@@ -38,7 +38,7 @@ export function branchFromTask(taskId: string): string | null {
   if (!dot) return null
   const rect = dot.getBoundingClientRect()
   const point = flow({ x: rect.right + 36, y: rect.top })
-  return useNotebook.getState().createBranch(taskId, point.x, point.y)
+  return useNotebook.getState().createBranch(taskId, point.x, point.y, branchText)
 }
 
 function shortcutTaskId(): string | null {

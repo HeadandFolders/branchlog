@@ -19,6 +19,7 @@ import { AiResolvedMarks } from './AiResolvedMarks'
 import { CarriedMark } from './CarriedMark'
 import { ContinuationMark } from './ContinuationMark'
 import { DroppedMark } from './DroppedMark'
+import { ProjectHoldAction } from './ProjectHoldAction'
 import { TaskActions, useTaskActionSpace } from './TaskActions'
 import { caretOffsets, insertPlainText } from '../lib/caret'
 import { useTaskFieldFocus } from '../lib/field-focus'
@@ -262,6 +263,7 @@ export function TaskBullet({ task }: TaskBulletProps) {
           dropped={task.droppedAt !== null}
         />
       </div>
+      {task.side === 'main' ? <ProjectHoldAction taskId={task.id} /> : null}
       <button
         type="button"
         className="branch-dot nopan nodrag"

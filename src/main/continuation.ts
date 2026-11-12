@@ -38,8 +38,8 @@ export function createContinuation(input: CreateContinuationInput): { task: Task
   const insert = db.transaction((branch: CreateContinuationInput) => {
     const today = localDateKey()
     const parent = db
-      .prepare(`SELECT id, text, dateCreated FROM tasks WHERE id = ?`)
-      .get(branch.parentId) as { id: string; text: string; dateCreated: string } | undefined
+      .prepare(`SELECT id, text, dateCreated, projectId FROM tasks WHERE id = ?`)
+      .get(branch.parentId) as { id: string; text: string; dateCreated: string; projectId: string | null } | undefined
     if (!parent || parent.id === branch.id || parent.dateCreated >= today) throw new Error('Invalid task')
 
     const row = db
@@ -53,9 +53,9 @@ export function createContinuation(input: CreateContinuationInput): { task: Task
     db.prepare(
       `INSERT INTO tasks (
          id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
-         carriedFromId, chainId, droppedAt
-       ) VALUES (?, ?, 0, ?, NULL, ?, 0, 0, ?, 0, 'main', ?, NULL, ?, NULL)`,
-    ).run(branch.id, branch.text, today, parent.id, BRANCH_WIDTH, orderIndex, branch.id)
+         carriedFromId, chainId, droppedAt, projectId
+       ) VALUES (?, ?, 0, ?, NULL, ?, 0, 0, ?, 0, 'main', ?, NULL, ?, NULL, ?)`,
+    ).run(branch.id, branch.text, today, parent.id, BRANCH_WIDTH, orderIndex, branch.id, parent.projectId)
 
     const task: Task = {
       id: branch.id,
@@ -73,6 +73,9 @@ export function createContinuation(input: CreateContinuationInput): { task: Task
       carriedFromId: null,
       chainId: branch.id,
       droppedAt: null,
+      projectId: parent.projectId,
+      // A continuation is a new question, even when it inherits its parent's project.
+      projectHoldDismissed: false,
     }
     const continuation: Continuation = {
       taskId: task.id,

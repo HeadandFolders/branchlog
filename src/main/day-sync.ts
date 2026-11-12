@@ -24,10 +24,10 @@ export function replaceDay(date: string, tasks: Task[]): void {
     const upsert = db.prepare(
       `INSERT INTO tasks (
          id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
-         carriedFromId, chainId, droppedAt
+         carriedFromId, chainId, droppedAt, projectId, projectHoldDismissed
        ) VALUES (
          @id, @text, @done, @dateCreated, @dateCompleted, NULL, @x, @y, @width, @height, @side, @orderIndex,
-         NULL, @chainId, @droppedAt
+         NULL, @chainId, @droppedAt, (SELECT id FROM aiBriefs WHERE id = @projectId), @dismissed
        )
        ON CONFLICT(id) DO UPDATE SET
          text = excluded.text,
@@ -41,7 +41,9 @@ export function replaceDay(date: string, tasks: Task[]): void {
          side = excluded.side,
          orderIndex = excluded.orderIndex,
          chainId = excluded.chainId,
-         droppedAt = excluded.droppedAt`,
+         droppedAt = excluded.droppedAt,
+         projectId = excluded.projectId,
+         projectHoldDismissed = excluded.projectHoldDismissed`,
     )
     for (const task of tasks) {
       const row = db.prepare('SELECT dateCreated FROM tasks WHERE id = ?').get(task.id) as
@@ -62,6 +64,8 @@ export function replaceDay(date: string, tasks: Task[]): void {
         orderIndex: task.orderIndex,
         chainId: task.chainId,
         droppedAt: task.droppedAt,
+        projectId: task.projectId,
+        dismissed: task.projectHoldDismissed ? 1 : 0,
       })
     }
 

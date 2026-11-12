@@ -21,6 +21,7 @@ interface AiCommentsState {
   revive: (comments: AiComment[]) => void
   replace: (comments: AiComment[]) => void
   setStatus: (id: string, status: 'open' | 'resolved') => void
+  setProject: (commentId: string, projectId: string | null) => void
   setKeptRanges: (commentId: string, replyId: string | null, keptRanges: string) => void
   remove: (id: string) => void
   sendReply: (id: string, text: string) => Promise<boolean>
@@ -168,6 +169,20 @@ export const useAiComments = create<AiCommentsState>((set, get) => ({
     }
     set((state) => ({
       comments: state.comments.map((comment) => (comment.id === id ? wrote.comment : comment)),
+      error: null,
+    }))
+  },
+
+  // A chip pick is a label and nothing else: it says which project this answer was written under, and
+  // pins it so no later guess can move it. It sends no request.
+  setProject: (commentId, projectId) => {
+    const wrote = window.branchlog.ai.setCommentProjectSync({ commentId, projectId })
+    if (!wrote.ok) {
+      set({ error: 'Could not label that comment.' })
+      return
+    }
+    set((state) => ({
+      comments: state.comments.map((comment) => (comment.id === commentId ? wrote.comment : comment)),
       error: null,
     }))
   },

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { PendingSave } from '@shared/ai-comments'
 import { useAiComments } from './ai-comments'
 import { useAiSettings } from './ai-settings'
 import { pushCommentHistory } from './history'
@@ -8,7 +9,10 @@ interface AskAiState {
   taskId: string | null
   requestId: string | null
   messages: Record<string, string>
-  ask: (taskId: string) => Promise<void>
+  // One save offer per answer, kept only for this screen: the file is written when the person
+  // clicks Save, so nothing here reaches the database.
+  pendingSaves: Record<string, PendingSave>
+  ask: (taskId: string, request?: boolean) => Promise<void>
   cancel: () => void
 }
 
@@ -16,6 +20,7 @@ export const useAskAi = create<AskAiState>((set, get) => ({
   taskId: null,
   requestId: null,
   messages: {},
+  pendingSaves: {},
 
   cancel: () => {
     const requestId = get().requestId
@@ -23,7 +28,7 @@ export const useAskAi = create<AskAiState>((set, get) => ({
     set({ taskId: null, requestId: null })
   },
 
-  ask: async (taskId) => {
+  ask: async (taskId, request = false) => {
     const notebook = useNotebook.getState()
     const task = notebook.tasks.find((item) => item.id === taskId)
     if (!notebook.ready || !task || task.side !== 'right' || task.done || task.droppedAt !== null) return
@@ -35,13 +40,23 @@ export const useAskAi = create<AskAiState>((set, get) => ({
     try {
       await notebook.flushText(taskId)
       if (get().requestId !== requestId) return
-      const result = await window.branchlog.ai.ask({ taskId, requestId, text: task.text })
+      const result = await window.branchlog.ai.ask({
+        taskId,
+        requestId,
+        text: task.text,
+        ...(request ? { request: true } : {}),
+      })
       if (get().requestId !== requestId || useNotebook.getState().currentDate !== date) return
       if (result.kind === 'comment') {
+        const comment = result.comment
         const before = useAiComments.getState().comments
-        const after = [...before, result.comment]
+        const after = [...before, comment]
         pushCommentHistory(before, after)
         useAiComments.setState({ comments: after, offline: false, error: null })
+        const pendingSave = result.pendingSave
+        if (pendingSave) {
+          set((state) => ({ pendingSaves: { ...state.pendingSaves, [comment.id]: pendingSave } }))
+        }
       } else {
         set((state) => ({
           messages: { ...state.messages, [taskId]: result.kind === 'offline' ? 'LM Studio is offline.' : 'No answer this time.' },
@@ -65,7 +80,7 @@ export function installAskAiLifecycle(): () => void {
     const pending = useAskAi.getState()
     if (state.currentDate !== before.currentDate || !state.ready) {
       pending.cancel()
-      useAskAi.setState({ messages: {} })
+      useAskAi.setState({ messages: {}, pendingSaves: {} })
       return
     }
     if (!pending.taskId) return
@@ -75,12 +90,13 @@ export function installAskAiLifecycle(): () => void {
   const removeSettings = useAiSettings.subscribe((state, before) => {
     if (state.settings.enabled !== before.settings.enabled || state.settings.baseUrl !== before.settings.baseUrl || state.settings.model !== before.settings.model) {
       useAskAi.getState().cancel()
-      useAskAi.setState({ messages: {} })
+      useAskAi.setState({ messages: {}, pendingSaves: {} })
     }
   })
   return () => {
     removeNotebook()
     removeSettings()
     useAskAi.getState().cancel()
+    useAskAi.setState({ pendingSaves: {} })
   }
 }

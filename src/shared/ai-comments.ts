@@ -1,6 +1,8 @@
 export type AiCommentType = 'question' | 'remark' | 'correction'
 export type AiCommentStatus = 'open' | 'resolved'
 
+export const MAX_SUGGESTED_NAME_CHARS = 120
+
 export interface AiReply {
   id: string
   commentId: string
@@ -21,6 +23,10 @@ export interface AiComment {
   x: number
   y: number
   createdAt: string
+  // The brief this answer was written under, and whether the person said so themselves. A pinned
+  // project is a correction: later auto-attribution leaves it alone.
+  projectId: string | null
+  projectPinned: boolean
   replies: AiReply[]
 }
 
@@ -32,10 +38,18 @@ export interface CommentRequest {
   y: number
 }
 
+// Re-labelling a comment is not a request: it writes the row and sends nothing to the model.
+export interface CommentProjectInput {
+  commentId: string
+  projectId: string | null
+}
+
 export interface AskAiInput {
   taskId: string
   requestId: string
   text: string
+  /** A committed `@r` request runs the tool-mode answer lane instead of the schema one. */
+  request?: boolean
 }
 
 export interface CommentReplyInput {
@@ -54,8 +68,15 @@ export interface RemovedComments {
   comments: AiComment[]
 }
 
+// Only ever carried on the result of one request: the app writes a file when the person clicks
+// Save, so nothing here is stored with the comment.
+export interface PendingSave {
+  content: string
+  suggestedName?: string
+}
+
 export type AiCommentResult =
-  | { kind: 'comment'; comment: AiComment }
+  | { kind: 'comment'; comment: AiComment; pendingSave?: PendingSave }
   | { kind: 'none' }
   | { kind: 'offline' }
 
@@ -125,6 +146,8 @@ export function isAiComment(value: unknown): value is AiComment {
     typeof value.x === 'number' &&
     typeof value.y === 'number' &&
     typeof value.createdAt === 'string' &&
+    (value.projectId === null || typeof value.projectId === 'string') &&
+    typeof value.projectPinned === 'boolean' &&
     Array.isArray(value.replies) &&
     value.replies.every(isAiReply)
   )
@@ -134,6 +157,15 @@ export function isAiCommentList(value: unknown): value is AiComment[] {
   return Array.isArray(value) && value.every(isAiComment)
 }
 
+export function isPendingSave(value: unknown): value is PendingSave {
+  if (!isRecord(value)) return false
+  if (typeof value.content !== 'string' || value.content === '') return false
+  return (
+    value.suggestedName === undefined ||
+    (typeof value.suggestedName === 'string' && value.suggestedName.length <= MAX_SUGGESTED_NAME_CHARS)
+  )
+}
+
 export function isRemovedComments(value: unknown): value is RemovedComments {
   return isRecord(value) && isAiCommentList(value.comments)
 }
@@ -141,7 +173,11 @@ export function isRemovedComments(value: unknown): value is RemovedComments {
 export function isAiCommentResult(value: unknown): value is AiCommentResult {
   if (!isRecord(value)) return false
   if (value.kind === 'none' || value.kind === 'offline') return true
-  return value.kind === 'comment' && isAiComment(value.comment)
+  return (
+    value.kind === 'comment' &&
+    isAiComment(value.comment) &&
+    (value.pendingSave === undefined || isPendingSave(value.pendingSave))
+  )
 }
 
 export function isAiReplyResult(value: unknown): value is AiReplyResult {

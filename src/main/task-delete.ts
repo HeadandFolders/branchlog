@@ -76,10 +76,10 @@ export function restoreRemovedOn(db: Database.Database, removed: RemovedTasks): 
     const insert = db.prepare(
       `INSERT INTO tasks (
          id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
-         carriedFromId, chainId, droppedAt
+         carriedFromId, chainId, droppedAt, projectId, projectHoldDismissed
        ) VALUES (
          @id, @text, @done, @dateCreated, @dateCompleted, NULL, @x, @y, @width, @height, @side, @orderIndex,
-         NULL, @chainId, @droppedAt
+         NULL, @chainId, @droppedAt, (SELECT id FROM aiBriefs WHERE id = @projectId), @dismissed
        )`,
     )
     for (const task of removed.tasks) {
@@ -97,6 +97,8 @@ export function restoreRemovedOn(db: Database.Database, removed: RemovedTasks): 
         orderIndex: task.orderIndex,
         chainId: task.chainId,
         droppedAt: task.droppedAt,
+        projectId: task.projectId,
+        dismissed: task.projectHoldDismissed ? 1 : 0,
       })
     }
     const setParent = db.prepare('UPDATE tasks SET parentId = ? WHERE id = ?')

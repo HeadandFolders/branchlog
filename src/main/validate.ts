@@ -1,5 +1,7 @@
+import { BRIEFS_MAX_CHARS_RANGE } from '@shared/ai-briefs'
 import { parseAiSettings, parseBaseUrl, type AiSettings } from '@shared/ai-settings'
 import { BRANCH_MIN_WIDTH } from '@shared/branch-size'
+import { DAY_NOTE_MAX_CHARS } from '@shared/day-note'
 import { parseThemeDocument, type ThemeDocument } from '@shared/theme'
 import { parseRemovedComments } from './ai-validate'
 import type {
@@ -94,7 +96,7 @@ export function parseCreateTask(value: unknown): CreateTaskInput {
   if (input.afterId !== undefined && input.afterId !== null) {
     afterId = requireId(input.afterId)
   }
-  return { id, dateCreated, text, afterId }
+  return { id, dateCreated, text, afterId, projectId: parseProjectRef(input).projectId }
 }
 
 export function requireCoordinate(value: unknown): number {
@@ -119,6 +121,7 @@ export function parseCreateBranch(value: unknown): CreateBranchInput {
     text: input.text === undefined ? '' : requireText(input.text),
     x: requireCoordinate(input.x),
     y: requireCoordinate(input.y),
+    projectId: parseProjectRef(input).projectId,
   }
 }
 
@@ -154,17 +157,33 @@ export function parseUpdateTask(value: unknown): UpdateTaskInput {
   if ('y' in input && input.y !== undefined) result.y = requireCoordinate(input.y)
   if ('width' in input && input.width !== undefined) result.width = requireSize(input.width, BRANCH_MIN_WIDTH)
   if ('height' in input && input.height !== undefined) result.height = requireSize(input.height, 0)
+  if ('projectId' in input && input.projectId !== undefined) {
+    result.projectId = parseProjectRef(input).projectId
+  }
+  if ('projectHoldDismissed' in input && input.projectHoldDismissed !== undefined) {
+    result.projectHoldDismissed = parseFlag(input.projectHoldDismissed)
+  }
   if (
     result.text === undefined &&
     result.done === undefined &&
     result.x === undefined &&
     result.y === undefined &&
     result.width === undefined &&
-    result.height === undefined
+    result.height === undefined &&
+    result.projectId === undefined &&
+    result.projectHoldDismissed === undefined
   ) {
     throw new Error('Invalid request')
   }
   return result
+}
+
+export function parseDayNoteWrite(value: unknown): { dateKey: string; text: string } {
+  const input = requireRecord(value)
+  const dateKey = requireDateKey(input.dateKey)
+  const text = requireText(input.text)
+  if (text.trim().length > DAY_NOTE_MAX_CHARS) throw new Error('Invalid request')
+  return { dateKey, text }
 }
 
 export function parseTaskDrop(value: unknown): { id: string; dropped: boolean } {
@@ -192,6 +211,13 @@ function parseCarryColumns(
   let droppedAt: string | null = null
   if (input.droppedAt !== null && input.droppedAt !== undefined) droppedAt = requireDateKey(input.droppedAt)
   return { carriedFromId, chainId, droppedAt }
+}
+
+// The brief may have been unlinked between the page reading it and writing the row back, and an
+// unknown id binds nothing rather than refusing the write.
+function parseProjectRef(input: Record<string, unknown>): { projectId: string | null } {
+  if (input.projectId === null || input.projectId === undefined) return { projectId: null }
+  return { projectId: requireId(input.projectId) }
 }
 
 function parseSnapshot(value: unknown, date: string): Task {
@@ -222,6 +248,8 @@ function parseSnapshot(value: unknown, date: string): Task {
     side: input.side,
     orderIndex: requireInteger(input.orderIndex),
     ...parseCarryColumns(input, id),
+    ...parseProjectRef(input),
+    projectHoldDismissed: input.projectHoldDismissed === undefined ? false : parseFlag(input.projectHoldDismissed),
   }
 }
 
@@ -252,6 +280,8 @@ function parseRemovedTask(value: unknown): Task {
     side: input.side,
     orderIndex: requireInteger(input.orderIndex),
     ...parseCarryColumns(input, id),
+    ...parseProjectRef(input),
+    projectHoldDismissed: input.projectHoldDismissed === undefined ? false : parseFlag(input.projectHoldDismissed),
   }
 }
 
@@ -440,6 +470,27 @@ export function parseFlag(value: unknown): boolean {
   return value
 }
 
+export function parseBriefId(value: unknown): string {
+  return requireId(value)
+}
+
+export function parseBriefFlag(value: unknown): { id: string; on: boolean } {
+  const input = requireRecord(value)
+  return { id: requireId(input.id), on: parseFlag(input.on) }
+}
+
+export function parseBriefsMaxChars(value: unknown): number {
+  if (
+    typeof value !== 'number' ||
+    !Number.isInteger(value) ||
+    value < BRIEFS_MAX_CHARS_RANGE.min ||
+    value > BRIEFS_MAX_CHARS_RANGE.max
+  ) {
+    throw new Error('Invalid briefs limit')
+  }
+  return value
+}
+
 export function parseReplaceDay(value: unknown): { date: string; tasks: Task[] } {
   const input = requireRecord(value)
   const date = requireDateKey(input.date)
@@ -456,6 +507,7 @@ export {
   parseCommentReply,
   parseCommentRequest,
   parseCommentStatus,
+  parseCommentProject,
   parseKeptRangesInput,
   parseRemovedComments,
 } from './ai-validate'

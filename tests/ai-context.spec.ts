@@ -57,6 +57,12 @@ function reply(index: number, role: 'user' | 'ai'): AiReply {
   }
 }
 
+function dayBlock(body: string): string[] {
+  const lines = body.split('\n')
+  const start = lines.indexOf('The day in page order:')
+  return start === -1 ? [] : lines.slice(start + 1)
+}
+
 test('the lineage is sent oldest-first and capped at five ancestors', () => {
   const ancestors = Array.from({ length: 8 }, (_, index) =>
     task({ id: `a${index}`, text: `ancestor ${index}` }),
@@ -76,49 +82,93 @@ test('the lineage is sent oldest-first and capped at five ancestors', () => {
   expect(lines[MAX_ANCESTORS]).toBe('Current task: the current task')
 })
 
-test('the day list skips the current task and right-side branches', () => {
-  const current = task()
+test('the day block numbers the main rows in page order and marks the current one', () => {
+  const current = task({ id: 't3', text: '@r draft the vendor email' })
   const day = [
-    task({ id: 't2', text: 'another main task' }),
-    task({ id: 't3', text: 'a branch', side: 'right' }),
+    task({ id: 't1', text: 'buy stamps' }),
+    task({ id: 't2', text: 'a finished one', done: true }),
     current,
-    task({ id: 't4', text: 'a finished one', done: true }),
+    task({ id: 't4', text: 'a branch of another row', side: 'right', parentId: 't1' }),
+    task({ id: 't5', text: 'a branch of the current row', side: 'right', parentId: 't3' }),
   ]
   const body = buildCommentMessages(current, [], day)[1].content
-  expect(body).toContain('- another main task')
-  expect(body).toContain('- (done) a finished one')
-  expect(body).not.toContain('a branch')
-  expect(body.match(/ship the quarterly report/g)).toHaveLength(1)
+  expect(dayBlock(body)).toEqual([
+    '1. buy stamps',
+    '2. (done) a finished one',
+    '3. [current] draft the vendor email',
+    '    - a branch of the current row',
+  ])
+  expect(body).not.toContain('a branch of another row')
+  expect(body).not.toContain('@r')
 })
 
-test('the day list stops at thirty tasks', () => {
+test('the day block hangs the current task under its own parent row', () => {
+  const current = task({ id: 'b1', text: '@r draft the vendor email', side: 'right', parentId: 't2' })
+  const day = [
+    task({ id: 't1', text: 'buy stamps' }),
+    task({ id: 't2', text: 'ship the quarterly report' }),
+    current,
+    task({ id: 'b2', text: 'a sibling branch', side: 'right', parentId: 't2' }),
+  ]
+  expect(dayBlock(buildCommentMessages(current, [], day)[1].content)).toEqual([
+    '1. buy stamps',
+    '2. ship the quarterly report',
+    '    - [current] draft the vendor email',
+    '    - a sibling branch',
+  ])
+})
+
+test('a branch of an earlier day takes the next number', () => {
+  const current = task({ id: 'b1', text: '@r draft the vendor email', side: 'right', parentId: 'older' })
+  const day = [task({ id: 't1', text: 'buy stamps' }), current]
+  expect(dayBlock(buildCommentMessages(current, [], day)[1].content)).toEqual([
+    '1. buy stamps',
+    '2. [current] draft the vendor email',
+  ])
+})
+
+test('the day block stops at thirty numbered rows', () => {
   const day = Array.from({ length: 60 }, (_, index) =>
     task({ id: `d${index}`, text: `day task ${index}` }),
   )
   const body = buildCommentMessages(task(), [], day)[1].content
-  const lines = body.split('\n').filter((line) => line.startsWith('- '))
+  const lines = dayBlock(body)
   expect(lines).toHaveLength(MAX_DAY_TASKS)
-  expect(body).toContain('- day task 0')
-  expect(body).toContain(`- day task ${MAX_DAY_TASKS - 1}`)
-  expect(body).not.toContain(`- day task ${MAX_DAY_TASKS}`)
+  expect(lines[0]).toBe('1. day task 0')
+  expect(lines.at(-1)).toBe(`${MAX_DAY_TASKS}. day task ${MAX_DAY_TASKS - 1}`)
+  expect(body).not.toContain('day task 30')
 })
 
-test('the day list stops before the two-thousand-character budget', () => {
+test('indented branches spend the same thirty-row budget', () => {
+  const current = task()
+  const day = [
+    current,
+    ...Array.from({ length: 31 }, (_, index) =>
+      task({ id: `b${index}`, text: `branch ${index}`, side: 'right', parentId: 't1' }),
+    ),
+  ]
+  const lines = dayBlock(buildCommentMessages(current, [], day)[1].content)
+  expect(lines).toHaveLength(MAX_DAY_TASKS)
+  expect(lines[0]).toBe('1. [current] ship the quarterly report')
+  expect(lines[1]).toBe('    - branch 0')
+  expect(lines.at(-1)).toBe('    - branch 28')
+  expect(lines.join('\n')).not.toContain('branch 29')
+})
+
+test('the day block stops before the two-thousand-character budget', () => {
   const day = Array.from({ length: 20 }, (_, index) =>
     task({ id: `d${index}`, text: `task ${index} ${'x'.repeat(300)}` }),
   )
-  const body = buildCommentMessages(task(), [], day)[1].content
-  const lines = body.split('\n').filter((line) => line.startsWith('- '))
-  const total = lines.reduce((sum, line) => sum + line.length, 0)
-  expect(total).toBeLessThanOrEqual(MAX_DAY_CHARS)
+  const lines = dayBlock(buildCommentMessages(task(), [], day)[1].content)
+  expect(lines.reduce((sum, line) => sum + line.length, 0)).toBeLessThanOrEqual(MAX_DAY_CHARS)
   expect(lines.length).toBeGreaterThan(0)
   expect(lines.length).toBeLessThan(20)
 })
 
 test('with no day tasks the prompt has only the lineage', () => {
-  const body = buildCommentMessages(task(), [], [task()])[1].content
+  const body = buildCommentMessages(task(), [], [])[1].content
   expect(body).toBe('Current task: ship the quarterly report')
-  expect(body).not.toContain('Other tasks today')
+  expect(body).not.toContain('The day in page order')
 })
 
 test('a reply keeps the task, the earlier comment, and the last ten replies', () => {

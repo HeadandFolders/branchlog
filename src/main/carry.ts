@@ -150,10 +150,10 @@ function copyUnfinished(db: Database.Database, today: string): Task[] {
   const insert = db.prepare(
     `INSERT INTO tasks (
        id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
-       carriedFromId, chainId, droppedAt
+       carriedFromId, chainId, droppedAt, projectId, projectHoldDismissed
      ) VALUES (
        @id, @text, 0, @dateCreated, NULL, @parentId, @x, @y, @width, @height, @side, @orderIndex,
-       @carriedFromId, @chainId, NULL
+       @carriedFromId, @chainId, NULL, @projectId, @dismissed
      )`,
   )
 
@@ -205,6 +205,9 @@ function carriedTask(
     carriedFromId: row.id,
     chainId: row.chainId,
     droppedAt: null,
+    projectId: row.projectId,
+    // The copy is the same task the person already answered about, so its "stop asking" travels too.
+    projectHoldDismissed: row.projectHoldDismissed === 1,
   }
 }
 
@@ -222,6 +225,8 @@ function taskRow(task: Task): Record<string, string | number | null> {
     orderIndex: task.orderIndex,
     carriedFromId: task.carriedFromId,
     chainId: task.chainId,
+    projectId: task.projectId,
+    dismissed: task.projectHoldDismissed ? 1 : 0,
   }
 }
 

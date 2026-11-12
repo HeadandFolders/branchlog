@@ -1,0 +1,46 @@
+.brief-complete {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 190px;
+  max-width: 320px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: 0 6px 18px color-mix(in oklab, var(--text) 12%, transparent);
+}
+
+.brief-complete [role='option'] {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  cursor: default;
+}
+
+.brief-complete [role='option'][data-active='true'] {
+  background: var(--bg-subtle);
+}
+
+.brief-complete-name {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.brief-complete-kind {
+  flex: none;
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.brief-complete [role='option'][data-brief-complete-kind='request'] .brief-complete-kind {
+  color: var(--ai);
+}

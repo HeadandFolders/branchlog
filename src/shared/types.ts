@@ -1,3 +1,4 @@
+import type { BriefResult, BriefView } from './ai-briefs'
 import type {
   AiComment,
   AiCommentDeleteResult,
@@ -6,12 +7,14 @@ import type {
   AiReplyResult,
   AskAiInput,
   CommentReplyInput,
+  CommentProjectInput,
   CommentRequest,
   KeptRangesInput,
   RemovedComments,
 } from './ai-comments'
 import { isAiComment, isAiCommentList } from './ai-comments'
 import type { AiSettings } from './ai-settings'
+import type { DayNote } from './day-note'
 import type { ThemeDocument } from './theme'
 
 export type TaskSide = 'main' | 'right'
@@ -32,6 +35,8 @@ export interface Task {
   carriedFromId: string | null
   chainId: string
   droppedAt: string | null
+  projectId: string | null
+  projectHoldDismissed: boolean
 }
 
 export interface CreateTaskInput {
@@ -39,6 +44,7 @@ export interface CreateTaskInput {
   dateCreated: string
   text: string
   afterId: string | null
+  projectId?: string | null
 }
 
 export interface CreateBranchInput {
@@ -47,6 +53,7 @@ export interface CreateBranchInput {
   text: string
   x: number
   y: number
+  projectId?: string | null
 }
 
 export interface CreateContinuationInput {
@@ -77,6 +84,8 @@ export interface UpdateTaskInput {
   y?: number
   width?: number
   height?: number
+  projectId?: string | null
+  projectHoldDismissed?: boolean
 }
 
 export interface TaskDropInput {
@@ -320,10 +329,26 @@ export interface BranchlogApi {
     cancel: (requestId: string) => void
     reply: (input: CommentReplyInput) => Promise<AiReplyResult>
     setCommentStatusSync: (id: string, status: 'open' | 'resolved') => AiCommentWriteResult
+    setCommentProjectSync: (input: CommentProjectInput) => AiCommentWriteResult
     setKeptRangesSync: (input: KeptRangesInput) => AiCommentWriteResult
     deleteCommentSync: (id: string) => AiCommentDeleteResult
     restoreCommentsSync: (removed: RemovedComments) => Ack
     replaceCommentsSync: (date: string, comments: AiComment[]) => Ack
+  }
+  briefs: {
+    list: () => Promise<BriefView[]>
+    linkFolder: () => Promise<BriefResult>
+    linkFiles: () => Promise<BriefResult>
+    refresh: (id: string) => Promise<BriefResult>
+    setEnabled: (id: string, on: boolean) => Promise<BriefResult>
+    setAlwaysInclude: (id: string, on: boolean) => Promise<BriefResult>
+    remove: (id: string) => Promise<BriefResult>
+    maxCharsSync: () => number
+    setMaxCharsSync: (value: number) => Ack
+  }
+  dayNote: {
+    get: (date: string) => Promise<DayNote | null>
+    setSync: (date: string, text: string) => Ack
   }
   onMenuAction: (callback: (action: MenuAction) => void) => () => void
   onResume: (callback: () => void) => () => void
@@ -355,7 +380,9 @@ export function isTask(value: unknown): value is Task {
     (value.carriedFromId === null || typeof value.carriedFromId === 'string') &&
     typeof value.chainId === 'string' &&
     value.chainId.length > 0 &&
-    (value.droppedAt === null || typeof value.droppedAt === 'string')
+    (value.droppedAt === null || typeof value.droppedAt === 'string') &&
+    (value.projectId === null || typeof value.projectId === 'string') &&
+    typeof value.projectHoldDismissed === 'boolean'
   )
 }
 

@@ -36,11 +36,17 @@ test('explicit answers use a helpful distinct prompt and the existing bounded da
   expect(messages[0].content).toContain('Never rewrite')
   expect(messages[1].content).toBe(buildCommentMessages(current, ancestors, day)[1].content)
   expect(messages[1].content).not.toContain('ancestor 5')
-  expect(messages[1].content.split('\n').filter((line) => line.startsWith('- '))).toHaveLength(30)
+  const numbered = (content: string) => content.split('\n').filter((line) => /^\d+\./.test(line))
+  expect(numbered(messages[1].content)).toEqual(
+    day.slice(0, 30).map((item, index) => `${index + 1}. ${item.text}`),
+  )
+  expect(messages[1].content).toContain('Current task: How should I start?')
   expect(messages[1].content).not.toContain('task 30')
   const longDay = day.map((item) => ({ ...item, text: 'x'.repeat(300) }))
-  const lines = buildAnswerMessages(current, [], longDay)[1].content.split('\n').filter((line) => line.startsWith('- '))
+  const lines = numbered(buildAnswerMessages(current, [], longDay)[1].content)
   expect(lines.join('').length).toBeLessThanOrEqual(2000)
+  expect(lines.length).toBeGreaterThan(0)
+  expect(lines.length).toBeLessThan(longDay.length)
 })
 
 test('right-side follow-ups are helpful and left-side replies keep their quiet prompt', () => {
@@ -54,12 +60,16 @@ test('every prompt demotes notebook text to context so a task cannot steer the m
   }
 })
 
-test('answer parsing accepts trimmed text and rejects null, wrong fields, and oversized text', () => {
+test('answer parsing accepts trimmed text, cuts an oversized answer, and keeps the null signal', () => {
   expect(parseAnswerJson({ answer: '  useful answer  ' })).toBe('useful answer')
-  for (const value of [null, [], {}, { answer: null }, { answer: 5 }, { answer: ' \n ' }, { reply: 'wrong field' }, { answer: 'x'.repeat(2001) }]) {
+  for (const value of [null, [], {}, { answer: null }, { answer: 5 }, { answer: ' \n ' }, { reply: 'wrong field' }]) {
     expect(parseAnswerJson(value)).toBeNull()
   }
   expect(parseAnswerJson({ answer: 'x'.repeat(2000) })).toHaveLength(2000)
+  const nineThousand = parseAnswerJson({ answer: 'Word. '.repeat(1_500) })
+  expect(nineThousand).toMatch(/\[truncated\]$/)
+  expect(nineThousand?.length).toBeLessThanOrEqual(8_000)
+  expect(parseAnswerJson({ answer: 'Word. '.repeat(1_500) }, 1_000)?.length).toBeLessThanOrEqual(1_000)
 })
 
 test('ask and cancel payloads are validated and right-side rows survive restore validation', () => {

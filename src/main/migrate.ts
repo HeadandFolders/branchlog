@@ -23,7 +23,9 @@ CREATE TABLE tasks_next (
   orderIndex INTEGER NOT NULL DEFAULT 0,
   carriedFromId TEXT,
   chainId TEXT NOT NULL DEFAULT '',
-  droppedAt TEXT
+  droppedAt TEXT,
+  projectId TEXT,
+  projectHoldDismissed INTEGER NOT NULL DEFAULT 0
 );
 `
 
@@ -31,8 +33,19 @@ const TASKS_INDEXES = `
 CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(dateCreated, side, orderIndex);
 CREATE INDEX IF NOT EXISTS idx_tasks_parent ON tasks(parentId);
 CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(dateCompleted);
+CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(projectId);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_chain_date ON tasks(chainId, dateCreated);
 CREATE INDEX IF NOT EXISTS idx_tasks_carried_from ON tasks(carriedFromId);
+`
+
+// A migrated column cannot gain a foreign key through ALTER, so the delete that would have cascaded
+// is done here instead. Fresh databases declare the constraint and never install this.
+const CLEAR_PROJECT_ON_BRIEF_DELETE = `
+CREATE TRIGGER IF NOT EXISTS tasks_clear_project_on_brief_delete
+AFTER DELETE ON aiBriefs
+BEGIN
+  UPDATE tasks SET projectId = NULL WHERE projectId = OLD.id;
+END;
 `
 
 const FILL_CHAIN = `
@@ -75,10 +88,10 @@ function rebuildTasks(db: Database.Database): void {
     db.exec(
       `INSERT INTO tasks_next (
          id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
-         carriedFromId, chainId, droppedAt
+         carriedFromId, chainId, droppedAt, projectId, projectHoldDismissed
        )
        SELECT id, text, done, dateCreated, dateCompleted, parentId, x, y, ${sizeSql}, side, orderIndex,
-         NULL, id, NULL
+         NULL, id, NULL, NULL, 0
        FROM tasks`,
     )
     db.exec('DROP TABLE tasks')
@@ -107,6 +120,32 @@ function ensureCarryColumns(db: Database.Database): void {
   }
   db.exec(TASKS_INDEXES)
   db.exec(FILL_CHAIN)
+}
+
+function projectForeignKey(db: Database.Database): boolean {
+  const keys = db.prepare('PRAGMA foreign_key_list(tasks)').all() as ForeignKeyRow[]
+  return keys.some((key) => key.from === 'projectId')
+}
+
+function ensureProjectColumn(db: Database.Database): void {
+  if (!taskColumns(db).has('projectId')) db.exec('ALTER TABLE tasks ADD COLUMN projectId TEXT')
+  if (!taskColumns(db).has('projectHoldDismissed')) {
+    db.exec('ALTER TABLE tasks ADD COLUMN projectHoldDismissed INTEGER NOT NULL DEFAULT 0')
+  }
+  db.exec(TASKS_INDEXES)
+  if (!projectForeignKey(db)) db.exec(CLEAR_PROJECT_ON_BRIEF_DELETE)
+}
+
+// A comment's project label is a label, not a link: an unlinked brief leaves the answer and its text
+// exactly as they were, so the column carries no foreign key and nothing cascades into it.
+function ensureCommentProjectColumns(db: Database.Database): void {
+  const comments = new Set(
+    (db.prepare('PRAGMA table_info(aiComments)').all() as { name: string }[]).map((column) => column.name),
+  )
+  if (!comments.has('projectId')) db.exec('ALTER TABLE aiComments ADD COLUMN projectId TEXT')
+  if (!comments.has('projectPinned')) {
+    db.exec('ALTER TABLE aiComments ADD COLUMN projectPinned INTEGER NOT NULL DEFAULT 0')
+  }
 }
 
 function cleanupOrphans(db: Database.Database): boolean {
@@ -150,6 +189,12 @@ export function migrateTasks(db: Database.Database): void {
   const carryStart = performance.now()
   ensureCarryColumns(db)
   tempMark('migrate-carry', { ms: tempMs(carryStart) })
+  const projectStart = performance.now()
+  ensureProjectColumn(db)
+  tempMark('migrate-project', { ms: tempMs(projectStart) })
+  const commentProjectStart = performance.now()
+  ensureCommentProjectColumns(db)
+  tempMark('migrate-comment-project', { ms: tempMs(commentProjectStart) })
   const orphanStart = performance.now()
   const skipped = cleanupOrphans(db)
   tempMark('migrate-orphan', { ms: tempMs(orphanStart), skipped })

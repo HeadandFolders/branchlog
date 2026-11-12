@@ -89,7 +89,8 @@ function sameTask(a: Task, b: Task): boolean {
     a.orderIndex === b.orderIndex &&
     a.carriedFromId === b.carriedFromId &&
     a.chainId === b.chainId &&
-    a.droppedAt === b.droppedAt
+    a.droppedAt === b.droppedAt &&
+    a.projectId === b.projectId
   )
 }
 
@@ -110,7 +111,10 @@ function singleTextChange(before: Task[], after: Task[]): string | null {
     const left = before[index]
     const right = after[index]
     if (!left || !right || left.id !== right.id) return null
-    const textOnly =
+    const typed = left.text !== right.text
+    // Typing "@auth" into a row changes its text and its binding in the same run, so the binding
+    // rides along with the row that was typed in. Any other field moving is a different edit.
+    const restSame =
       left.done === right.done &&
       left.dateCreated === right.dateCreated &&
       left.dateCompleted === right.dateCompleted &&
@@ -123,9 +127,10 @@ function singleTextChange(before: Task[], after: Task[]): string | null {
       left.orderIndex === right.orderIndex &&
       left.carriedFromId === right.carriedFromId &&
       left.chainId === right.chainId &&
-      left.droppedAt === right.droppedAt
-    if (!textOnly) return null
-    if (left.text !== right.text) {
+      left.droppedAt === right.droppedAt &&
+      (typed || left.projectId === right.projectId)
+    if (!restSame) return null
+    if (typed) {
       if (changed) return null
       changed = left.id
     }
@@ -315,7 +320,8 @@ export function installHistoryKeys(): () => void {
     if (event.isComposing || event.key === 'Process') return
     if (!(event.ctrlKey || event.metaKey) || event.altKey) return
     if (event.target instanceof Element && event.target.closest('[data-theme-lab]')) return
-    if (event.target instanceof HTMLInputElement) return
+    // Fields that own their own text undo keep it: the day stack cannot undo what it never recorded.
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
     const key = event.key.toLowerCase()
     const undo = key === 'z' && !event.shiftKey
     const redo = (key === 'z' && event.shiftKey) || (key === 'y' && event.ctrlKey && !event.metaKey && !event.shiftKey)

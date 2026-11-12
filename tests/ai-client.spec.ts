@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test'
-import { listModels, parseJsonReply, requestChat, type ChatOptions, type ChatReply } from '../src/main/lm-studio'
+import {
+  listModels,
+  parseJsonReply,
+  requestChat,
+  type ChatReply,
+  type SchemaChatOptions,
+} from '../src/main/lm-studio'
 import { startMockLmStudio, type MockLmStudio } from './mock-lm-studio'
 
 let mock: MockLmStudio
@@ -12,7 +18,7 @@ test.afterEach(async () => {
   await mock.close()
 })
 
-function chat(overrides: Partial<ChatOptions> = {}): Promise<ChatReply> {
+function chat(overrides: Partial<SchemaChatOptions> = {}): Promise<ChatReply> {
   return requestChat({
     baseUrl: mock.url,
     messages: [{ role: 'user', content: 'plan the garden' }],
@@ -123,11 +129,18 @@ test('a server without structured output falls back to asking for JSON', async (
   expect(messages.at(-1)?.content).toContain('JSON')
 })
 
-test('without a schema the answer stays plain text', async () => {
+test('without a schema the answer comes back as text, with no tools and no thinking switch', async () => {
   mock.setChatMode('plain')
-  const reply = await chat({ schema: undefined })
-  expect(reply).toEqual({ ok: true, content: 'Try a smaller first step.' })
-  expect(mock.requests[0].body?.response_format).toBeUndefined()
+  const reply = await requestChat({
+    baseUrl: mock.url,
+    model: 'mock-model',
+    messages: [{ role: 'user', content: 'plan the garden' }],
+  })
+  expect(reply).toEqual({ ok: true, text: 'Try a smaller first step.', toolCalls: [], finishReason: 'stop' })
+  const post = mock.requests.find((request) => request.method === 'POST')
+  expect(post?.body?.response_format).toBeUndefined()
+  expect(post?.body?.tools).toBeUndefined()
+  expect(post?.body?.thinking).toBeUndefined()
 })
 
 test('the model list reports success, no model loaded, and offline distinctly', async () => {

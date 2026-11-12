@@ -1,0 +1,216 @@
+.briefs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.briefs-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.briefs-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.briefs-links button,
+.briefs-item-actions button {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 10px;
+  color: var(--text-muted);
+}
+
+.briefs-links button:hover:enabled,
+.briefs-links button:focus-visible,
+.briefs-item-actions button:hover:enabled,
+.briefs-item-actions button:focus-visible {
+  color: var(--text);
+}
+
+.briefs-links button:disabled,
+.briefs-item-actions button:disabled {
+  color: var(--text-faint);
+}
+
+.briefs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.briefs-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-subtle);
+}
+
+.briefs-item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.briefs-item-name {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.briefs-badge {
+  border: 1px solid var(--ai-line);
+  border-radius: 999px;
+  padding: 0 6px;
+  color: var(--ai);
+  font-size: 11px;
+}
+
+.briefs-summary {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.briefs-path {
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-faint);
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.briefs-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- which-project hold --- */
+
+/* Quiet on purpose: it is a question, not a warning, and it sits where a row's own marks sit. */
+.briefs-hold {
+  flex: none;
+  box-sizing: border-box;
+  align-self: center;
+  margin: 0;
+  padding: 1px 8px;
+  border: 1px solid var(--ai-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.briefs-hold:hover,
+.briefs-hold[aria-expanded='true'] {
+  border-color: var(--ai);
+  color: var(--ai);
+}
+
+.briefs-hold:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 1px;
+  color: var(--text);
+}
+
+/* --- the project chip on a note --- */
+
+.briefs-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 7px;
+  border: 1px solid var(--ai-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ai);
+  font: inherit;
+  font-size: 11px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.briefs-chip:hover,
+.briefs-chip[aria-expanded='true'] {
+  border-color: var(--ai);
+  background: var(--ai-soft);
+}
+
+.briefs-chip:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.briefs-chip-auto {
+  color: var(--text-faint);
+  font-size: 10px;
+  text-transform: lowercase;
+}
+
+/* --- the picker both of them open --- */
+
+.briefs-pick {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 180px;
+  max-width: 300px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: 0 6px 18px color-mix(in oklab, var(--text) 12%, transparent);
+}
+
+.briefs-pick-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 3px 7px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.briefs-pick-row:hover,
+.briefs-pick-row:focus-visible {
+  background: var(--bg-subtle);
+}
+
+.briefs-pick-row[data-current='true'] {
+  color: var(--ai);
+}
+
+.briefs-pick-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+

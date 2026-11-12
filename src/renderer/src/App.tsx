@@ -1,6 +1,7 @@
 import { Component, lazy, Suspense, useEffect, useLayoutEffect, type ReactNode } from 'react'
 import { AiSettings } from './components/AiSettings'
 import { AiStatusNote } from './components/AiStatusNote'
+import { BriefAutocomplete } from './components/BriefAutocomplete'
 import { CalendarView } from './components/CalendarView'
 import { DailyCanvas } from './components/DailyCanvas'
 import { EarlierSearch } from './components/EarlierSearch'
@@ -8,6 +9,7 @@ import { ThemeLab } from './components/ThemeLab'
 import { DeleteNotice } from './components/DeleteNotice'
 import { TopBar } from './components/TopBar'
 import { branchFromShortcut, installBranchShortcut } from './lib/branch-from'
+import { installBriefComplete } from './lib/brief-complete-keys'
 import { installAiSettingsShortcut } from './lib/ai-settings-keys'
 import { installAiTrigger } from './lib/ai-trigger-install'
 import { installEarlierShortcut, openEarlierSearch } from './lib/earlier-search'
@@ -96,6 +98,7 @@ function Notebook() {
     const removePaste = installImagePaste()
     const removeDrop = installImageDrop()
     const removeAiTrigger = installAiTrigger()
+    const removeBriefComplete = installBriefComplete()
     const removeAskAi = installAskAiLifecycle()
     const onUnload = (): void => {
       useNotebook.getState().flushPendingSync()
@@ -116,6 +119,7 @@ function Notebook() {
       removePaste()
       removeDrop()
       removeAiTrigger()
+      removeBriefComplete()
       removeAskAi()
       window.removeEventListener('beforeunload', onUnload)
     }
@@ -125,6 +129,7 @@ function Notebook() {
     <div className="relative flex h-full flex-col bg-[var(--bg)]">
       <TopBar />
       <EarlierSearch />
+      <BriefAutocomplete />
       <main className="min-h-0 flex-1">
         {view === 'calendar' ? (
           <CalendarView />

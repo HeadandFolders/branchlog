@@ -34,7 +34,8 @@ test('Ask AI answers inside the branch, uses lineage and day context, and never 
     expect(messages[0].content).toContain('answer')
     expect(messages[1].content).toContain(`Earlier line 1: ${PARENT_TEXT}`)
     expect(messages[1].content).toContain(`Current task: ${BRANCH_TEXT}`)
-    expect(messages[1].content).toContain(`- ${PARENT_TEXT}`)
+    expect(messages[1].content).toContain(`1. ${PARENT_TEXT}`)
+    expect(messages[1].content).toContain(`    - [current] ${BRANCH_TEXT}`)
     expect(posts[0].body?.stream).toBe(false)
     const painted = await answer.evaluate((element) => {
       const probe = document.createElement('span')

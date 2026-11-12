@@ -5,6 +5,7 @@ import { parseRanges } from '../lib/keep-ranges'
 import { useAiComments } from '../store/ai-comments'
 import { useAskAi } from '../store/ask-ai'
 import { KeepHideText } from './KeepHideText'
+import { ProjectChip } from './ProjectChip'
 import { AiThinkingDots } from './AiThinkingDots'
 
 export const AiCommentBody = memo(function AiCommentBody({ id }: { id: string }) {
@@ -108,6 +109,7 @@ export const AiCommentBody = memo(function AiCommentBody({ id }: { id: string })
         </button>
       </form>
       <div className="ai-comment-tools nodrag">
+        <ProjectChip commentId={id} />
         {comment.replies.length > 0 && !trimmed ? (
           <button type="button" className="ai-tool" onClick={() => setShowReplies((value) => !value)}>
             {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}

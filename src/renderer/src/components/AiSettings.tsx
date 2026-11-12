@@ -1,6 +1,15 @@
 import { useState } from 'react'
-import { isPrivateAddress, MAX_COMMENTS_RANGE, PAUSE_DELAY_RANGE, parseBaseUrl } from '@shared/ai-settings'
+import {
+  ANSWER_MAX_CHARS_RANGE,
+  CHAT_TIMEOUT_MS_RANGE,
+  isPrivateAddress,
+  MAX_COMMENTS_RANGE,
+  MODEL_CONTEXT_TOKENS_RANGE,
+  PAUSE_DELAY_RANGE,
+  parseBaseUrl,
+} from '@shared/ai-settings'
 import { useAiSettings } from '../store/ai-settings'
+import { BriefsPanel } from './BriefsPanel'
 
 function validUrl(value: string): boolean {
   try {
@@ -10,6 +19,8 @@ function validUrl(value: string): boolean {
     return false
   }
 }
+
+type NumberSetting = 'maxCommentsPerDay' | 'pauseDelayMs' | 'answerMaxChars' | 'chatTimeoutMs' | 'modelContextTokens'
 
 export function AiSettings() {
   const open = useAiSettings((state) => state.open)
@@ -32,7 +43,7 @@ function AiSettingsPanel() {
   const commitModel = (): void => {
     if (model !== settings.model) update({ model })
   }
-  const numberCommit = (raw: string, key: 'maxCommentsPerDay' | 'pauseDelayMs', min: number, max: number): void => {
+  const numberCommit = (raw: string, key: NumberSetting, min: number, max: number): void => {
     const parsed = Number.parseInt(raw, 10)
     if (!Number.isFinite(parsed)) return
     const value = Math.min(max, Math.max(min, parsed))
@@ -106,6 +117,67 @@ function AiSettingsPanel() {
             }
           />
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={settings.thinkingMode === 'on'}
+            onChange={(event) => update({ thinkingMode: event.target.checked ? 'on' : 'off' })}
+          />
+          Let the model think first (slower, smarter)
+        </label>
+        <label>
+          Longest answer (characters)
+          <input
+            type="number"
+            min={ANSWER_MAX_CHARS_RANGE.min}
+            max={ANSWER_MAX_CHARS_RANGE.max}
+            step={100}
+            value={settings.answerMaxChars}
+            onChange={(event) =>
+              numberCommit(
+                event.target.value,
+                'answerMaxChars',
+                ANSWER_MAX_CHARS_RANGE.min,
+                ANSWER_MAX_CHARS_RANGE.max,
+              )
+            }
+          />
+        </label>
+        <label>
+          Longest wait for an answer (ms)
+          <input
+            type="number"
+            min={CHAT_TIMEOUT_MS_RANGE.min}
+            max={CHAT_TIMEOUT_MS_RANGE.max}
+            step={1000}
+            value={settings.chatTimeoutMs}
+            onChange={(event) =>
+              numberCommit(event.target.value, 'chatTimeoutMs', CHAT_TIMEOUT_MS_RANGE.min, CHAT_TIMEOUT_MS_RANGE.max)
+            }
+          />
+        </label>
+        <label>
+          Model context (tokens)
+          <input
+            type="number"
+            min={MODEL_CONTEXT_TOKENS_RANGE.min}
+            max={MODEL_CONTEXT_TOKENS_RANGE.max}
+            step={512}
+            value={settings.modelContextTokens}
+            onChange={(event) =>
+              numberCommit(
+                event.target.value,
+                'modelContextTokens',
+                MODEL_CONTEXT_TOKENS_RANGE.min,
+                MODEL_CONTEXT_TOKENS_RANGE.max,
+              )
+            }
+          />
+        </label>
+        <p className="ai-settings-note">
+          Set the context to the length LM Studio loaded the model with. An answer past the character limit is cut at
+          its last full sentence and marked as truncated.
+        </p>
         {remote ? (
           <p className="ai-settings-note" role="note" data-ai-remote-note="true">
             This address is not on your machine or private network. Your task text would be sent to it.
@@ -143,6 +215,7 @@ function AiSettingsPanel() {
             {error}
           </p>
         ) : null}
+        <BriefsPanel />
       </div>
     </aside>
   )

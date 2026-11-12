@@ -10,13 +10,22 @@ import {
   type AiCommentWriteResult,
   type AiReplyResult,
   type AskAiInput,
+  type CommentProjectInput,
   type CommentReplyInput,
   type CommentRequest,
   type KeptRangesInput,
   type RemovedComments,
 } from '@shared/ai-comments'
 import { defaultAiSettings, parseAiSettings, type AiSettings } from '@shared/ai-settings'
+import {
+  DEFAULT_BRIEFS_MAX_CHARS,
+  isBriefResult,
+  isBriefViewList,
+  type BriefResult,
+  type BriefView,
+} from '@shared/ai-briefs'
 import { tempMark, tempMs } from '@shared/temp-timing'
+import { isDayNoteResult, type DayNote } from '@shared/day-note'
 import { defaultTheme, parseThemeDocument, type ThemeDocument } from '@shared/theme'
 import {
   isAck,
@@ -71,6 +80,10 @@ const deleteFailed: DeleteResult = { ok: false }
 
 function readWriteResult(value: unknown): WriteResult {
   return isWriteResult(value) ? value : failed
+}
+
+function readBriefResult(value: unknown): BriefResult {
+  return isBriefResult(value) ? value : { ok: false, message: 'Could not complete that request' }
 }
 
 function readTheme(): ThemeDocument {
@@ -287,6 +300,10 @@ const api: BranchlogApi = {
       const value: unknown = ipcRenderer.sendSync('ai:setCommentStatus', { id, status })
       return isAiCommentWriteResult(value) ? value : { ok: false }
     },
+    setCommentProjectSync: (input: CommentProjectInput): AiCommentWriteResult => {
+      const value: unknown = ipcRenderer.sendSync('ai:setCommentProject', input)
+      return isAiCommentWriteResult(value) ? value : { ok: false }
+    },
     setKeptRangesSync: (input: KeptRangesInput): AiCommentWriteResult => {
       const value: unknown = ipcRenderer.sendSync('ai:setKeptRanges', input)
       return isAiCommentWriteResult(value) ? value : { ok: false }
@@ -302,6 +319,42 @@ const api: BranchlogApi = {
     },
     replaceCommentsSync: (date: string, comments: AiComment[]): Ack => {
       const value: unknown = ipcRenderer.sendSync('ai:replaceComments', { date, comments })
+      if (!isAck(value) || !value.ok) return { ok: false }
+      return { ok: true }
+    },
+  },
+  briefs: {
+    list: async (): Promise<BriefView[]> => {
+      const value: unknown = await ipcRenderer.invoke('briefs:list')
+      if (!isBriefViewList(value)) throw new Error('Could not load the briefs')
+      return value
+    },
+    linkFolder: async (): Promise<BriefResult> => readBriefResult(await ipcRenderer.invoke('briefs:linkFolder')),
+    linkFiles: async (): Promise<BriefResult> => readBriefResult(await ipcRenderer.invoke('briefs:linkFiles')),
+    refresh: async (id: string): Promise<BriefResult> => readBriefResult(await ipcRenderer.invoke('briefs:refresh', id)),
+    remove: async (id: string): Promise<BriefResult> => readBriefResult(await ipcRenderer.invoke('briefs:remove', id)),
+    setEnabled: async (id: string, on: boolean): Promise<BriefResult> =>
+      readBriefResult(await ipcRenderer.invoke('briefs:setEnabled', { id, on })),
+    setAlwaysInclude: async (id: string, on: boolean): Promise<BriefResult> =>
+      readBriefResult(await ipcRenderer.invoke('briefs:setAlwaysInclude', { id, on })),
+    maxCharsSync: (): number => {
+      const value: unknown = ipcRenderer.sendSync('briefs:maxChars')
+      return typeof value === 'number' && Number.isInteger(value) ? value : DEFAULT_BRIEFS_MAX_CHARS
+    },
+    setMaxCharsSync: (value: number): Ack => {
+      const result: unknown = ipcRenderer.sendSync('briefs:setMaxChars', value)
+      if (!isAck(result) || !result.ok) return { ok: false }
+      return { ok: true }
+    },
+  },
+  dayNote: {
+    get: async (date): Promise<DayNote | null> => {
+      const value: unknown = await ipcRenderer.invoke('dayNote:get', date)
+      if (!isDayNoteResult(value)) throw new Error('Could not load the day note')
+      return value
+    },
+    setSync: (date, text): Ack => {
+      const value: unknown = ipcRenderer.sendSync('dayNote:set', { dateKey: date, text })
       if (!isAck(value) || !value.ok) return { ok: false }
       return { ok: true }
     },

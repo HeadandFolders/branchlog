@@ -7,6 +7,7 @@ import { localDateKey } from '../shared/dates.ts'
 import type { ActivityCount, CreateBranchInput, CreateTaskInput, Task, UpdateTaskInput } from '@shared/types'
 import { applySchema } from './schema.ts'
 import { mapTask, TASK_COLUMNS, type TaskRow } from './task-row.ts'
+import { resolveProject } from './project-ref.ts'
 
 let database: Database.Database | null = null
 
@@ -101,12 +102,13 @@ export function createTask(input: CreateTaskInput): Task {
       orderIndex = row.maxIndex + 1
     }
 
+    const project = resolveProject(db, task.projectId)
     db.prepare(
       `INSERT INTO tasks (
          id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
-         carriedFromId, chainId, droppedAt
-       ) VALUES (?, ?, 0, ?, NULL, NULL, 0, 0, ?, 0, 'main', ?, NULL, ?, NULL)`,
-    ).run(task.id, task.text, task.dateCreated, BRANCH_WIDTH, orderIndex, task.id)
+         carriedFromId, chainId, droppedAt, projectId
+       ) VALUES (?, ?, 0, ?, NULL, NULL, 0, 0, ?, 0, 'main', ?, NULL, ?, NULL, ?)`,
+    ).run(task.id, task.text, task.dateCreated, BRANCH_WIDTH, orderIndex, task.id, project)
 
     return {
       id: task.id,
@@ -124,6 +126,8 @@ export function createTask(input: CreateTaskInput): Task {
       carriedFromId: null,
       chainId: task.id,
       droppedAt: null,
+      projectId: project,
+      projectHoldDismissed: false,
     }
   })
 
@@ -151,11 +155,12 @@ export function createBranch(input: CreateBranchInput): Task {
       .get(parent.dateCreated) as { maxIndex: number }
     const orderIndex = row.maxIndex + 1
 
+    const project = resolveProject(db, branch.projectId)
     db.prepare(
       `INSERT INTO tasks (
          id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex,
-         carriedFromId, chainId, droppedAt
-       ) VALUES (?, ?, 0, ?, NULL, ?, ?, ?, ?, 0, 'right', ?, NULL, ?, NULL)`,
+         carriedFromId, chainId, droppedAt, projectId
+       ) VALUES (?, ?, 0, ?, NULL, ?, ?, ?, ?, 0, 'right', ?, NULL, ?, NULL, ?)`,
     ).run(
       branch.id,
       branch.text,
@@ -166,6 +171,7 @@ export function createBranch(input: CreateBranchInput): Task {
       BRANCH_WIDTH,
       orderIndex,
       branch.id,
+      project,
     )
 
     return {
@@ -184,6 +190,8 @@ export function createBranch(input: CreateBranchInput): Task {
       carriedFromId: null,
       chainId: branch.id,
       droppedAt: null,
+      projectId: project,
+      projectHoldDismissed: false,
     }
   })
 
@@ -211,6 +219,8 @@ export function updateTask(input: UpdateTaskInput): Task {
   const hasY = input.y !== undefined
   const hasWidth = input.width !== undefined
   const hasHeight = input.height !== undefined
+  const hasProject = input.projectId !== undefined
+  const hasDismissed = input.projectHoldDismissed !== undefined
   const today = localDateKey()
   const result = db
     .prepare(
@@ -221,6 +231,14 @@ export function updateTask(input: UpdateTaskInput): Task {
          y = CASE WHEN @hasY = 1 THEN @y ELSE y END,
          width = CASE WHEN @hasWidth = 1 THEN @width ELSE width END,
          height = CASE WHEN @hasHeight = 1 THEN @height ELSE height END,
+         projectId = CASE
+           WHEN @hasProject = 0 THEN projectId
+           ELSE (SELECT id FROM aiBriefs WHERE id = @project)
+         END,
+         projectHoldDismissed = CASE
+           WHEN @hasDismissed = 0 THEN projectHoldDismissed
+           ELSE @dismissed
+         END,
          dateCompleted = CASE
            WHEN @hasDone = 0 THEN dateCompleted
            WHEN @done = 1 THEN @today
@@ -242,6 +260,10 @@ export function updateTask(input: UpdateTaskInput): Task {
       width: input.width ?? 0,
       hasHeight: hasHeight ? 1 : 0,
       height: input.height ?? 0,
+      hasProject: hasProject ? 1 : 0,
+      project: input.projectId ?? null,
+      hasDismissed: hasDismissed ? 1 : 0,
+      dismissed: input.projectHoldDismissed ? 1 : 0,
       today,
     })
 

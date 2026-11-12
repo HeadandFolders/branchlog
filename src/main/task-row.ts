@@ -16,10 +16,12 @@ export interface TaskRow {
   carriedFromId: string | null
   chainId: string
   droppedAt: string | null
+  projectId: string | null
+  projectHoldDismissed: number
 }
 
 export const TASK_COLUMNS =
-  'id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex, carriedFromId, chainId, droppedAt'
+  'id, text, done, dateCreated, dateCompleted, parentId, x, y, width, height, side, orderIndex, carriedFromId, chainId, droppedAt, projectId, projectHoldDismissed'
 
 function asSide(value: string): TaskSide {
   if (value === 'main' || value === 'right') return value
@@ -43,5 +45,7 @@ export function mapTask(row: TaskRow): Task {
     carriedFromId: row.carriedFromId,
     chainId: row.chainId,
     droppedAt: row.droppedAt,
+    projectId: row.projectId,
+    projectHoldDismissed: row.projectHoldDismissed === 1,
   }
 }

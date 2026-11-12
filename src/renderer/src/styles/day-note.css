@@ -1,0 +1,52 @@
+.day-note-empty {
+  display: block;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-faint);
+  font-size: 12px;
+  text-align: left;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.day-note-empty:hover,
+.day-note-empty:focus-visible {
+  opacity: 1;
+}
+
+.day-note-wrap {
+  margin-top: 6px;
+}
+
+.day-note {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  resize: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.day-note:hover,
+.day-note:focus {
+  color: var(--text);
+  outline: none;
+}
+
+.day-note::placeholder {
+  color: var(--text-faint);
+}
+
+.day-note-error {
+  margin: 4px 0 0;
+  color: var(--text-faint);
+  font-size: 11px;
+}

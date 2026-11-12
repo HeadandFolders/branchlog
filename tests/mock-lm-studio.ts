@@ -1,7 +1,17 @@
 import { createServer, type Server, type ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
 
-export type MockChatMode = 'json' | 'null' | 'fenced' | 'malformed' | 'delayed' | 'error500' | 'plain' | 'reply'
+export type MockChatMode =
+  | 'json'
+  | 'null'
+  | 'fenced'
+  | 'malformed'
+  | 'delayed'
+  | 'error500'
+  | 'plain'
+  | 'reply'
+  | 'question'
+  | 'tool-save'
 
 export interface MockRequest {
   method: string
@@ -21,6 +31,24 @@ export interface MockLmStudio {
 
 const COMMENT = { comment: 'What does done look like for this?', type: 'question' }
 export const MOCK_ANSWER = 'Start with an outline, then draft the introduction.'
+export const MOCK_QUESTION = 'QUESTION: Which vendor should the email go to?'
+export const MOCK_FILE_BODY = 'Dear vendor,\n\nHere is the quarterly report.\n\nRegards'
+export const MOCK_FILE_NAME = 'vendor-email.md'
+
+function toolCompletion(name: string, args: unknown): unknown {
+  return {
+    choices: [
+      {
+        message: {
+          role: 'assistant',
+          content: null,
+          tool_calls: [{ id: 'call-1', type: 'function', function: { name, arguments: JSON.stringify(args) } }],
+        },
+        finish_reason: 'tool_calls',
+      },
+    ],
+  }
+}
 
 function chatBody(mode: MockChatMode, body: Record<string, unknown> | null): { status: number; payload: unknown } {
   const messages = body?.messages as { role: string; content: string }[] | undefined
@@ -32,11 +60,15 @@ function chatBody(mode: MockChatMode, body: Record<string, unknown> | null): { s
   if (mode === 'null') return { status: 200, payload: completion(JSON.stringify(isAnswer ? { answer: null } : { comment: null })) }
   if (mode === 'plain') return { status: 200, payload: completion('Try a smaller first step.') }
   if (mode === 'reply') return { status: 200, payload: completion(JSON.stringify({ reply: 'A smaller first step still counts.' })) }
+  if (mode === 'question') return { status: 200, payload: completion(MOCK_QUESTION) }
+  if (mode === 'tool-save') {
+    return { status: 200, payload: toolCompletion('save_file', { content: MOCK_FILE_BODY, suggestedName: MOCK_FILE_NAME }) }
+  }
   return { status: 200, payload: completion(JSON.stringify(payload)) }
 }
 
 function completion(content: string): unknown {
-  return { choices: [{ message: { role: 'assistant', content } }] }
+  return { choices: [{ message: { role: 'assistant', content }, finish_reason: 'stop' }] }
 }
 
 function send(response: ServerResponse, status: number, payload: unknown): void {
